@@ -1,7 +1,7 @@
 namespace ControlSaveManager;
 
 /// <summary>
-/// Registro delle operazioni in Documenti\ControlSaves\log.txt.
+/// Registro delle operazioni in log.txt nella cartella dei dati dell'app.
 /// Non lancia mai eccezioni: un registro non scrivibile non deve bloccare l'app.
 /// </summary>
 internal static class Log
@@ -11,10 +11,16 @@ internal static class Log
 
     private static readonly object Lock = new();
 
-    // Impostabile per i test.
-    public static string FilePath { get; set; } = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-        "ControlSaves", "log.txt");
+    private static string? filePath;
+
+    /// <summary>
+    /// Segue AppData.Root, che può cambiare all'avvio. Impostabile per i test.
+    /// </summary>
+    public static string FilePath
+    {
+        get => filePath ?? Path.Combine(AppData.Root, "log.txt");
+        set => filePath = value;
+    }
 
     public static void Write(string message)
     {

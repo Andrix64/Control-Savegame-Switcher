@@ -69,7 +69,7 @@ public sealed class SaveManager
     public string AccountName { get; }
 
     /// <param name="savePath">Cartella dei salvataggi del gioco (…\870780).</param>
-    /// <param name="basePath">Cartella dei dati dell'app (…\ControlSaves\IDAccount).</param>
+    /// <param name="basePath">Cartella dei dati dell'account (…\ControlSaveManager\IDAccount).</param>
     internal SaveManager(string savePath, string basePath, string accountName = "")
     {
         SavePath = savePath;
@@ -113,8 +113,7 @@ public sealed class SaveManager
                 Strings.SavesNotFound);
         }
 
-        string appData = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "ControlSaves");
+        string appData = AppData.Root;
         string lastAccountFile = Path.Combine(appData, "account.txt");
 
         SteamAccount? account = accounts[0];

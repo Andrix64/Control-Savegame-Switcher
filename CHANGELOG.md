@@ -32,7 +32,11 @@ Prima versione distribuita.
   verificati in una cartella a parte prima dello scambio; in caso di errore si
   ripristina il backup.
 - Operazioni bloccate mentre Control è aperto; una sola istanza dell'app.
-- Registro delle operazioni in `Documenti\ControlSaves\log.txt`.
+- Dati (profili, savestate, backup, registro) in
+  `%LOCALAPPDATA%\ControlSaveManager`, che OneDrive non sincronizza. I dati
+  delle versioni di prova in `Documenti\ControlSaves` vengono spostati da soli
+  al primo avvio, senza mai perdere nulla.
+- Registro delle operazioni in `log.txt`.
 
 ### Steam Cloud
 

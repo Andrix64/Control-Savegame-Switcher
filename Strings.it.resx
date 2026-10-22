@@ -213,4 +213,25 @@ I salvataggi attuali vanno prima in un nuovo backup.
   <data name="Yes" xml:space="preserve"><value>Sì</value></data>
   <data name="No" xml:space="preserve"><value>No</value></data>
   <data name="OK" xml:space="preserve"><value>OK</value></data>
+  <data name="DataMoved" xml:space="preserve"><value>Profili, savestate e backup sono stati spostati nella cartella dei dati dell&apos;app, che OneDrive non sincronizza:
+{1}
+
+Prima erano in:
+{0}</value></data>
+  <data name="DataMovedOldLeft" xml:space="preserve"><value>
+
+La vecchia cartella non è stata eliminata del tutto: {0}</value></data>
+  <data name="DataBothExist" xml:space="preserve"><value>Ci sono dati in tutte e due le cartelle:
+{0}
+{1}
+
+L&apos;app usa la seconda. La prima non è stata toccata: controllala ed eliminala se non ti serve più.</value></data>
+  <data name="DataMoveFailed" xml:space="preserve"><value>Non è stato possibile spostare i dati da:
+{0}
+a:
+{1}
+
+{2}
+
+L&apos;app continua a usare la vecchia cartella. Non è andato perso nulla.</value></data>
 </root>

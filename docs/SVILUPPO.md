@@ -8,13 +8,28 @@ Note tecniche per chi lavora sul codice. La guida per chi usa l'app è nel
 | Cosa | Percorso |
 |---|---|
 | Salvataggi del gioco | `<Steam>\userdata\<IDAccount>\870780\` |
-| Profili | `Documenti\ControlSaves\<IDAccount>\Profili\Profilo_<nome>\` |
-| Backup | `Documenti\ControlSaves\<IDAccount>\Backup\<motivo>_<data>\` |
-| Savestate | `Documenti\ControlSaves\<IDAccount>\Savestate\Profilo_<nome>\<data>_<nome savestate>\` |
-| Stato | `Documenti\ControlSaves\<IDAccount>\stato.ini` |
-| Registro | `Documenti\ControlSaves\log.txt` (oltre 1 MB diventa `log.old.txt`) |
-| Ultimo account usato | `Documenti\ControlSaves\account.txt` |
+| Dati dell'app | `%LOCALAPPDATA%\ControlSaveManager\` (`AppData.Root`) |
+| Profili | `<dati>\<IDAccount>\Profili\Profilo_<nome>\` |
+| Backup | `<dati>\<IDAccount>\Backup\<motivo>_<data>\` |
+| Savestate | `<dati>\<IDAccount>\Savestate\Profilo_<nome>\<data>_<nome savestate>\` |
+| Stato | `<dati>\<IDAccount>\stato.ini` |
+| Registro | `<dati>\log.txt` (oltre 1 MB diventa `log.old.txt`) |
+| Ultimo account usato | `<dati>\account.txt` |
 | Impostazione Steam Cloud | `<Steam>\userdata\<IDAccount>\7\remote\sharedconfig.vdf` (solo lettura) |
+
+I dati stanno in `%LOCALAPPDATA%` e non in Documenti perché Documenti è spesso
+sincronizzata con OneDrive, che blocca i file durante il caricamento, li lascia
+solo nel cloud ("file su richiesta") e crea copie "in conflitto": tutte cose che
+in una cartella di salvataggi fanno fallire le copie o mischiano le partite.
+`Local` e non `Roaming` perché i backup possono essere grandi.
+
+Le versioni di sviluppo precedenti usavano `Documenti\ControlSaves`. All'avvio
+`AppData.MoveFromDocuments` sposta quella cartella: sullo stesso disco con un
+solo `Directory.Move`, su dischi diversi copiando in `ControlSaveManager.spostamento`,
+verificando ogni file e solo dopo eliminando l'originale. Se ci sono dati in
+tutte e due le cartelle non tocca niente e usa la nuova; se lo spostamento
+fallisce continua a usare la vecchia. L'esito va nel registro e viene mostrato
+una volta all'utente.
 
 La cartella di Steam viene letta dal registro (`HKCU\Software\Valve\Steam\SteamPath`),
 con ripiego sui percorsi standard in `Program Files`.
@@ -100,6 +115,7 @@ build (`StronglyTypedLanguage` nel `.csproj`), senza bisogno di Visual Studio.
 | `SaveManager.cs` | Tutta la logica: ricerca di Steam e degli account, profili, attivazione, salvataggio, savestate, backup, Steam Cloud. |
 | `FileOps.cs` | Copia, verifica e sostituzione di cartelle. |
 | `AppState.cs` | Lettura e scrittura di `stato.ini`. |
+| `AppData.cs` | Cartella dei dati dell'app e spostamento da Documenti. |
 | `Vdf.cs` | Lettore dei file di configurazione di Steam. |
 | `Log.cs` | Registro delle operazioni e degli errori imprevisti. |
 | `Result.cs` | Esito delle operazioni (messaggio, backup creato, errore grave). |
@@ -139,7 +155,7 @@ Per il debug in VS Code ci sono `.vscode\launch.json` e `.vscode\tasks.json`.
 ## Test
 
 Test xUnit in `tests/ControlSaveManager.Tests`: lavorano su cartelle finte in
-`%TEMP%` (non toccano Steam né `Documenti\ControlSaves`) e coprono copie e
+`%TEMP%` (non toccano Steam né i dati veri dell'app) e coprono copie e
 scambio delle cartelle, profili, savestate, backup, `stato.ini`, Steam Cloud,
 account e testi tradotti. Il registro dei test va in `%TEMP%\csm_test_log.txt`.
 I test girano in italiano qualunque sia la lingua di Windows.

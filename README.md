@@ -77,15 +77,23 @@ conservarne (20 di base, 0 = tutti).
 
 ## Dove sono i file
 
-- Profili, savestate e backup: `Documenti\ControlSaves\`.
-- Registro delle operazioni: `Documenti\ControlSaves\log.txt`.
+Profili, savestate, backup e registro delle operazioni (`log.txt`) sono in
+`%LOCALAPPDATA%\ControlSaveManager` (di solito
+`C:\Users\<nome>\AppData\Local\ControlSaveManager`). È una cartella che OneDrive
+non sincronizza: così i salvataggi non vengono bloccati, scaricati a metà o
+duplicati come "copie in conflitto".
 
-Il pulsante **Apri cartella profili** apre la cartella in Esplora file. Se più
-account Steam sul PC hanno Control, all'avvio il programma chiede quale usare;
-ogni account ha i suoi profili.
+Il pulsante **Apri cartella profili** la apre in Esplora file. Altrimenti
+premi Win+R e scrivi `%LOCALAPPDATA%\ControlSaveManager`. Se più account Steam
+sul PC hanno Control, all'avvio il programma chiede quale usare; ogni account
+ha i suoi profili.
+
+Se avevi usato una versione di prova che salvava in `Documenti\ControlSaves`,
+al primo avvio i dati vengono spostati da soli nella nuova cartella e il
+programma te lo dice.
 
 Per disinstallare basta cancellare l'exe. Se vuoi, cancella anche
-`Documenti\ControlSaves` (ma lì ci sono i tuoi profili).
+`%LOCALAPPDATA%\ControlSaveManager` (ma lì ci sono i tuoi profili).
 
 ## Domande
 
@@ -121,8 +129,8 @@ The app is in English or Italian, following the Windows language.
   saved first. **Savestates...** keeps snapshots (e.g. before a boss);
   **Backups...** lists the automatic backups and restores them. Right-click a
   profile to rename or delete it.
-- Files are in `Documents\ControlSaves\`, the log in
-  `Documents\ControlSaves\log.txt`.
+- Profiles, savestates, backups and the log are in
+  `%LOCALAPPDATA%\ControlSaveManager`, a folder OneDrive doesn't sync.
 
 ## Licenza
 

@@ -34,7 +34,11 @@ internal static class Program
             return;
         }
 
+        // Prima di qualsiasi lettura o scrittura dei dati, registro compreso.
+        (AppData.MoveResult moved, string moveDetail) = AppData.MoveFromDocuments();
+
         Log.Write("Avvio versione " + Version);
+        ReportDataMove(moved, moveDetail);
 
         Result<SaveManager> init = SaveManager.Initialize(AccountForm.Choose);
 
@@ -55,6 +59,35 @@ internal static class Program
         }
 
         Application.Run(new MainForm(init.Value!));
+    }
+
+    /// <summary>
+    /// Dice all'utente, una volta sola, che i dati sono stati spostati da Documenti.
+    /// </summary>
+    private static void ReportDataMove(AppData.MoveResult result, string detail)
+    {
+        if (result == AppData.MoveResult.NothingToMove)
+            return;
+
+        Log.Write($"Spostamento dei dati da {AppData.OldRoot} a {AppData.DefaultRoot}: {result} {detail}");
+
+        (string text, MessageBoxIcon icon) = result switch
+        {
+            AppData.MoveResult.Moved => (
+                Loc.F(Strings.DataMoved, AppData.OldRoot, AppData.DefaultRoot) +
+                (detail == "" ? "" : Loc.F(Strings.DataMovedOldLeft, detail)),
+                MessageBoxIcon.Information),
+
+            AppData.MoveResult.BothExist => (
+                Loc.F(Strings.DataBothExist, AppData.OldRoot, AppData.DefaultRoot),
+                MessageBoxIcon.Warning),
+
+            _ => (
+                Loc.F(Strings.DataMoveFailed, AppData.OldRoot, AppData.DefaultRoot, detail),
+                MessageBoxIcon.Warning)
+        };
+
+        MessageDialog.Show(text, Title, MessageBoxButtons.OK, icon);
     }
 
     private static void ShowUnexpectedError(Exception ex)

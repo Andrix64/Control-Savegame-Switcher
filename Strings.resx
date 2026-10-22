@@ -213,4 +213,25 @@ The current saves first go into a new backup.
   <data name="Yes" xml:space="preserve"><value>Yes</value></data>
   <data name="No" xml:space="preserve"><value>No</value></data>
   <data name="OK" xml:space="preserve"><value>OK</value></data>
+  <data name="DataMoved" xml:space="preserve"><value>Your profiles, savestates and backups have been moved to the app&apos;s data folder, which OneDrive doesn&apos;t sync:
+{1}
+
+They used to be in:
+{0}</value></data>
+  <data name="DataMovedOldLeft" xml:space="preserve"><value>
+
+The old folder could not be completely deleted: {0}</value></data>
+  <data name="DataBothExist" xml:space="preserve"><value>Both folders contain data:
+{0}
+{1}
+
+The app uses the second one. The first has not been touched: check it and delete it if you no longer need it.</value></data>
+  <data name="DataMoveFailed" xml:space="preserve"><value>Your data could not be moved from:
+{0}
+to:
+{1}
+
+{2}
+
+The app keeps using the old folder. Nothing has been lost.</value></data>
 </root>

@@ -196,6 +196,22 @@ internal static class FileOps
     }
 
     /// <summary>
+    /// Copia tutto, senza esclusioni, e controlla byte per byte ogni file copiato.
+    /// </summary>
+    public static void CopyAllVerified(string source, string destination)
+    {
+        CopyAll(source, destination);
+
+        foreach (string file in Directory.EnumerateFiles(source, "*", SearchOption.AllDirectories))
+        {
+            string copy = Path.Combine(destination, Path.GetRelativePath(source, file));
+
+            if (!File.Exists(copy) || !FilesAreEqual(file, copy))
+                throw new IOException("La copia non coincide con l'originale: " + copy);
+        }
+    }
+
+    /// <summary>
     /// Copia tutto, senza esclusioni.
     /// </summary>
     private static void CopyAll(string source, string destination)
