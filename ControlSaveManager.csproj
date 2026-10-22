@@ -10,6 +10,15 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <!--
+      Smart App Control giudica ogni dll non firmata in base al suo hash e a
+      volte blocca una build. Con una build non deterministica ogni compilazione
+      produce un file diverso: se una viene bloccata, basta ricompilare.
+    -->
+    <Deterministic>false</Deterministic>
+  </PropertyGroup>
+
   <ItemGroup>
     <!-- Icona delle finestre (Theme.AppIcon). -->
     <EmbeddedResource Include="app.ico" LogicalName="ControlSaveManager.app.ico" />

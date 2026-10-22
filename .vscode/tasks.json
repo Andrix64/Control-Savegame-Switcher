@@ -18,6 +18,23 @@
         "kind": "build",
         "isDefault": true
       }
+    },
+    {
+      "label": "rebuild",
+      "detail": "Ricompila tutto: da usare se Smart App Control blocca la build.",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/ControlSaveManager.csproj",
+        "-c",
+        "Debug",
+        "--no-incremental",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
     }
   ]
 }
