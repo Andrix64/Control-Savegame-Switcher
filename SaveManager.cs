@@ -57,6 +57,9 @@ public sealed class SaveManager
     private const string RestoreBackupName = "Prima_ripristino";
     private const string DeletedBackupPrefix = "Eliminato_";
 
+    // Nome intermedio di una rinomina solo di maiuscole.
+    private const string RenameSuffix = ".rinomina";
+
     public string SavePath { get; }
     public string ProfilesPath { get; }
     public string BackupPath { get; }
@@ -82,6 +85,10 @@ public sealed class SaveManager
         Directory.CreateDirectory(ProfilesPath);
         Directory.CreateDirectory(BackupPath);
 
+        // Profili e savestate lasciati a metà da un'operazione interrotta.
+        RecoverInterrupted(ProfilesPath);
+        RecoverInterrupted(SavestatePath);
+
         State.Load();
     }
 
@@ -104,6 +111,10 @@ public sealed class SaveManager
 
         if (!Directory.Exists(userData))
             return Result<SaveManager>.Fail(Strings.UserDataNotFound);
+
+        // Prima di cercare gli account: una cartella del gioco rimasta come
+        // 870780.vecchio farebbe sparire l'account.
+        RecoverGameFolders(userData);
 
         IReadOnlyList<SteamAccount> accounts = FindAccounts(userData);
 
@@ -142,7 +153,75 @@ public sealed class SaveManager
     }
 
     /// <summary>
-    /// Account in userdata che hanno i salvataggi di Control, dal più usato di recente.
+    /// Rimette a posto la cartella del gioco di ogni account dopo una
+    /// sostituzione interrotta (vedi FileOps.RecoverInterruptedReplace).
+    /// </summary>
+    internal static void RecoverGameFolders(string userData)
+    {
+        foreach (string dir in Directory.GetDirectories(userData))
+        {
+            string game = Path.Combine(dir, AppId);
+
+            if (!Directory.Exists(game + FileOps.OldSuffix) && !Directory.Exists(game + FileOps.TempSuffix))
+                continue;
+
+            try
+            {
+                if (FileOps.RecoverInterruptedReplace(game))
+                    Log.Write("Recuperata una sostituzione interrotta: " + game);
+            }
+            catch (Exception ex)
+            {
+                Log.Write("Recupero di " + game, ex);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Rimette a posto le cartelle di root (profili o savestate) lasciate a
+    /// metà da una sostituzione o da una rinomina interrotta.
+    /// </summary>
+    private static void RecoverInterrupted(string root)
+    {
+        if (!Directory.Exists(root))
+            return;
+
+        foreach (string dir in Directory.GetDirectories(root))
+        {
+            try
+            {
+                if (dir.EndsWith(RenameSuffix, StringComparison.OrdinalIgnoreCase))
+                {
+                    // Rinomina solo di maiuscole interrotta tra i due spostamenti.
+                    string target = dir[..^RenameSuffix.Length];
+
+                    if (!Directory.Exists(target))
+                    {
+                        Directory.Move(dir, target);
+                        Log.Write("Recuperata una rinomina interrotta: " + target);
+                    }
+                }
+                else if (dir.EndsWith(FileOps.OldSuffix, StringComparison.OrdinalIgnoreCase) ||
+                         dir.EndsWith(FileOps.TempSuffix, StringComparison.OrdinalIgnoreCase))
+                {
+                    string target = dir[..dir.LastIndexOf('.')];
+
+                    if (FileOps.RecoverInterruptedReplace(target))
+                        Log.Write("Recuperata una sostituzione interrotta: " + target);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Write("Recupero di " + dir, ex);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Account in userdata che hanno la cartella di Control, dal più usato di
+    /// recente. Basta la cartella 870780: dopo aver attivato un profilo vuoto o
+    /// creato a mano può mancare la sottocartella remote, e l'account non deve
+    /// sparire per questo.
     /// </summary>
     internal static IReadOnlyList<SteamAccount> FindAccounts(string userData)
     {
@@ -150,17 +229,21 @@ public sealed class SaveManager
 
         foreach (string dir in Directory.GetDirectories(userData))
         {
-            string remote = Path.Combine(dir, AppId, "remote");
+            string game = Path.Combine(dir, AppId);
 
-            if (!Directory.Exists(remote))
+            if (!Directory.Exists(game))
                 continue;
 
             DateTime? lastSaved = null;
 
             try
             {
-                foreach (string file in Directory.EnumerateFiles(remote, "*", SearchOption.AllDirectories))
+                foreach (string file in Directory.EnumerateFiles(game, "*", SearchOption.AllDirectories))
                 {
+                    // Il file di Steam Cloud non è un salvataggio.
+                    if (Path.GetFileName(file).Equals("remotecache.vdf", StringComparison.OrdinalIgnoreCase))
+                        continue;
+
                     DateTime time = File.GetLastWriteTime(file);
 
                     if (lastSaved == null || time > lastSaved)
@@ -540,7 +623,7 @@ public sealed class SaveManager
         }
 
         // Un cambio solo di maiuscole passa per un nome intermedio.
-        string temp = destination + ".rinomina";
+        string temp = destination + RenameSuffix;
         Directory.Move(source, temp);
         Directory.Move(temp, destination);
     }

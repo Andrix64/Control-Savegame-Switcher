@@ -50,6 +50,16 @@ Il file `remotecache.vdf` di Steam non viene mai copiato né cancellato.
   cartella è in uso e non si può spostare, si ripiega sulla copia diretta dalla
   copia già verificata. In caso di errore si ripristina il backup.
 - `stato.ini` viene scritto in `stato.ini.tmp` e poi sostituito.
+- Recupero all'avvio di un'operazione interrotta (per esempio da uno
+  spegnimento): prima di cercare gli account, per ogni cartella del gioco, e
+  all'apertura, per `Profili` e `Savestate`. Se manca la cartella ma c'è
+  `<cartella>.vecchio`, questa torna al suo posto (è lo stato di prima
+  dell'operazione); se la cartella c'è, gli avanzi `.nuovo` e `.vecchio` vengono
+  eliminati. Una rinomina solo di maiuscole interrotta (`<profilo>.rinomina`)
+  viene completata. Un `.nuovo` da solo non viene toccato. Gli interventi
+  finiscono nel registro.
+- Un account viene riconosciuto se ha la cartella `870780`, anche senza
+  `remote` (che manca dopo aver attivato un profilo creato a mano).
 - Una sola istanza dell'app alla volta (`Mutex`).
 - Tutte le operazioni sono bloccate mentre Control è in esecuzione: la finestra
   lo controlla ogni 2 secondi.
@@ -157,7 +167,8 @@ Per il debug in VS Code ci sono `.vscode\launch.json` e `.vscode\tasks.json`.
 Test xUnit in `tests/ControlSaveManager.Tests`: lavorano su cartelle finte in
 `%TEMP%` (non toccano Steam né i dati veri dell'app) e coprono copie e
 scambio delle cartelle, profili, savestate, backup, `stato.ini`, Steam Cloud,
-account, spostamento dei dati da Documenti e testi tradotti. Il registro dei
+account, recupero delle operazioni interrotte, spostamento dei dati da
+Documenti e testi tradotti. Il registro dei
 test va in `%TEMP%\csm_test_log.txt`.
 I test girano in italiano qualunque sia la lingua di Windows.
 

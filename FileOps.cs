@@ -10,6 +10,10 @@ internal static class FileOps
     // File di Steam Cloud: non va mai copiato né cancellato.
     private const string SteamCacheFile = "remotecache.vdf";
 
+    // Cartelle accanto alla destinazione durante ReplaceFolder.
+    public const string TempSuffix = ".nuovo";
+    public const string OldSuffix = ".vecchio";
+
     public static void CopyFolder(string source, string destination)
     {
         if (!Directory.Exists(source))
@@ -113,12 +117,10 @@ internal static class FileOps
     /// </summary>
     public static void ReplaceFolder(string source, string destination)
     {
-        string temp = destination + ".nuovo";
-        string old = destination + ".vecchio";
+        string temp = destination + TempSuffix;
+        string old = destination + OldSuffix;
 
-        // Un'interruzione tra i due spostamenti lascia solo la cartella vecchia.
-        if (!Directory.Exists(destination) && Directory.Exists(old))
-            Directory.Move(old, destination);
+        RecoverInterruptedReplace(destination);
 
         DeleteIfExists(temp);
         DeleteIfExists(old);
@@ -167,6 +169,43 @@ internal static class FileOps
         {
             TryDelete(temp);
         }
+    }
+
+    /// <summary>
+    /// Rimette a posto destination dopo una ReplaceFolder interrotta (per
+    /// esempio da uno spegnimento). Se manca la cartella ma c'è la copia
+    /// .vecchio, la riporta al suo posto: è lo stato di prima dell'operazione,
+    /// di cui esiste anche il backup. Se la cartella c'è, elimina gli avanzi
+    /// .nuovo e .vecchio.
+    /// </summary>
+    /// <returns>true se ha trovato e sistemato qualcosa.</returns>
+    public static bool RecoverInterruptedReplace(string destination)
+    {
+        string temp = destination + TempSuffix;
+        string old = destination + OldSuffix;
+        bool recovered = false;
+
+        // Un'interruzione tra i due spostamenti lascia solo la cartella vecchia.
+        if (!Directory.Exists(destination) && Directory.Exists(old))
+        {
+            Directory.Move(old, destination);
+            recovered = true;
+        }
+
+        // Senza la cartella, un .nuovo da solo è l'unica copia: si lascia stare.
+        if (Directory.Exists(destination))
+        {
+            foreach (string leftover in new[] { temp, old })
+            {
+                if (Directory.Exists(leftover))
+                {
+                    TryDelete(leftover);
+                    recovered = true;
+                }
+            }
+        }
+
+        return recovered;
     }
 
     private static void Verify(string source, string destination)

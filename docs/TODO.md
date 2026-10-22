@@ -9,8 +9,6 @@ Quello che manca, in ordine di priorità. I bug sono in
 - [ ] **Firma del codice.** Senza firma SmartScreen avvisa chi scarica l'exe e
   Smart App Control può bloccarlo. Opzione più economica: Azure Trusted
   Signing. Un certificato autofirmato non basta.
-- [ ] **Correggere i bug 1 e 2** di [BUG_NOTI.md](BUG_NOTI.md): in casi rari
-  impediscono all'app di partire.
 
 ## Da provare con il gioco vero
 

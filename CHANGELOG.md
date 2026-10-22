@@ -28,6 +28,8 @@ Prima versione distribuita.
 ### Sicurezza dei salvataggi
 
 - Ogni copia viene verificata byte per byte.
+- Se un'operazione viene interrotta (per esempio da uno spegnimento), al
+  successivo avvio le cartelle tornano da sole allo stato di prima.
 - Sostituzione in due passaggi: i nuovi salvataggi vengono preparati e
   verificati in una cartella a parte prima dello scambio; in caso di errore si
   ripristina il backup.
