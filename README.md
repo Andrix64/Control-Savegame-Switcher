@@ -56,6 +56,9 @@ che non rispettano la regola vengono ignorate.
 | `Result.cs` | Esito delle operazioni (messaggio, backup creato, errore grave). |
 | `MainForm.cs` | Finestra principale (WinForms). |
 | `NewProfileForm.cs` | Finestra "Nuovo profilo". |
+| `Theme.cs` | Colori, caratteri e icona del tema scuro. |
+| `ThemedControls.cs` | Controlli disegnati a mano: pulsanti, schede, intestazione, barra di stato. |
+| `app.ico` | Icona dell'exe e delle finestre. |
 | `Program.cs` | Avvio dell'applicazione. |
 
 La vecchia versione da console è nella cronologia git (commit `17cd279`).
@@ -77,6 +80,12 @@ dotnet publish -c Release
 - **Steam Cloud**: se attivo per Control, Steam può risincronizzare i file dopo
   lo scambio. Si consiglia di disattivarlo per il gioco o di chiudere Steam
   durante l'uso.
+- **Smart App Control** (Windows 11) può bloccare l'exe compilato in proprio,
+  che non è firmato: l'app si chiude subito all'avvio e nel registro eventi
+  compare "An Application Control policy has blocked this file". È successo con
+  una versione che chiamava direttamente `dwmapi.dll` e `uxtheme.dll` (barra
+  del titolo e barre di scorrimento scure); senza quelle chiamate parte. Meglio
+  evitare `DllImport` nel progetto.
 - Cambiare profilo **senza aver salvato i progressi** li sposta solo nel backup
   `Prima_di_<profilo>`, non nel profilo attivo.
 

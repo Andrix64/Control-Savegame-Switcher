@@ -156,6 +156,23 @@ l'operazione i pulsanti sono disabilitati e il cursore è in attesa.
 | Ripristino fallito | Errore grave: "Non avviare il gioco" più percorso del backup. |
 | Steam / salvataggi non trovati all'avvio | Errore e chiusura dell'app. |
 
+### Aspetto (tema scuro)
+
+Aggiunto dopo la Fase 3. Tema scuro con accento rosso ispirato al gioco,
+definito in `Theme.cs`; controlli disegnati a mano in `ThemedControls.cs`.
+
+- Intestazione "CONTROL / SAVE MANAGER" con barra rossa.
+- Scheda del profilo attivo con data di attivazione e ultimo salvataggio.
+- Lista disegnata a mano: nome, data dell'ultima modifica, etichetta "ATTIVO".
+  Messaggio dedicato quando non ci sono profili.
+- Pulsanti piatti arrotondati: primario rosso, secondari grigi, "Apri cartella"
+  discreto.
+- Barra di stato con pallino colorato (pronto, in corso, riuscito, avviso, errore).
+- Icona `app.ico`, incorporata anche come risorsa per le finestre.
+
+Niente chiamate native a Windows (`DllImport`): una versione con barra del
+titolo e barre di scorrimento scure forzate veniva bloccata da Smart App Control.
+
 ## Fase 4 — Pulizia
 
 - [x] Rimuovere il vecchio `Program.cs` da console (resta nella cronologia git).

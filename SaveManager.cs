@@ -138,6 +138,32 @@ public sealed class SaveManager
         return Directory.Exists(Path.Combine(ProfilesPath, profileName));
     }
 
+    /// <summary>
+    /// Data del file più recente nel profilo, o null se il profilo è vuoto.
+    /// </summary>
+    public DateTime? GetProfileLastModified(string profileName)
+    {
+        DateTime? latest = null;
+
+        try
+        {
+            foreach (string file in Directory.EnumerateFiles(
+                         Path.Combine(ProfilesPath, profileName), "*", SearchOption.AllDirectories))
+            {
+                DateTime time = File.GetLastWriteTime(file);
+
+                if (latest == null || time > latest)
+                    latest = time;
+            }
+        }
+        catch
+        {
+            // Profilo non leggibile: nessuna data.
+        }
+
+        return latest;
+    }
+
     public bool HasActiveProfile =>
         State.ActiveProfile != "" && ProfileExists(State.ActiveProfile);
 

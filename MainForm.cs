@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Drawing.Drawing2D;
 
 namespace ControlSaveManager;
 
@@ -7,28 +8,40 @@ namespace ControlSaveManager;
 /// </summary>
 internal sealed class MainForm : Form
 {
+    private const int ItemHeight = 58;
+
     private readonly SaveManager manager;
 
-    private readonly Label activeLabel = new() { AutoSize = true };
-    private readonly Label sinceLabel = new() { AutoSize = true };
-    private readonly Label savedLabel = new() { AutoSize = true };
+    private readonly Label activeLabel = MakeLabel(Theme.Large, Theme.Text);
+    private readonly Label sinceLabel = MakeLabel(Theme.Base, Theme.Text);
+    private readonly Label savedLabel = MakeLabel(Theme.Base, Theme.Text);
+    private readonly Label profilesCaption = MakeLabel(Theme.Caption, Theme.TextMuted);
 
     private readonly ListBox profileList = new()
     {
         Dock = DockStyle.Fill,
-        IntegralHeight = false
+        IntegralHeight = false,
+        BorderStyle = BorderStyle.None,
+        DrawMode = DrawMode.OwnerDrawFixed,
+        BackColor = Theme.Surface,
+        ForeColor = Theme.Text
     };
 
-    private readonly Button activateButton = MakeButton("Attiva");
-    private readonly Button saveButton = MakeButton("Salva progressi");
-    private readonly Button newButton = MakeButton("Nuovo...");
-    private readonly Button folderButton = MakeButton("Apri cartella");
-
-    private readonly ToolStripStatusLabel statusLabel = new()
+    private readonly Label emptyLabel = new()
     {
-        Spring = true,
-        TextAlign = ContentAlignment.MiddleLeft
+        Dock = DockStyle.Fill,
+        Text = "Nessun profilo.\nCreane uno con «Nuovo profilo».",
+        TextAlign = ContentAlignment.MiddleCenter,
+        ForeColor = Theme.TextMuted,
+        Visible = false
     };
+
+    private readonly FlatButton activateButton = new("Attiva profilo", ButtonKind.Primary);
+    private readonly FlatButton saveButton = new("Salva progressi");
+    private readonly FlatButton newButton = new("Nuovo profilo...");
+    private readonly FlatButton folderButton = new("Apri cartella profili", ButtonKind.Ghost);
+
+    private readonly StatusBar statusBar = new();
 
     private readonly System.Windows.Forms.Timer gameTimer = new() { Interval = 2000 };
 
@@ -37,19 +50,27 @@ internal sealed class MainForm : Form
     private bool gameRunning;
     private bool checkingGame;
     private string lastMessage = "Pronto.";
+    private StatusKind lastKind = StatusKind.Info;
 
     public MainForm(SaveManager manager)
     {
         this.manager = manager;
 
         Text = "Control Save Manager";
+        Icon = Theme.AppIcon;
         StartPosition = FormStartPosition.CenterScreen;
         AutoScaleMode = AutoScaleMode.Font;
-        ClientSize = new Size(520, 380);
-        MinimumSize = new Size(440, 340);
+        Font = Theme.Base;
+        BackColor = Theme.Background;
+        ForeColor = Theme.Text;
+        ClientSize = new Size(620, 520);
+        MinimumSize = new Size(540, 480);
 
         BuildLayout();
 
+        profileList.DrawItem += DrawProfileItem;
+        profileList.DpiChangedAfterParent += (_, _) =>
+            profileList.ItemHeight = profileList.LogicalToDeviceUnits(ItemHeight);
         profileList.SelectedIndexChanged += (_, _) => UpdateControls();
         profileList.DoubleClick += (_, _) =>
         {
@@ -66,6 +87,7 @@ internal sealed class MainForm : Form
 
         Load += async (_, _) =>
         {
+            profileList.ItemHeight = profileList.LogicalToDeviceUnits(ItemHeight);
             RefreshAll();
             await CheckGameAsync();
             gameTimer.Start();
@@ -88,76 +110,197 @@ internal sealed class MainForm : Form
 
     private void BuildLayout()
     {
-        activeLabel.Font = new Font(Font, FontStyle.Bold);
-
-        var info = new FlowLayoutPanel
+        // Scheda del profilo attivo.
+        var info = new TableLayoutPanel
         {
-            FlowDirection = FlowDirection.TopDown,
+            Dock = DockStyle.Top,
             AutoSize = true,
-            Dock = DockStyle.Fill,
-            Margin = new Padding(0, 0, 0, 8),
-            WrapContents = false
+            ColumnCount = 2,
+            RowCount = 4
         };
-        info.Controls.AddRange(new Control[] { activeLabel, sinceLabel, savedLabel });
+        info.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
+        info.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
 
-        var profilesBox = new GroupBox
+        Label activeCaption = MakeCaption("PROFILO ATTIVO");
+        info.Controls.Add(activeCaption, 0, 0);
+        info.SetColumnSpan(activeCaption, 2);
+
+        activeLabel.Margin = new Padding(0, 0, 0, 10);
+        info.Controls.Add(activeLabel, 0, 1);
+        info.SetColumnSpan(activeLabel, 2);
+
+        info.Controls.Add(MakeCaption("ATTIVATO IL"), 0, 2);
+        info.Controls.Add(MakeCaption("ULTIMO SALVATAGGIO"), 1, 2);
+        info.Controls.Add(sinceLabel, 0, 3);
+        info.Controls.Add(savedLabel, 1, 3);
+
+        var infoCard = new CardPanel
         {
-            Text = "Profili",
             Dock = DockStyle.Fill,
-            Padding = new Padding(8)
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            Padding = new Padding(18, 14, 18, 16),
+            Margin = new Padding(0, 0, 0, 18)
         };
-        profilesBox.Controls.Add(profileList);
+        infoCard.Controls.Add(info);
 
+        // Lista dei profili.
+        profilesCaption.Margin = new Padding(2, 0, 0, 8);
+
+        var listCard = new CardPanel
+        {
+            Dock = DockStyle.Fill,
+            Padding = new Padding(6),
+            Margin = new Padding(0)
+        };
+        listCard.Controls.Add(profileList);
+        listCard.Controls.Add(emptyLabel);
+
+        // Pulsanti.
         var buttons = new FlowLayoutPanel
         {
             FlowDirection = FlowDirection.TopDown,
             AutoSize = true,
             WrapContents = false,
-            Margin = new Padding(8, 6, 0, 0)
+            Margin = new Padding(16, 0, 0, 0)
         };
-        buttons.Controls.AddRange(new Control[] { activateButton, saveButton, newButton, folderButton });
+
+        foreach (FlatButton button in new[] { activateButton, saveButton, newButton, folderButton })
+        {
+            button.Size = new Size(190, 40);
+            button.Margin = new Padding(0, 0, 0, 10);
+            buttons.Controls.Add(button);
+        }
+
+        folderButton.Margin = new Padding(0, 14, 0, 0);
 
         var root = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
-            Padding = new Padding(12),
+            Padding = new Padding(20, 18, 20, 18),
             ColumnCount = 2,
-            RowCount = 2
+            RowCount = 3
         };
         root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         root.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
         root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         root.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 
-        root.Controls.Add(info, 0, 0);
-        root.SetColumnSpan(info, 2);
-        root.Controls.Add(profilesBox, 0, 1);
-        root.Controls.Add(buttons, 1, 1);
+        root.Controls.Add(infoCard, 0, 0);
+        root.SetColumnSpan(infoCard, 2);
+        root.Controls.Add(profilesCaption, 0, 1);
+        root.Controls.Add(listCard, 0, 2);
+        root.Controls.Add(buttons, 1, 2);
 
-        var status = new StatusStrip { SizingGrip = false };
-        status.Items.Add(statusLabel);
-
+        // L'ultimo aggiunto viene ancorato per primo.
         Controls.Add(root);
-        Controls.Add(status);
+        Controls.Add(statusBar);
+        Controls.Add(new HeaderPanel("CONTROL", "SAVE MANAGER"));
     }
 
-    private static Button MakeButton(string text)
+    private static Label MakeLabel(Font font, Color color)
     {
-        return new Button
+        return new Label
         {
-            Text = text,
-            Size = new Size(140, 32),
-            Margin = new Padding(0, 0, 0, 8)
+            AutoSize = true,
+            Font = font,
+            ForeColor = color,
+            Margin = new Padding(0)
         };
     }
 
-    // AGGIORNAMENTO
-
-    private sealed record ProfileItem(string FolderName, bool Active)
+    private static Label MakeCaption(string text)
     {
-        public override string ToString() =>
-            SaveManager.ProfileDisplayName(FolderName) + (Active ? "   ✔ attivo" : "");
+        Label label = MakeLabel(Theme.Caption, Theme.TextMuted);
+        label.Text = text;
+        label.Margin = new Padding(0, 0, 0, 3);
+        return label;
     }
+
+    // LISTA DEI PROFILI
+
+    private sealed record ProfileItem(string FolderName, bool Active, DateTime? Modified)
+    {
+        public string Details => Modified == null
+            ? "Nessun salvataggio"
+            : "Ultima modifica: " + Modified.Value.ToString("dd/MM/yyyy HH:mm");
+
+        // Usato dagli screen reader.
+        public override string ToString() =>
+            SaveManager.ProfileDisplayName(FolderName) + (Active ? ", attivo" : "");
+    }
+
+    private void DrawProfileItem(object? sender, DrawItemEventArgs e)
+    {
+        if (e.Index < 0 || e.Index >= profileList.Items.Count)
+            return;
+
+        var item = (ProfileItem)profileList.Items[e.Index];
+        bool selected = (e.State & DrawItemState.Selected) != 0;
+
+        Graphics g = e.Graphics;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+
+        using (var back = new SolidBrush(Theme.Surface))
+            g.FillRectangle(back, e.Bounds);
+
+        int Px(int value) => profileList.LogicalToDeviceUnits(value);
+
+        Rectangle inner = Rectangle.Inflate(e.Bounds, -Px(2), -Px(2));
+
+        if (selected)
+        {
+            using GraphicsPath path = Theme.RoundedRect(inner, Px(6));
+            using var brush = new SolidBrush(Theme.SurfaceSelected);
+            g.FillPath(brush, path);
+        }
+
+        // Barra rossa a sinistra del profilo attivo.
+        if (item.Active)
+        {
+            using var accent = new SolidBrush(Theme.Accent);
+            g.FillRectangle(accent,
+                inner.X, inner.Y + Px(10), Px(3), inner.Height - Px(20));
+        }
+
+        int pad = Px(16);
+        int right = inner.Right - pad;
+
+        if (item.Active)
+        {
+            const string badge = "ATTIVO";
+            Size textSize = TextRenderer.MeasureText(g, badge, Theme.Caption, Size.Empty, TextFormatFlags.NoPadding);
+            var badgeRect = new Rectangle(0, 0, textSize.Width + Px(16), textSize.Height + Px(8));
+            badgeRect.Location = new Point(right - badgeRect.Width, inner.Y + (inner.Height - badgeRect.Height) / 2);
+
+            using (GraphicsPath path = Theme.RoundedRect(badgeRect, badgeRect.Height / 2f))
+            using (var brush = new SolidBrush(Theme.AccentSoft))
+                g.FillPath(brush, path);
+
+            TextRenderer.DrawText(g, badge, Theme.Caption, badgeRect, Theme.AccentSoftText,
+                TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
+
+            right = badgeRect.Left - Px(10);
+        }
+
+        const TextFormatFlags flags =
+            TextFormatFlags.Left |
+            TextFormatFlags.VerticalCenter |
+            TextFormatFlags.SingleLine |
+            TextFormatFlags.EndEllipsis |
+            TextFormatFlags.NoPrefix;
+
+        int x = inner.X + pad;
+        int middle = inner.Y + inner.Height / 2;
+
+        TextRenderer.DrawText(g, SaveManager.ProfileDisplayName(item.FolderName), Theme.ItemName,
+            new Rectangle(x, middle - Px(22), right - x, Px(24)), Theme.Text, flags);
+        TextRenderer.DrawText(g, item.Details, Theme.Small,
+            new Rectangle(x, middle + Px(1), right - x, Px(20)), Theme.TextMuted, flags);
+    }
+
+    // AGGIORNAMENTO
 
     /// <summary>
     /// Rilegge stato e profili dal disco e aggiorna tutta la finestra.
@@ -170,7 +313,7 @@ internal sealed class MainForm : Form
         }
         catch (Exception ex)
         {
-            lastMessage = "Impossibile leggere lo stato: " + ex.Message;
+            SetStatus("Impossibile leggere lo stato: " + ex.Message, StatusKind.Error);
         }
 
         AppState state = manager.State;
@@ -184,7 +327,11 @@ internal sealed class MainForm : Form
         {
             foreach (string profile in manager.GetProfiles())
             {
-                var item = new ProfileItem(profile, profile == state.ActiveProfile);
+                var item = new ProfileItem(
+                    profile,
+                    profile == state.ActiveProfile,
+                    manager.GetProfileLastModified(profile));
+
                 profileList.Items.Add(item);
 
                 if (profile == selected)
@@ -193,16 +340,27 @@ internal sealed class MainForm : Form
         }
         catch (Exception ex)
         {
-            lastMessage = "Impossibile leggere i profili: " + ex.Message;
+            SetStatus("Impossibile leggere i profili: " + ex.Message, StatusKind.Error);
         }
 
         profileList.EndUpdate();
 
-        activeLabel.Text = "Profilo attivo: " + (state.ActiveProfile == ""
-            ? "nessuno"
-            : SaveManager.ProfileDisplayName(state.ActiveProfile));
-        sinceLabel.Text = "Attivato il: " + (state.ActiveSince == "" ? "-" : state.ActiveSince);
-        savedLabel.Text = "Ultimo salvataggio: " + (state.LastSaved == "" ? "mai" : state.LastSaved);
+        int count = profileList.Items.Count;
+        profilesCaption.Text = count == 0 ? "PROFILI" : $"PROFILI  ·  {count}";
+        emptyLabel.Visible = count == 0;
+        profileList.Visible = count > 0;
+
+        bool hasActive = state.ActiveProfile != "";
+
+        activeLabel.Text = hasActive
+            ? SaveManager.ProfileDisplayName(state.ActiveProfile)
+            : "Nessuno";
+        activeLabel.ForeColor = hasActive ? Theme.Text : Theme.TextMuted;
+
+        sinceLabel.Text = state.ActiveSince == "" ? "—" : state.ActiveSince;
+
+        savedLabel.Text = state.LastSaved == "" ? "Mai" : state.LastSaved;
+        savedLabel.ForeColor = state.LastSaved == "" ? Theme.TextMuted : Theme.Text;
 
         UpdateControls();
     }
@@ -215,13 +373,20 @@ internal sealed class MainForm : Form
         activateButton.Enabled = canAct && selected != null && !selected.Active;
         saveButton.Enabled = canAct && manager.HasActiveProfile;
         newButton.Enabled = canAct;
-        profileList.Enabled = !busy;
 
-        statusLabel.Text = gameRunning && !busy
-            ? "⚠ Control è in esecuzione: chiudilo per cambiare o salvare."
-            : lastMessage;
+        if (gameRunning && !busy)
+            statusBar.SetStatus("Control è in esecuzione: chiudilo per cambiare o salvare.", StatusKind.Warning);
+        else
+            statusBar.SetStatus(lastMessage, lastKind);
 
         UseWaitCursor = busy;
+    }
+
+    private void SetStatus(string message, StatusKind kind)
+    {
+        lastMessage = message;
+        lastKind = kind;
+        UpdateControls();
     }
 
     private async Task CheckGameAsync()
@@ -317,10 +482,10 @@ internal sealed class MainForm : Form
     private async Task<bool> CheckUnsavedProgressAsync()
     {
         string previousMessage = lastMessage;
+        StatusKind previousKind = lastKind;
 
         busy = true;
-        lastMessage = "Controllo i progressi...";
-        UpdateControls();
+        SetStatus("Controllo i progressi...", StatusKind.Busy);
 
         try
         {
@@ -329,8 +494,7 @@ internal sealed class MainForm : Form
         finally
         {
             busy = false;
-            lastMessage = previousMessage;
-            UpdateControls();
+            SetStatus(previousMessage, previousKind);
         }
     }
 
@@ -400,8 +564,7 @@ internal sealed class MainForm : Form
     private async Task<Result> RunBusyAsync(string message, Func<Result> action)
     {
         busy = true;
-        lastMessage = message;
-        UpdateControls();
+        SetStatus(message, StatusKind.Busy);
 
         try
         {
@@ -422,8 +585,8 @@ internal sealed class MainForm : Form
 
     private void ShowResult(Result result)
     {
-        lastMessage = (result.Success ? "✔ " : "✖ ") + result.Message.Split('\n')[0];
-        UpdateControls();
+        SetStatus(result.Message.Split('\n')[0],
+            result.Success ? StatusKind.Success : StatusKind.Error);
 
         if (result.Success)
             return;

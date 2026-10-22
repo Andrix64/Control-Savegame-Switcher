@@ -9,26 +9,44 @@ internal sealed class NewProfileForm : Form
 
     private readonly Func<string, bool> profileExists;
 
-    private readonly TextBox nameBox = new() { Width = 280 };
+    private readonly TextBox nameBox = new()
+    {
+        Dock = DockStyle.Fill,
+        BorderStyle = BorderStyle.None,
+        BackColor = Theme.Surface,
+        ForeColor = Theme.Text,
+        Font = new Font("Segoe UI", 11f)
+    };
+
+    private readonly CardPanel nameCard = new()
+    {
+        Size = new Size(340, 38),
+        Padding = new Padding(12, 8, 12, 4),
+        Margin = new Padding(0, 0, 0, 6),
+        BorderColor = Theme.Border
+    };
 
     private readonly Label hintLabel = new()
     {
         AutoSize = true,
-        ForeColor = SystemColors.GrayText,
-        Margin = new Padding(3, 0, 3, 10)
+        Font = Theme.Small,
+        ForeColor = Theme.TextMuted,
+        Margin = new Padding(2, 0, 0, 18)
     };
 
     private readonly RadioButton copyRadio = new()
     {
         Text = "Copia i salvataggi attuali del gioco",
         AutoSize = true,
-        Checked = true
+        Checked = true,
+        Margin = new Padding(0, 0, 0, 4)
     };
 
     private readonly RadioButton emptyRadio = new()
     {
         Text = "Profilo vuoto (nuova partita)",
-        AutoSize = true
+        AutoSize = true,
+        Margin = new Padding(0, 0, 0, 18)
     };
 
     private readonly CheckBox activateCheck = new()
@@ -36,19 +54,17 @@ internal sealed class NewProfileForm : Form
         Text = "Attiva subito il profilo",
         AutoSize = true,
         Checked = true,
-        Margin = new Padding(3, 10, 3, 3)
+        Margin = new Padding(0)
     };
 
-    private readonly Button createButton = new()
+    private readonly FlatButton createButton = new("Crea", ButtonKind.Primary)
     {
-        Text = "Crea",
         DialogResult = DialogResult.OK,
         Enabled = false
     };
 
-    private readonly Button cancelButton = new()
+    private readonly FlatButton cancelButton = new("Annulla")
     {
-        Text = "Annulla",
         DialogResult = DialogResult.Cancel
     };
 
@@ -62,24 +78,37 @@ internal sealed class NewProfileForm : Form
         this.profileExists = profileExists;
 
         Text = "Nuovo profilo";
+        Icon = Theme.AppIcon;
+        ShowIcon = false;
         FormBorderStyle = FormBorderStyle.FixedDialog;
         StartPosition = FormStartPosition.CenterParent;
         MaximizeBox = false;
         MinimizeBox = false;
         ShowInTaskbar = false;
         AutoScaleMode = AutoScaleMode.Font;
+        Font = Theme.Base;
+        BackColor = Theme.Background;
+        ForeColor = Theme.Text;
         AutoSize = true;
         AutoSizeMode = AutoSizeMode.GrowAndShrink;
 
         AcceptButton = createButton;
         CancelButton = cancelButton;
 
+        nameCard.Controls.Add(nameBox);
+
+        foreach (FlatButton button in new[] { createButton, cancelButton })
+        {
+            button.Size = new Size(110, 36);
+            button.Margin = new Padding(10, 0, 0, 0);
+        }
+
         var buttons = new FlowLayoutPanel
         {
             FlowDirection = FlowDirection.RightToLeft,
             AutoSize = true,
             Dock = DockStyle.Fill,
-            Margin = new Padding(0, 12, 0, 0)
+            Margin = new Padding(0, 24, 0, 0)
         };
         buttons.Controls.AddRange(new Control[] { createButton, cancelButton });
 
@@ -88,13 +117,14 @@ internal sealed class NewProfileForm : Form
             FlowDirection = FlowDirection.TopDown,
             AutoSize = true,
             WrapContents = false,
-            Padding = new Padding(12)
+            Padding = new Padding(22, 20, 22, 20)
         };
         layout.Controls.AddRange(new Control[]
         {
-            new Label { Text = "Nome del profilo:", AutoSize = true },
-            nameBox,
+            MakeCaption("NOME DEL PROFILO"),
+            nameCard,
             hintLabel,
+            MakeCaption("CONTENUTO"),
             copyRadio,
             emptyRadio,
             activateCheck,
@@ -103,8 +133,23 @@ internal sealed class NewProfileForm : Form
 
         Controls.Add(layout);
 
+        // Bordo rosso sulla casella di testo quando è attiva.
+        nameBox.Enter += (_, _) => nameCard.BorderColor = Theme.Accent;
+        nameBox.Leave += (_, _) => nameCard.BorderColor = Theme.Border;
         nameBox.TextChanged += (_, _) => Validate();
         Validate();
+    }
+
+    private static Label MakeCaption(string text)
+    {
+        return new Label
+        {
+            Text = text,
+            AutoSize = true,
+            Font = Theme.Caption,
+            ForeColor = Theme.TextMuted,
+            Margin = new Padding(2, 0, 0, 6)
+        };
     }
 
     private new void Validate()
@@ -118,7 +163,7 @@ internal sealed class NewProfileForm : Form
             error = "Esiste già un profilo con questo nome.";
 
         hintLabel.Text = error == "" ? Hint : error;
-        hintLabel.ForeColor = error == "" ? SystemColors.GrayText : Color.Firebrick;
+        hintLabel.ForeColor = error == "" ? Theme.TextMuted : Theme.Error;
 
         createButton.Enabled = name != "" && error == "";
     }
