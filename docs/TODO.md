@@ -41,8 +41,10 @@ I bug noti sono in [BUG_NOTI.md](BUG_NOTI.md).
   pulsante "Ripristina".
 - [x] **Rinominare ed eliminare i profili** dalla finestra.
 - [x] **Più account Steam.** Chiedere quale usare se ce n'è più di uno (bug 13).
-- [ ] **Test nel repository.** Progetto xUnit con i test su cartelle finte
+- [x] **Test nel repository.** Progetto xUnit con i test su cartelle finte
   (oggi sono fuori dal repo) e GitHub Actions che compila e li esegue.
+  Fatto in `tests/ControlSaveManager.Tests` e `.github/workflows/build.yml`;
+  il workflow girerà quando il repository sarà su GitHub.
 - [ ] **Pubblicazione.** Exe singolo, versione, nome prodotto e copyright nel
   `.csproj`, zip di rilascio.
 

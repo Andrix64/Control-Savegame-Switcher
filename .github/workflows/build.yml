@@ -1,0 +1,32 @@
+name: Build e test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    # WinForms e il registro di Windows: serve un runner Windows.
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Compila
+        run: dotnet build ControlSaveManager.csproj -c Release
+
+      - name: Test
+        run: dotnet test tests/ControlSaveManager.Tests -c Release --logger "trx;LogFileName=risultati.trx"
+
+      - name: Risultati dei test
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: risultati-test
+          path: tests/ControlSaveManager.Tests/TestResults/*.trx

@@ -8,6 +8,8 @@
     <ApplicationIcon>app.ico</ApplicationIcon>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <!-- I test hanno il loro progetto. -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);tests/**</DefaultItemExcludes>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
@@ -22,6 +24,10 @@
   <ItemGroup>
     <!-- Icona delle finestre (Theme.AppIcon). -->
     <EmbeddedResource Include="app.ico" LogicalName="ControlSaveManager.app.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="ControlSaveManager.Tests" />
   </ItemGroup>
 
 </Project>

@@ -98,12 +98,27 @@ La vecchia versione da console è nella cronologia git (commit `17cd279`).
 Richiede .NET 10 SDK.
 
 ```bash
-dotnet build -c Release
+dotnet build ControlSaveManager.csproj -c Release
 ```
 
 ```bash
-dotnet publish -c Release
+dotnet publish ControlSaveManager.csproj -c Release
 ```
+
+## Test
+
+Test xUnit in `tests/ControlSaveManager.Tests`: lavorano su cartelle finte in
+`%TEMP%` (non toccano Steam né `Documenti\ControlSaves`) e coprono copie e
+scambio delle cartelle, profili, savestate, backup, `stato.ini` e ricerca
+degli account. Il registro dei test va in `%TEMP%\csm_test_log.txt`.
+
+```bash
+dotnet test tests/ControlSaveManager.Tests
+```
+
+Le finestre non sono coperte dai test. GitHub Actions
+(`.github/workflows/build.yml`) compila ed esegue i test a ogni push su `main`
+e a ogni pull request, su un runner Windows.
 
 ## Avvertenze
 
