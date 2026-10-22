@@ -93,3 +93,4 @@ dotnet publish -c Release
 
 - [Piano per l'interfaccia grafica](docs/PIANO_GUI.md)
 - [Bug noti](docs/BUG_NOTI.md)
+- [Cose da fare](docs/TODO.md)
