@@ -17,10 +17,26 @@ scelta più leggera.
 
 ## Fase 0 — Preparazione
 
-- [ ] Inizializzare un repository git (con `.gitignore` per `bin/` e `obj/`).
-- [ ] Commit dello stato attuale (versione console).
+- [x] Inizializzare un repository git (con `.gitignore` per `bin/` e `obj/`).
+- [x] Commit dello stato attuale (versione console).
 
-## Fase 1 — Separare la logica dalla console
+## Fase 1 — Separare la logica dalla console ✅
+
+Completata. File creati: `SaveManager.cs`, `AppState.cs`, `FileOps.cs`,
+`Result.cs`. `Program.cs` ora è solo il menu da console sopra `SaveManager`.
+
+Differenze rispetto allo schema qui sotto:
+
+- `SaveProgress(bool allowEmptySaves = false)`: rifiuta di svuotare il profilo
+  se la cartella del gioco è vuota, a meno che l'interfaccia non abbia chiesto
+  conferma.
+- `IsSteamRunning()`: l'interfaccia lo usa per avvisare prima di attivare o
+  salvare.
+- `GameSavesAreEmpty()`, `HasActiveProfile`, `ProfileExists()`,
+  `ProfileFolderName()`, `ReloadState()`.
+- `Result.Critical` (creato con `Result.Fatal`): ripristino fallito, il gioco
+  non va avviato.
+- `CopyFolder` e `MirrorFolder` lanciano eccezioni invece di restituire `bool`.
 
 Oggi ogni funzione mescola operazioni sui file e `Console.*`. Va estratta una
 classe senza I/O di console.

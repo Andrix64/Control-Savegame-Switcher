@@ -45,6 +45,16 @@ SalvatoIl=-
 Lettere ASCII, cifre, `_` e `-`, massimo 50 caratteri. Le cartelle in `Profili`
 che non rispettano la regola vengono ignorate.
 
+## Struttura del codice
+
+| File | Contenuto |
+|---|---|
+| `SaveManager.cs` | Tutta la logica: ricerca di Steam, profili, attivazione, salvataggio. Nessun I/O di console. |
+| `FileOps.cs` | Copia e sincronizzazione di cartelle. |
+| `AppState.cs` | Lettura e scrittura di `stato.ini`. |
+| `Result.cs` | Esito delle operazioni (messaggio, backup creato, errore grave). |
+| `Program.cs` | Menu da console. |
+
 ## Compilazione
 
 Richiede .NET 10 SDK.

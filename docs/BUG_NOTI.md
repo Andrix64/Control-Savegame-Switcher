@@ -2,6 +2,21 @@
 
 Revisione della versione console (`Program.cs`). Build: 0 errori, 3 warning.
 
+## Stato
+
+| # | Bug | Stato |
+|---|---|---|
+| 1 | Backup incompleto non rilevato | ✅ Risolto (Fase 1) |
+| 2 | `SaveProgress` può svuotare il profilo | ✅ Risolto (Fase 1) |
+| 3 | Steam Cloud / Steam aperto | ✅ Avviso se Steam è aperto (Fase 1) |
+| 4 | Profilo parziale lasciato su disco | Aperto |
+| 5 | Falso positivo `Control` | Aperto (risolto solo il `Dispose`) |
+| 6 | Cambio profilo senza avviso | Aperto |
+| 7 | `SaveState` ignora gli errori | ✅ Risolto (Fase 1, errore restituito nel `Result`) |
+| 8 | Ciclo infinito con input chiuso | ✅ Risolto nel menu principale (Fase 1) |
+| 9 | Warning `CA1416` | Aperto (Fase 2) |
+| 10–14 | Priorità bassa | Aperti |
+
 Priorità: **Alta** = rischio di perdere salvataggi, **Media** = comportamento
 sbagliato, **Bassa** = rifinitura.
 

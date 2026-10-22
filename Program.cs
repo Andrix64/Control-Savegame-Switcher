@@ -1,33 +1,32 @@
-﻿
-using Microsoft.Win32;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace ControlSaveManager;
 
+/// <summary>
+/// Interfaccia da console. Tutta la logica è in SaveManager.
+/// </summary>
 internal class Program
 {
-    private static string savePath = "";
-    private static string profilesPath = "";
-    private static string backupPath = "";
-    private static string statePath = "";
-
-    private static string activeProfile = "";
-    private static string activeSince = "";
-    private static string lastSaved = "";
+    private static SaveManager manager = null!;
 
     static void Main()
     {
         Console.Title = "Control Save Manager";
 
-        if (!Initialize())
+        Result<SaveManager> init = SaveManager.Initialize();
+
+        if (!init.Success)
         {
+            Console.WriteLine(init.Message);
             Pause();
             return;
         }
 
+        manager = init.Value!;
+
         while (true)
         {
-            if (IsGameRunning())
+            if (SaveManager.IsGameRunning())
             {
                 Console.Clear();
                 Console.WriteLine("Control è in esecuzione.");
@@ -36,11 +35,15 @@ internal class Program
                 continue;
             }
 
-            LoadState();
+            manager.ReloadState();
             ShowMenu();
 
             Console.Write("\nScelta: ");
-            string choice = Console.ReadLine() ?? "";
+            string? choice = Console.ReadLine();
+
+            // Input chiuso: esce invece di ripetere il menu all'infinito.
+            if (choice == null)
+                return;
 
             switch (choice)
             {
@@ -71,87 +74,12 @@ internal class Program
         }
     }
 
-    // INIZIALIZZAZIONE
-
-    private static bool Initialize()
-    {
-        string steam = FindSteam();
-
-        if (steam == "")
-        {
-            Console.WriteLine("Steam non trovato.");
-            return false;
-        }
-
-        string userData = Path.Combine(steam, "userdata");
-
-        if (!Directory.Exists(userData))
-        {
-            Console.WriteLine("Cartella userdata non trovata.");
-            return false;
-        }
-
-        // Cerca un account Steam con i salvataggi di Control.
-        string? account = Directory.GetDirectories(userData)
-            .FirstOrDefault(dir =>
-                Directory.Exists(Path.Combine(dir, "870780", "remote")));
-
-        if (account == null)
-        {
-            Console.WriteLine("Salvataggi di Control non trovati.");
-            Console.WriteLine("Avvia il gioco almeno una volta.");
-            return false;
-        }
-
-        savePath = Path.Combine(account, "870780");
-
-        string documents = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-
-        string basePath = Path.Combine(documents, "ControlSaves", Path.GetFileName(account));
-
-        profilesPath = Path.Combine(basePath, "Profili");
-        backupPath = Path.Combine(basePath, "Backup");
-        statePath = Path.Combine(basePath, "stato.ini");
-
-        Directory.CreateDirectory(profilesPath);
-        Directory.CreateDirectory(backupPath);
-
-        LoadState();
-
-        return true;
-    }
-
-    private static string FindSteam()
-    {
-        try
-        {
-            using var key = Registry.CurrentUser.OpenSubKey(@"Software\Valve\Steam");
-
-            string? path = key?.GetValue("SteamPath") as string;
-
-            if (!string.IsNullOrWhiteSpace(path) && Directory.Exists(path))
-            {
-                return path;
-            }
-        }
-        catch
-        {
-            // Se il registro non è disponibile, prova i percorsi standard.
-        }
-
-        string[] paths =
-        {
-            @"C:\Program Files (x86)\Steam",
-            @"C:\Program Files\Steam"
-        };
-
-        return paths.FirstOrDefault(Directory.Exists) ?? "";
-    }
-
     // MENU
 
     private static void ShowMenu()
     {
+        AppState state = manager.State;
+
         Console.Clear();
 
         Console.WriteLine("====================================");
@@ -159,11 +87,9 @@ internal class Program
         Console.WriteLine("====================================");
         Console.WriteLine();
 
-        Console.WriteLine("Profilo attivo: " + (activeProfile == "" ? "Nessuno" : activeProfile));
-
-        Console.WriteLine("Attivato il: " + (activeSince == "" ? "-" : activeSince));
-
-        Console.WriteLine("Ultimo salvataggio: " + (lastSaved == "" ? "Mai" : lastSaved));
+        Console.WriteLine("Profilo attivo: " + (state.ActiveProfile == "" ? "Nessuno" : state.ActiveProfile));
+        Console.WriteLine("Attivato il: " + (state.ActiveSince == "" ? "-" : state.ActiveSince));
+        Console.WriteLine("Ultimo salvataggio: " + (state.LastSaved == "" ? "Mai" : state.LastSaved));
 
         Console.WriteLine();
         Console.WriteLine("1. Cambia profilo");
@@ -175,19 +101,6 @@ internal class Program
 
     // PROFILI
 
-    private static List<string> GetProfiles()
-    {
-        return Directory.GetDirectories(profilesPath)
-            .Select(Path.GetFileName)
-            .Where(name =>
-                name != null &&
-                name.StartsWith("Profilo_") &&
-                IsValidName(name[8..]))
-            .Select(name => name!)
-            .OrderBy(name => name)
-            .ToList();
-    }
-
     private static void CreateProfile()
     {
         Console.Clear();
@@ -197,16 +110,14 @@ internal class Program
         Console.Write("Nome del profilo: ");
         string name = Console.ReadLine() ?? "";
 
-        if (!IsValidName(name))
+        if (!SaveManager.IsValidName(name))
         {
             Console.WriteLine("Nome non valido.");
             Pause();
             return;
         }
 
-        string profile = Path.Combine(profilesPath, "Profilo_" + name);
-
-        if (Directory.Exists(profile))
+        if (manager.ProfileExists(SaveManager.ProfileFolderName(name)))
         {
             Console.WriteLine("Questo profilo esiste già.");
             Pause();
@@ -220,53 +131,18 @@ internal class Program
 
         string choice = Console.ReadLine() ?? "";
 
-        try
+        if (choice != "1" && choice != "2")
         {
-            if (choice == "1")
-            {
-                string backup = NewBackupPath("Prima_creazione");
-
-                if (!CopyFolder(savePath, backup))
-                {
-                    Console.WriteLine("Backup non riuscito.");
-                    Pause();
-                    return;
-                }
-
-                if (!CopyFolder(savePath, profile))
-                {
-                    Console.WriteLine("Copia non riuscita.");
-                    Pause();
-                    return;
-                }
-
-                Console.WriteLine("Profilo creato.");
-            }
-            else if (choice == "2")
-            {
-                Directory.CreateDirectory(Path.Combine(profile, "remote"));
-
-                Console.WriteLine("Profilo vuoto creato.");
-            }
-            else
-            {
-                Console.WriteLine("Scelta non valida.");
-                Pause();
-                return;
-            }
-
-            Console.Write("Vuoi attivarlo? (s/n): ");
-
-            if ((Console.ReadLine() ?? "").Trim()
-                .Equals("s", StringComparison.OrdinalIgnoreCase))
-            {
-                ChangeToProfile(Path.GetFileName(profile)!);
-            }
+            Console.WriteLine("Scelta non valida.");
+            Pause();
+            return;
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine("Errore: " + ex.Message);
-        }
+
+        Result result = manager.CreateProfile(name, copyCurrentSaves: choice == "1");
+        Print(result);
+
+        if (result.Success && Confirm("Vuoi attivarlo?"))
+            ActivateProfile(SaveManager.ProfileFolderName(name));
 
         Pause();
     }
@@ -277,7 +153,7 @@ internal class Program
         Console.WriteLine("CAMBIA PROFILO");
         Console.WriteLine();
 
-        List<string> profiles = GetProfiles();
+        IReadOnlyList<string> profiles = manager.GetProfiles();
 
         if (profiles.Count == 0)
         {
@@ -288,7 +164,7 @@ internal class Program
 
         for (int i = 0; i < profiles.Count; i++)
         {
-            string marker = profiles[i] == activeProfile ? " [ATTIVO]" : "";
+            string marker = profiles[i] == manager.State.ActiveProfile ? " [ATTIVO]" : "";
 
             Console.WriteLine($"{i + 1}. {profiles[i]}{marker}");
         }
@@ -306,308 +182,87 @@ internal class Program
         if (choice == 0)
             return;
 
-        ChangeToProfile(profiles[choice - 1]);
+        ActivateProfile(profiles[choice - 1]);
         Pause();
     }
 
-    private static void ChangeToProfile(string profileName)
+    private static void ActivateProfile(string profileName)
     {
-        if (IsGameRunning())
-        {
-            Console.WriteLine("Chiudi Control prima di continuare.");
+        if (!ConfirmSteamClosed())
             return;
-        }
 
-        string profile = Path.Combine(profilesPath, profileName);
-
-        if (!Directory.Exists(profile))
-        {
-            Console.WriteLine("Profilo non trovato.");
-            return;
-        }
-
-        // Backup dei salvataggi prima della sostituzione.
-        string backup = NewBackupPath("Prima_di_" + profileName);
-
-        Console.WriteLine("Creo il backup...");
-
-        if (!CopyFolder(savePath, backup))
-        {
-            Console.WriteLine("Backup fallito. Cambio annullato.");
-            return;
-        }
-
-        Console.WriteLine("Attivo il profilo...");
-
-        if (!MirrorFolder(profile, savePath))
-        {
-            Console.WriteLine("Errore durante l'attivazione.");
-            Console.WriteLine("Provo a ripristinare il backup...");
-
-            if (MirrorFolder(backup, savePath))
-                Console.WriteLine("Ripristino completato.");
-            else
-                Console.WriteLine("ATTENZIONE: ripristino fallito. " + "Non avviare il gioco.");
-
-            return;
-        }
-
-        activeProfile = profileName;
-        activeSince = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
-        lastSaved = "";
-
-        SaveState();
-
-        Console.WriteLine("Profilo attivato correttamente.");
+        Console.WriteLine("Creo il backup e attivo il profilo...");
+        Print(manager.ActivateProfile(profileName));
     }
 
     // SALVATAGGIO DEI PROGRESSI
 
     private static void SaveProgress()
     {
-        if (activeProfile == "" ||
-            !Directory.Exists(Path.Combine(profilesPath, activeProfile)))
+        if (!manager.HasActiveProfile)
         {
             Console.WriteLine("Non c'è un profilo attivo valido.");
             Pause();
             return;
         }
 
-        if (IsGameRunning())
+        bool allowEmpty = false;
+
+        if (manager.GameSavesAreEmpty())
         {
-            Console.WriteLine("Chiudi Control prima di continuare.");
+            Console.WriteLine("ATTENZIONE: la cartella dei salvataggi del gioco è vuota.");
+            Console.WriteLine("Salvando, il profilo " + manager.State.ActiveProfile + " verrà svuotato.");
+
+            if (!Confirm("Continuare comunque?"))
+            {
+                Pause();
+                return;
+            }
+
+            allowEmpty = true;
+        }
+
+        if (!ConfirmSteamClosed())
+        {
             Pause();
             return;
         }
 
-        string profile = Path.Combine(profilesPath, activeProfile);
-        string backup = NewBackupPath("Prima_salvataggio");
-
-        Console.WriteLine("Creo il backup del profilo...");
-
-        if (!CopyFolder(profile, backup))
-        {
-            Console.WriteLine("Backup fallito. Operazione annullata.");
-            Pause();
-            return;
-        }
-
-        Console.WriteLine("Salvo i progressi...");
-
-        if (MirrorFolder(savePath, profile))
-        {
-            lastSaved = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
-            SaveState();
-
-            Console.WriteLine("Progressi salvati nel profilo.");
-        }
-        else
-        {
-            Console.WriteLine("Salvataggio fallito.");
-            Console.WriteLine("Backup disponibile in:");
-            Console.WriteLine(backup);
-        }
-
+        Console.WriteLine("Creo il backup e salvo i progressi...");
+        Print(manager.SaveProgress(allowEmpty));
         Pause();
     }
 
-    // FILE E CARTELLE
+    // UTILITÀ
 
-    private static bool CopyFolder(string source, string destination)
+    private static bool ConfirmSteamClosed()
     {
-        try
-        {
-            if (!Directory.Exists(source))
-                return false;
-
-            Directory.CreateDirectory(destination);
-
-            foreach (string file in Directory.GetFiles(source))
-            {
-                if (Path.GetFileName(file) == "remotecache.vdf")
-                    continue;
-
-                File.Copy(
-                    file,
-                    Path.Combine(destination, Path.GetFileName(file)),
-                    true);
-            }
-
-            foreach (string dir in Directory.GetDirectories(source))
-            {
-                string name = Path.GetFileName(dir);
-
-                if (IsExcluded(name))
-                    continue;
-
-                CopyFolder(dir, Path.Combine(destination, name));
-            }
-
+        if (!SaveManager.IsSteamRunning())
             return true;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine("Errore di copia: " + ex.Message);
-            return false;
-        }
+
+        Console.WriteLine("ATTENZIONE: Steam è aperto.");
+        Console.WriteLine("Se Steam Cloud è attivo per Control, può sovrascrivere i salvataggi.");
+
+        return Confirm("Continuare comunque?");
     }
 
-    private static bool MirrorFolder(string source, string destination)
+    private static void Print(Result result)
     {
-        try
-        {
-            if (!Directory.Exists(source))
-                return false;
+        if (result.Critical)
+            Console.WriteLine("ERRORE GRAVE");
 
-            Directory.CreateDirectory(destination);
+        Console.WriteLine(result.Message);
 
-            // Elimina i file che non esistono più nella sorgente.
-            foreach (string file in Directory.GetFiles(destination))
-            {
-                string name = Path.GetFileName(file);
-
-                if (name == "remotecache.vdf")
-                    continue;
-
-                if (!File.Exists(Path.Combine(source, name)))
-                    File.Delete(file);
-            }
-
-            // Elimina le cartelle non presenti nella sorgente.
-            foreach (string dir in Directory.GetDirectories(destination))
-            {
-                string name = Path.GetFileName(dir);
-
-                if (IsExcluded(name))
-                    continue;
-
-                if (!Directory.Exists(Path.Combine(source, name)))
-                    Directory.Delete(dir, true);
-            }
-
-            // Copia i file aggiornati.
-            foreach (string file in Directory.GetFiles(source))
-            {
-                string name = Path.GetFileName(file);
-
-                if (name == "remotecache.vdf")
-                    continue;
-
-                File.Copy(file, Path.Combine(destination, name), true);
-            }
-
-            // Sincronizza le sottocartelle.
-            foreach (string dir in Directory.GetDirectories(source))
-            {
-                string name = Path.GetFileName(dir);
-
-                if (IsExcluded(name))
-                    continue;
-
-                if (!MirrorFolder(dir, Path.Combine(destination, name)))
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine("Errore di sincronizzazione: " + ex.Message);
-            return false;
-        }
+        if (!result.Success && !result.Critical && result.BackupPath != null)
+            Console.WriteLine("Backup: " + result.BackupPath);
     }
 
-    private static bool IsExcluded(string name)
+    private static bool Confirm(string question)
     {
-        return name == "Backup" || name == "Profili" || name.StartsWith("Profilo_");
-    }
+        Console.Write(question + " (s/n): ");
 
-    private static string NewBackupPath(string name)
-    {
-        return Path.Combine(backupPath, name + "_" + DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss-fff"));
-    }
-
-    // STATO
-
-    private static void LoadState()
-    {
-        activeProfile = "";
-        activeSince = "";
-        lastSaved = "";
-
-        if (!File.Exists(statePath))
-            return;
-
-        foreach (string line in File.ReadAllLines(statePath))
-        {
-            string[] parts = line.Split('=', 2);
-
-            if (parts.Length != 2)
-                continue;
-
-            switch (parts[0])
-            {
-                case "ProfiloAttivo":
-                    activeProfile = parts[1] == "-" ? "" : parts[1];
-                    break;
-
-                case "AttivatoIl":
-                    activeSince = parts[1] == "-" ? "" : parts[1];
-                    break;
-
-                case "SalvatoIl":
-                    lastSaved = parts[1] == "-" ? "" : parts[1];
-                    break;
-            }
-        }
-    }
-
-    private static void SaveState()
-    {
-        try
-        {
-            File.WriteAllLines(statePath, new[]
-            {
-                "ProfiloAttivo=" + (activeProfile == "" ? "-" : activeProfile),
-                "AttivatoIl=" + (activeSince == "" ? "-" : activeSince),
-                "SalvatoIl=" + (lastSaved == "" ? "-" : lastSaved)
-            });
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine("Errore nel salvataggio dello stato: " + ex.Message);
-        }
-    }
-
-    // CONTROLLI
-
-    private static bool IsGameRunning()
-    {
-        string[] processNames =
-        {
-            "Control_DX12",
-            "Control_DX11",
-            "Control"
-        };
-
-        foreach (string name in processNames)
-        {
-            if (Process.GetProcessesByName(name).Length > 0)
-                return true;
-        }
-
-        return false;
-    }
-
-    private static bool IsValidName(string name)
-    {
-        if (string.IsNullOrWhiteSpace(name) ||
-            name.Length > 50)
-            return false;
-
-        return name.All(c => char.IsAsciiLetterOrDigit(c) || c == '_' || c == '-');
+        return (Console.ReadLine() ?? "").Trim()
+            .Equals("s", StringComparison.OrdinalIgnoreCase);
     }
 
     private static void ShowProfilesFolder()
@@ -616,7 +271,7 @@ internal class Program
         {
             Process.Start(new ProcessStartInfo
             {
-                FileName = profilesPath,
+                FileName = manager.ProfilesPath,
                 UseShellExecute = true
             });
         }
