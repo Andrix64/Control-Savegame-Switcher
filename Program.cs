@@ -13,25 +13,26 @@ internal static class Program
     [STAThread]
     static void Main()
     {
-        // Due finestre aperte lavorerebbero sugli stessi file.
-        using Mutex mutex = new(true, @"Local\ControlSaveManager", out bool firstInstance);
-
-        if (!firstInstance)
-        {
-            MessageBox.Show(
-                "Control Save Manager è già aperto.",
-                Title,
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information);
-            return;
-        }
-
+        // Vanno chiamati prima di creare qualsiasi finestra.
         Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
         Application.ThreadException += (_, e) => ShowUnexpectedError(e.Exception);
         AppDomain.CurrentDomain.UnhandledException += (_, e) =>
             Log.Write("Errore imprevisto (chiusura)", (Exception)e.ExceptionObject);
 
         ApplicationConfiguration.Initialize();
+
+        // Due finestre aperte lavorerebbero sugli stessi file.
+        using Mutex mutex = new(true, @"Local\ControlSaveManager", out bool firstInstance);
+
+        if (!firstInstance)
+        {
+            MessageDialog.Show(
+                Strings.AppAlreadyRunning,
+                Title,
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
+            return;
+        }
 
         Log.Write("Avvio versione " + Version);
 
@@ -45,7 +46,7 @@ internal static class Program
 
             Log.Write("Avvio fallito: " + init.Message);
 
-            MessageBox.Show(
+            MessageDialog.Show(
                 init.Message,
                 Title,
                 MessageBoxButtons.OK,
@@ -60,9 +61,8 @@ internal static class Program
     {
         Log.Write("Errore imprevisto", ex);
 
-        MessageBox.Show(
-            "Si è verificato un errore imprevisto:\n" + ex.Message +
-            "\n\nI dettagli sono nel registro:\n" + Log.FilePath,
+        MessageDialog.Show(
+            Loc.F(Strings.UnexpectedErrorWithLog, ex.Message, Log.FilePath),
             Title,
             MessageBoxButtons.OK,
             MessageBoxIcon.Error);

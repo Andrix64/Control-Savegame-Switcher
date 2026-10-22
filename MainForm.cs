@@ -9,13 +9,14 @@ namespace ControlSaveManager;
 internal sealed class MainForm : Form
 {
     private const int ItemHeight = 58;
-    private const string ReadyMessage = "Pronto. Tasto destro su un profilo per rinominarlo o eliminarlo.";
+    private static readonly string ReadyMessage = Strings.ReadyHint;
 
     private readonly SaveManager manager;
 
     private readonly Label activeLabel = MakeLabel(Theme.Large, Theme.Text);
     private readonly Label sinceLabel = MakeLabel(Theme.Base, Theme.Text);
     private readonly Label savedLabel = MakeLabel(Theme.Base, Theme.Text);
+    private readonly Label cloudLabel = MakeLabel(Theme.Base, Theme.Text);
     private readonly Label profilesCaption = MakeLabel(Theme.Caption, Theme.TextMuted);
 
     private readonly ListBox profileList = new()
@@ -31,18 +32,18 @@ internal sealed class MainForm : Form
     private readonly Label emptyLabel = new()
     {
         Dock = DockStyle.Fill,
-        Text = "Nessun profilo.\nCreane uno con «Nuovo profilo».",
+        Text = Strings.NoProfiles,
         TextAlign = ContentAlignment.MiddleCenter,
         ForeColor = Theme.TextMuted,
         Visible = false
     };
 
-    private readonly FlatButton activateButton = new("Attiva profilo", ButtonKind.Primary);
-    private readonly FlatButton saveButton = new("Salva progressi");
-    private readonly FlatButton savestateButton = new("Savestate...");
-    private readonly FlatButton newButton = new("Nuovo profilo...");
-    private readonly FlatButton backupButton = new("Backup...", ButtonKind.Ghost);
-    private readonly FlatButton folderButton = new("Apri cartella profili", ButtonKind.Ghost);
+    private readonly FlatButton activateButton = new(Strings.ActivateProfile, ButtonKind.Primary);
+    private readonly FlatButton saveButton = new(Strings.SaveProgress);
+    private readonly FlatButton savestateButton = new(Strings.SavestatesButton);
+    private readonly FlatButton newButton = new(Strings.NewProfileButton);
+    private readonly FlatButton backupButton = new(Strings.BackupsButton, ButtonKind.Ghost);
+    private readonly FlatButton folderButton = new(Strings.OpenProfilesFolder, ButtonKind.Ghost);
 
     private readonly ContextMenuStrip profileMenu = new()
     {
@@ -51,8 +52,8 @@ internal sealed class MainForm : Form
         Font = Theme.Base
     };
 
-    private readonly ToolStripMenuItem renameItem = new("Rinomina...") { ShortcutKeyDisplayString = "F2" };
-    private readonly ToolStripMenuItem deleteItem = new("Elimina...") { ShortcutKeyDisplayString = "Canc" };
+    private readonly ToolStripMenuItem renameItem = new(Strings.RenameMenu) { ShortcutKeyDisplayString = "F2" };
+    private readonly ToolStripMenuItem deleteItem = new(Strings.DeleteMenu) { ShortcutKeyDisplayString = Strings.DeleteKey };
 
     private readonly StatusBar statusBar = new();
 
@@ -63,6 +64,7 @@ internal sealed class MainForm : Form
     private bool gameRunning;
     private bool checkingGame;
     private bool steamWarningAccepted;
+    private CloudState cloudState = CloudState.Unknown;
     private string lastMessage = ReadyMessage;
     private StatusKind lastKind = StatusKind.Info;
 
@@ -116,7 +118,7 @@ internal sealed class MainForm : Form
             }
 
             deleteItem.Enabled = !item.Active;
-            deleteItem.ToolTipText = item.Active ? "Il profilo attivo non si può eliminare." : "";
+            deleteItem.ToolTipText = item.Active ? Strings.ActiveCannotBeDeleted : "";
         };
         profileList.KeyDown += (_, e) =>
         {
@@ -151,8 +153,8 @@ internal sealed class MainForm : Form
             if (busy)
             {
                 e.Cancel = true;
-                MessageBox.Show(this,
-                    "Attendi la fine dell'operazione in corso.",
+                MessageDialog.Show(this,
+                    Strings.WaitForOperation,
                     Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         };
@@ -167,24 +169,27 @@ internal sealed class MainForm : Form
         {
             Dock = DockStyle.Top,
             AutoSize = true,
-            ColumnCount = 2,
+            ColumnCount = 3,
             RowCount = 4
         };
-        info.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
-        info.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
+        info.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 38));
+        info.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 38));
+        info.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 24));
 
-        Label activeCaption = MakeCaption("PROFILO ATTIVO");
+        Label activeCaption = MakeCaption(Strings.CaptionActiveProfile);
         info.Controls.Add(activeCaption, 0, 0);
-        info.SetColumnSpan(activeCaption, 2);
+        info.SetColumnSpan(activeCaption, 3);
 
         activeLabel.Margin = new Padding(0, 0, 0, 10);
         info.Controls.Add(activeLabel, 0, 1);
-        info.SetColumnSpan(activeLabel, 2);
+        info.SetColumnSpan(activeLabel, 3);
 
-        info.Controls.Add(MakeCaption("ATTIVATO IL"), 0, 2);
-        info.Controls.Add(MakeCaption("ULTIMO SALVATAGGIO"), 1, 2);
+        info.Controls.Add(MakeCaption(Strings.CaptionActivatedOn), 0, 2);
+        info.Controls.Add(MakeCaption(Strings.CaptionLastSaved), 1, 2);
+        info.Controls.Add(MakeCaption(Strings.CaptionSteamCloud), 2, 2);
         info.Controls.Add(sinceLabel, 0, 3);
         info.Controls.Add(savedLabel, 1, 3);
+        info.Controls.Add(cloudLabel, 2, 3);
 
         var infoCard = new CardPanel
         {
@@ -279,12 +284,12 @@ internal sealed class MainForm : Form
     private sealed record ProfileItem(string FolderName, bool Active, DateTime? Modified)
     {
         public string Details => Modified == null
-            ? "Nessun salvataggio"
-            : "Ultima modifica: " + Modified.Value.ToString("dd/MM/yyyy HH:mm");
+            ? Strings.NoSaves
+            : Loc.F(Strings.LastModified, Modified.Value.ToString("g"));
 
         // Usato dagli screen reader.
         public override string ToString() =>
-            SaveManager.ProfileDisplayName(FolderName) + (Active ? ", attivo" : "");
+            SaveManager.ProfileDisplayName(FolderName) + (Active ? Strings.ActiveSuffix : "");
     }
 
     private void DrawProfileItem(object? sender, DrawItemEventArgs e)
@@ -325,7 +330,7 @@ internal sealed class MainForm : Form
 
         if (item.Active)
         {
-            const string badge = "ATTIVO";
+            string badge = Strings.ActiveBadge;
             Size textSize = TextRenderer.MeasureText(g, badge, Theme.Caption, Size.Empty, TextFormatFlags.NoPadding);
             var badgeRect = new Rectangle(0, 0, textSize.Width + Px(16), textSize.Height + Px(8));
             badgeRect.Location = new Point(right - badgeRect.Width, inner.Y + (inner.Height - badgeRect.Height) / 2);
@@ -369,7 +374,7 @@ internal sealed class MainForm : Form
         }
         catch (Exception ex)
         {
-            SetStatus("Impossibile leggere lo stato: " + ex.Message, StatusKind.Error);
+            SetStatus(Loc.F(Strings.CannotReadState, ex.Message), StatusKind.Error);
         }
 
         AppState state = manager.State;
@@ -396,13 +401,13 @@ internal sealed class MainForm : Form
         }
         catch (Exception ex)
         {
-            SetStatus("Impossibile leggere i profili: " + ex.Message, StatusKind.Error);
+            SetStatus(Loc.F(Strings.CannotReadProfiles, ex.Message), StatusKind.Error);
         }
 
         profileList.EndUpdate();
 
         int count = profileList.Items.Count;
-        profilesCaption.Text = count == 0 ? "PROFILI" : $"PROFILI  ·  {count}";
+        profilesCaption.Text = count == 0 ? Strings.CaptionProfiles : $"{Strings.CaptionProfiles}  ·  {count}";
         emptyLabel.Visible = count == 0;
         profileList.Visible = count > 0;
 
@@ -410,13 +415,22 @@ internal sealed class MainForm : Form
 
         activeLabel.Text = hasActive
             ? SaveManager.ProfileDisplayName(state.ActiveProfile)
-            : "Nessuno";
+            : Strings.NoneValue;
         activeLabel.ForeColor = hasActive ? Theme.Text : Theme.TextMuted;
 
-        sinceLabel.Text = state.ActiveSince == "" ? "—" : state.ActiveSince;
+        sinceLabel.Text = state.ActiveSince == "" ? "—" : SaveManager.FormatStoredDate(state.ActiveSince);
 
-        savedLabel.Text = state.LastSaved == "" ? "Mai" : state.LastSaved;
+        savedLabel.Text = state.LastSaved == "" ? Strings.Never : SaveManager.FormatStoredDate(state.LastSaved);
         savedLabel.ForeColor = state.LastSaved == "" ? Theme.TextMuted : Theme.Text;
+
+        cloudState = manager.GetCloudState();
+
+        (cloudLabel.Text, cloudLabel.ForeColor) = cloudState switch
+        {
+            CloudState.Disabled => (Strings.CloudOff, Theme.Success),
+            CloudState.Enabled => (Strings.CloudOn, Theme.Warning),
+            _ => (Strings.CloudUnknown, Theme.TextMuted)
+        };
 
         UpdateControls();
     }
@@ -433,7 +447,7 @@ internal sealed class MainForm : Form
         backupButton.Enabled = canAct;
 
         if (gameRunning && !busy)
-            statusBar.SetStatus("Control è in esecuzione: chiudilo per cambiare o salvare.", StatusKind.Warning);
+            statusBar.SetStatus(Strings.GameRunning, StatusKind.Warning);
         else
             statusBar.SetStatus(lastMessage, lastKind);
 
@@ -493,7 +507,7 @@ internal sealed class MainForm : Form
         string name = SaveManager.ProfileDisplayName(profileName);
         string active = SaveManager.ProfileDisplayName(manager.State.ActiveProfile);
 
-        Result result = await RunBusyAsync($"Attivo \"{name}\"...", () =>
+        Result result = await RunBusyAsync(Loc.F(Strings.BusyActivating, name), () =>
         {
             bool saved = false;
 
@@ -505,8 +519,7 @@ internal sealed class MainForm : Form
                 {
                     return save with
                     {
-                        Message = $"Profilo non cambiato: salvataggio di \"{active}\" non riuscito.\n" +
-                                  save.Message
+                        Message = Loc.F(Strings.SwitchSaveFailed, active, save.Message)
                     };
                 }
 
@@ -521,8 +534,8 @@ internal sealed class MainForm : Form
             return activation with
             {
                 Message = saved
-                    ? $"Progressi salvati in \"{active}\". Profilo \"{name}\" attivato."
-                    : $"Profilo \"{name}\" attivato."
+                    ? Loc.F(Strings.SavedAndActivated, active, name)
+                    : Loc.F(Strings.ActivatedNamed, name)
             };
         });
 
@@ -539,10 +552,7 @@ internal sealed class MainForm : Form
 
         if (manager.GameSavesAreEmpty())
         {
-            if (!Ask("La cartella dei salvataggi del gioco è vuota.\n" +
-                     $"Salvando, il profilo \"{name}\" verrà svuotato.\n\n" +
-                     "Continuare comunque?",
-                     MessageBoxIcon.Warning))
+            if (!Ask(Loc.F(Strings.ConfirmSaveEmpty, name), MessageBoxIcon.Warning))
                 return;
 
             allowEmpty = true;
@@ -551,7 +561,7 @@ internal sealed class MainForm : Form
         if (!ConfirmSteamClosed())
             return;
 
-        Result result = await RunBusyAsync("Salvo i progressi...",
+        Result result = await RunBusyAsync(Strings.BusySavingProgress,
             () => manager.SaveProgress(allowEmpty));
 
         ShowResult(result);
@@ -569,7 +579,7 @@ internal sealed class MainForm : Form
         bool copy = dialog.CopyCurrentSaves;
         bool activate = dialog.ActivateNow;
 
-        Result result = await RunBusyAsync("Creo il profilo...",
+        Result result = await RunBusyAsync(Strings.BusyCreatingProfile,
             () => manager.CreateProfile(name, copy));
 
         ShowResult(result);
@@ -598,7 +608,7 @@ internal sealed class MainForm : Form
 
         string newName = dialog.ProfileName;
 
-        Result result = await RunBusyAsync("Rinomino il profilo...",
+        Result result = await RunBusyAsync(Strings.BusyRenamingProfile,
             () => manager.RenameProfile(item.FolderName, newName));
 
         ShowResult(result);
@@ -619,24 +629,22 @@ internal sealed class MainForm : Form
 
         if (item.Active)
         {
-            SetStatus($"\"{name}\" è il profilo attivo: attivane un altro prima di eliminarlo.",
+            SetStatus(Loc.F(Strings.ActiveCannotDeleteStatus, name),
                 StatusKind.Warning);
             return;
         }
 
-        string question = $"Eliminare il profilo \"{name}\"?\n\n" +
-                          "Una copia resta nella finestra Backup, da cui si può ripristinare " +
-                          "finché la pulizia automatica non la elimina.";
+        string question = Loc.F(Strings.ConfirmDeleteProfile, name);
 
         int savestates = manager.CountSavestates(item.FolderName);
 
         if (savestates > 0)
-            question += $"\n\nI suoi savestate ({savestates}) vengono eliminati definitivamente.";
+            question += Loc.F(Strings.ConfirmDeleteProfileSavestates, savestates);
 
         if (!Ask(question, MessageBoxIcon.Warning))
             return;
 
-        Result result = await RunBusyAsync("Elimino il profilo...",
+        Result result = await RunBusyAsync(Strings.BusyDeletingProfile,
             () => manager.DeleteProfile(item.FolderName));
 
         ShowResult(result);
@@ -672,8 +680,7 @@ internal sealed class MainForm : Form
         catch (Exception ex)
         {
             Log.Write("Errore imprevisto (" + message + ")", ex);
-            return Result.Fail("Errore imprevisto: " + ex.Message +
-                               "\nI dettagli sono nel registro:\n" + Log.FilePath);
+            return Result.Fail(Loc.F(Strings.UnexpectedError, ex.Message, Log.FilePath));
         }
         finally
         {
@@ -692,40 +699,40 @@ internal sealed class MainForm : Form
         if (result.Success)
             return;
 
-        string title = result.Critical ? "Errore grave" : "Operazione non riuscita";
+        string title = result.Critical ? Strings.TitleSeriousError : Strings.TitleOperationFailed;
         MessageBoxIcon icon = result.Critical ? MessageBoxIcon.Error : MessageBoxIcon.Warning;
 
         if (result.BackupPath == null || !Directory.Exists(result.BackupPath))
         {
-            MessageBox.Show(this, result.Message, title, MessageBoxButtons.OK, icon);
+            MessageDialog.Show(this, result.Message, title, MessageBoxButtons.OK, icon);
             return;
         }
 
         string text = result.Message;
 
         if (!result.Critical)
-            text += "\n\nBackup:\n" + result.BackupPath;
+            text += Loc.F(Strings.BackupLine, result.BackupPath);
 
-        text += "\n\nAprire la cartella del backup?";
+        text += Strings.AskOpenBackupFolder;
 
-        if (MessageBox.Show(this, text, title, MessageBoxButtons.YesNo, icon) == DialogResult.Yes)
+        if (MessageDialog.Show(this, text, title, MessageBoxButtons.YesNo, icon) == DialogResult.Yes)
             OpenFolder(result.BackupPath);
     }
 
     /// <summary>
-    /// Avvisa che Steam è aperto, una sola volta per sessione.
+    /// Avvisa che Steam è aperto, una sola volta per sessione. Con Steam Cloud
+    /// disattivato per Control l'avviso non serve: Steam non tocca i salvataggi.
     /// </summary>
     private bool ConfirmSteamClosed()
     {
-        if (steamWarningAccepted || !SaveManager.IsSteamRunning())
+        if (steamWarningAccepted || cloudState == CloudState.Disabled || !SaveManager.IsSteamRunning())
             return true;
 
-        steamWarningAccepted = Ask("Steam è aperto.\n\n" +
-                                   "Se Steam Cloud è attivo per Control, potrebbe sovrascrivere " +
-                                   "i salvataggi dopo l'operazione.\n\n" +
-                                   "Continuare comunque? L'avviso non verrà ripetuto fino alla " +
-                                   "chiusura dell'app.",
-                                   MessageBoxIcon.Warning);
+        string cloud = cloudState == CloudState.Enabled
+            ? Strings.CloudOnWarning
+            : Strings.CloudMaybeWarning;
+
+        steamWarningAccepted = Ask(Loc.F(Strings.SteamRunningWarning, cloud), MessageBoxIcon.Warning);
 
         return steamWarningAccepted;
     }
@@ -737,7 +744,7 @@ internal sealed class MainForm : Form
             ? MessageBoxDefaultButton.Button2
             : MessageBoxDefaultButton.Button1;
 
-        return MessageBox.Show(this, question, Text,
+        return MessageDialog.Show(this, question, Text,
             MessageBoxButtons.YesNo, icon, defaultButton) == DialogResult.Yes;
     }
 
@@ -765,7 +772,7 @@ internal sealed class MainForm : Form
         }
         catch (Exception ex)
         {
-            MessageBox.Show(this, "Impossibile aprire la cartella: " + ex.Message,
+            MessageDialog.Show(this, Loc.F(Strings.CannotOpenFolder, ex.Message),
                 Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
     }

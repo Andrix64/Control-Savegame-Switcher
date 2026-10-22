@@ -19,7 +19,7 @@ internal sealed class ItemList : ListBox
         /// Riga di un savestate o backup, con la data come dettaglio.
         /// </summary>
         public static Row For(Snapshot snapshot, string title) =>
-            new(snapshot, title, snapshot.Date.ToString("dd/MM/yyyy  HH:mm:ss"));
+            new(snapshot, title, snapshot.Date.ToString("G"));
 
         // Usato dagli screen reader.
         public override string ToString() => Title + ", " + Details;
@@ -134,7 +134,7 @@ internal abstract class ListDialog : Form
         Margin = new Padding(2, 12, 0, 0)
     };
 
-    private readonly FlatButton closeButton = new("Chiudi")
+    private readonly FlatButton closeButton = new(Strings.Close)
     {
         DialogResult = DialogResult.Cancel
     };
@@ -293,7 +293,7 @@ internal abstract class ListDialog : Form
         }
         catch (Exception ex)
         {
-            SetStatus("Impossibile leggere l'elenco: " + ex.Message, Theme.Error);
+            SetStatus(Loc.F(Strings.CannotReadList, ex.Message), Theme.Error);
         }
 
         int count = List.Items.Count;
@@ -313,7 +313,7 @@ internal abstract class ListDialog : Form
             ? MessageBoxDefaultButton.Button2
             : MessageBoxDefaultButton.Button1;
 
-        return MessageBox.Show(this, question, Text,
+        return MessageDialog.Show(this, question, Text,
             MessageBoxButtons.YesNo, icon, defaultButton) == DialogResult.Yes;
     }
 
@@ -336,8 +336,7 @@ internal abstract class ListDialog : Form
         catch (Exception ex)
         {
             Log.Write("Errore imprevisto (" + message + ")", ex);
-            result = Result.Fail("Errore imprevisto: " + ex.Message +
-                                 "\nI dettagli sono nel registro:\n" + Log.FilePath);
+            result = Result.Fail(Loc.F(Strings.UnexpectedError, ex.Message, Log.FilePath));
         }
         finally
         {
@@ -358,8 +357,8 @@ internal abstract class ListDialog : Form
         if (result.Success)
             return;
 
-        MessageBox.Show(this, result.Message,
-            result.Critical ? "Errore grave" : "Operazione non riuscita",
+        MessageDialog.Show(this, result.Message,
+            result.Critical ? Strings.TitleSeriousError : Strings.TitleOperationFailed,
             MessageBoxButtons.OK,
             result.Critical ? MessageBoxIcon.Error : MessageBoxIcon.Warning);
     }
@@ -379,7 +378,7 @@ internal abstract class ListDialog : Form
         }
         catch (Exception ex)
         {
-            MessageBox.Show(this, "Impossibile aprire la cartella: " + ex.Message,
+            MessageDialog.Show(this, Loc.F(Strings.CannotOpenFolder, ex.Message),
                 Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
     }
@@ -390,7 +389,7 @@ internal abstract class ListDialog : Form
 /// </summary>
 internal sealed class SavestateForm : ListDialog
 {
-    private const string Hint = "Facoltativo, es. \"Prima di Ahti\". Lettere, cifre, spazi, _ e -.";
+    private static readonly string Hint = Strings.SavestateHint;
 
     private readonly TextBox nameBox;
     private readonly CardPanel nameCard;
@@ -408,8 +407,8 @@ internal sealed class SavestateForm : ListDialog
 
     private SavestateForm(SaveManager manager, Func<bool> confirmSteamClosed, Control top,
         TextBox nameBox, CardPanel nameCard, Label hintLabel, FlatButton createButton)
-        : base(manager, "Savestate",
-            "Nessun savestate.\nCreane uno prima di un punto difficile.",
+        : base(manager, Strings.SavestatesTitle,
+            Strings.NoSavestates,
             top, confirmSteamClosed)
     {
         this.nameBox = nameBox;
@@ -417,9 +416,9 @@ internal sealed class SavestateForm : ListDialog
         this.hintLabel = hintLabel;
         this.createButton = createButton;
 
-        restoreButton = AddButton("Ripristina", ButtonKind.Primary, RestoreAsync);
-        deleteButton = AddButton("Elimina", ButtonKind.Secondary, DeleteAsync);
-        FlatButton folderButton = AddButton("Apri cartella", ButtonKind.Ghost, () =>
+        restoreButton = AddButton(Strings.Restore, ButtonKind.Primary, RestoreAsync);
+        deleteButton = AddButton(Strings.Delete, ButtonKind.Secondary, DeleteAsync);
+        FlatButton folderButton = AddButton(Strings.OpenFolder, ButtonKind.Ghost, () =>
         {
             OpenFolder(Manager.ActiveSavestatePath);
             return Task.CompletedTask;
@@ -468,7 +467,7 @@ internal sealed class SavestateForm : ListDialog
         };
         nameCard.Controls.Add(nameBox);
 
-        createButton = new FlatButton("Crea savestate", ButtonKind.Primary)
+        createButton = new FlatButton(Strings.CreateSavestate, ButtonKind.Primary)
         {
             Size = new Size(170, 38),
             Margin = new Padding(16, 0, 0, 0)
@@ -494,7 +493,7 @@ internal sealed class SavestateForm : ListDialog
         top.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         top.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
 
-        Label caption = MakeCaption("NUOVO SAVESTATE DAI SALVATAGGI ATTUALI");
+        Label caption = MakeCaption(Strings.CaptionNewSavestate);
         top.Controls.Add(caption, 0, 0);
         top.SetColumnSpan(caption, 2);
         top.Controls.Add(nameCard, 0, 1);
@@ -508,13 +507,14 @@ internal sealed class SavestateForm : ListDialog
     protected override IEnumerable<ItemList.Row> LoadRows()
     {
         return Manager.GetSavestates()
-            .Select(s => ItemList.Row.For(s, s.Name == "" ? "Senza nome" : s.Name));
+            .Select(s => ItemList.Row.For(s, s.Name == "" ? Strings.Unnamed : s.Name));
     }
 
     protected override string CaptionText(int count)
     {
         string profile = SaveManager.ProfileDisplayName(Manager.State.ActiveProfile).ToUpperInvariant();
-        return count == 0 ? $"SAVESTATE DI {profile}" : $"SAVESTATE DI {profile}  ·  {count}";
+        string caption = Loc.F(Strings.CaptionSavestatesOf, profile);
+        return count == 0 ? caption : $"{caption}  ·  {count}";
     }
 
     protected override void UpdateButtons()
@@ -526,7 +526,7 @@ internal sealed class SavestateForm : ListDialog
         string name = nameBox.Text.Trim();
         bool valid = SaveManager.IsValidSavestateName(name);
 
-        hintLabel.Text = valid ? Hint : "Nome non valido. Lettere, cifre, spazi, _ e - (massimo 50).";
+        hintLabel.Text = valid ? Hint : Strings.InvalidSavestateName;
         hintLabel.ForeColor = valid ? Theme.TextMuted : Theme.Error;
 
         bool selected = List.SelectedSnapshot != null;
@@ -540,7 +540,7 @@ internal sealed class SavestateForm : ListDialog
     {
         string name = nameBox.Text.Trim();
 
-        Result result = await RunAsync("Creo il savestate...", () => Manager.CreateSavestate(name));
+        Result result = await RunAsync(Strings.BusyCreatingSavestate, () => Manager.CreateSavestate(name));
 
         if (result.Success)
         {
@@ -557,7 +557,7 @@ internal sealed class SavestateForm : ListDialog
         if (List.SelectedSnapshot is not Snapshot savestate || !ConfirmSteamClosed())
             return;
 
-        await RunAsync("Ripristino il savestate...", () => Manager.RestoreSavestate(savestate));
+        await RunAsync(Strings.BusyRestoringSavestate, () => Manager.RestoreSavestate(savestate));
     }
 
     private async Task DeleteAsync()
@@ -565,14 +565,13 @@ internal sealed class SavestateForm : ListDialog
         if (List.SelectedSnapshot is not Snapshot savestate)
             return;
 
-        string name = savestate.Name == "" ? "senza nome" : $"\"{savestate.Name}\"";
+        string name = savestate.Name == "" ? Strings.UnnamedLower : $"\"{savestate.Name}\"";
 
-        if (!Ask($"Eliminare il savestate {name} del {savestate.Date:dd/MM/yyyy HH:mm}?\n\n" +
-                 "L'eliminazione è definitiva.",
+        if (!Ask(Loc.F(Strings.ConfirmDeleteSavestate, name, savestate.Date.ToString("g")),
                  MessageBoxIcon.Warning))
             return;
 
-        await RunAsync("Elimino il savestate...", () => Manager.DeleteSavestate(savestate));
+        await RunAsync(Strings.BusyDeletingSavestate, () => Manager.DeleteSavestate(savestate));
     }
 }
 
@@ -593,13 +592,13 @@ internal sealed class BackupForm : ListDialog
 
     private BackupForm(SaveManager manager, Func<bool> confirmSteamClosed, Control top,
         NumericUpDown keepBox, FlatButton applyButton)
-        : base(manager, "Backup", "Nessun backup.", top, confirmSteamClosed)
+        : base(manager, Strings.BackupsTitle, Strings.NoBackups, top, confirmSteamClosed)
     {
         this.keepBox = keepBox;
         this.applyButton = applyButton;
 
-        restoreButton = AddButton("Ripristina", ButtonKind.Primary, RestoreAsync);
-        FlatButton folderButton = AddButton("Apri cartella", ButtonKind.Ghost, () =>
+        restoreButton = AddButton(Strings.Restore, ButtonKind.Primary, RestoreAsync);
+        FlatButton folderButton = AddButton(Strings.OpenFolder, ButtonKind.Ghost, () =>
         {
             OpenFolder(List.SelectedSnapshot?.Path ?? Manager.BackupPath);
             return Task.CompletedTask;
@@ -618,7 +617,7 @@ internal sealed class BackupForm : ListDialog
 
     private static Control BuildTop(out NumericUpDown keepBox, out FlatButton applyButton)
     {
-        applyButton = new FlatButton("Applica")
+        applyButton = new FlatButton(Strings.Apply)
         {
             Size = new Size(90, 30),
             Margin = new Padding(8, 0, 0, 0)
@@ -652,9 +651,9 @@ internal sealed class BackupForm : ListDialog
             Margin = new Padding(0, 3, 0, 0)
         };
 
-        top.Controls.Add(MakeText("Conserva gli ultimi"));
+        top.Controls.Add(MakeText(Strings.KeepLast));
         top.Controls.Add(keepBox);
-        top.Controls.Add(MakeText("backup  (0 = tutti)"));
+        top.Controls.Add(MakeText(Strings.KeepLastSuffix));
         top.Controls.Add(applyButton);
 
         return top;
@@ -668,7 +667,7 @@ internal sealed class BackupForm : ListDialog
 
     protected override string CaptionText(int count)
     {
-        return count == 0 ? "BACKUP" : $"BACKUP  ·  {count}";
+        return count == 0 ? Strings.CaptionBackups : $"{Strings.CaptionBackups}  ·  {count}";
     }
 
     protected override void UpdateButtons()
@@ -689,11 +688,11 @@ internal sealed class BackupForm : ListDialog
 
         // Conferma solo se si perde qualcosa: l'eliminazione è definitiva.
         if (excess > 0 &&
-            !Ask($"Verranno eliminati subito i {excess} backup più vecchi.\n\nContinuare?",
+            !Ask(Loc.F(Strings.ConfirmPrune, excess),
                  MessageBoxIcon.Warning))
             return;
 
-        await RunAsync("Salvo l'impostazione...", () => Manager.SetBackupsToKeep(keep));
+        await RunAsync(Strings.BusySavingSetting, () => Manager.SetBackupsToKeep(keep));
     }
 
     private async Task RestoreAsync()
@@ -702,19 +701,17 @@ internal sealed class BackupForm : ListDialog
             return;
 
         string active = Manager.HasActiveProfile
-            ? $"Al prossimo salvataggio o cambio profilo finiranno nel profilo attivo " +
-              $"\"{SaveManager.ProfileDisplayName(Manager.State.ActiveProfile)}\"."
-            : "Non c'è un profilo attivo.";
+            ? Loc.F(Strings.RestoreGoesToActive, SaveManager.ProfileDisplayName(Manager.State.ActiveProfile))
+            : Strings.NoActiveProfile;
 
         // Qui la conferma serve: il backup può essere di un altro profilo.
-        if (!Ask($"Rimettere nel gioco il backup \"{SaveManager.BackupReasonText(backup.Name)}\" " +
-                 $"del {backup.Date:dd/MM/yyyy HH:mm}?\n\n" +
-                 "I salvataggi attuali vanno prima in un nuovo backup.\n" + active))
+        if (!Ask(Loc.F(Strings.ConfirmRestoreBackup,
+                     SaveManager.BackupReasonText(backup.Name), backup.Date.ToString("g"), active)))
             return;
 
         if (!ConfirmSteamClosed())
             return;
 
-        await RunAsync("Ripristino il backup...", () => Manager.RestoreBackup(backup));
+        await RunAsync(Strings.BusyRestoringBackup, () => Manager.RestoreBackup(backup));
     }
 }

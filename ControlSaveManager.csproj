@@ -21,7 +21,8 @@
     <Company>Andrix64</Company>
     <Authors>Andrix64</Authors>
     <Copyright>© 2026 Andrix64</Copyright>
-    <NeutralLanguage>it-IT</NeutralLanguage>
+    <!-- Testi in inglese in Strings.resx, italiano in Strings.it.resx: la lingua segue Windows. -->
+    <NeutralLanguage>en</NeutralLanguage>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
@@ -36,6 +37,13 @@
   <ItemGroup>
     <!-- Icona delle finestre (Theme.AppIcon). -->
     <EmbeddedResource Include="app.ico" LogicalName="ControlSaveManager.app.ico" />
+
+    <!-- Genera la classe Strings dai testi, senza bisogno di Visual Studio. -->
+    <EmbeddedResource Update="Strings.resx"
+                      StronglyTypedLanguage="CSharp"
+                      StronglyTypedClassName="Strings"
+                      StronglyTypedNamespace="ControlSaveManager"
+                      StronglyTypedFileName="$(IntermediateOutputPath)Strings.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

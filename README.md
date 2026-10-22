@@ -1,189 +1,133 @@
 # Control Save Manager
 
-Piccolo strumento per Windows che gestisce **più profili di salvataggio** per
-*Control* (Steam, AppID `870780`). Permette di passare da una partita all'altra
-sostituendo i file di salvataggio del gioco, con un backup automatico prima di
-ogni operazione.
+Più partite di **Control** (Steam) sullo stesso account, e passare dall'una
+all'altra in un clic. Con savestate da usare prima dei punti difficili e un
+backup automatico prima di ogni operazione.
 
-## Funzioni
+![Finestra principale](docs/img/main.png)
 
-| Funzione | Cosa fa |
-|---|---|
-| **Cambia profilo** | Senza conferme: se ci sono progressi non salvati li salva nel profilo attivo, fa il backup dei salvataggi attuali, poi copia il profilo scelto nella cartella del gioco. |
-| **Salva i progressi** | Fa il backup del profilo attivo, poi copia i salvataggi del gioco nel profilo. Chiede conferma solo se la cartella del gioco è vuota. |
-| **Savestate** | Istantanea dei salvataggi attuali del gioco (es. prima di un boss), con nome facoltativo, senza cambiare né sovrascrivere il profilo attivo. Si ripristina (con backup prima) o si elimina dalla finestra Savestate. |
-| **Backup** | Elenco dei backup automatici con data e motivo; "Ripristina" li rimette nel gioco (con backup prima). Si conservano gli ultimi N (predefinito 20, 0 = tutti). |
-| **Crea profilo** | Nuovo profilo vuoto oppure copia dei salvataggi attuali; può essere attivato subito. |
-| **Rinomina / Elimina** | Tasto destro su un profilo (o F2 / Canc). La rinomina sposta anche i savestate. L'eliminazione sposta il profilo nei backup (`Eliminato_<profilo>`), da cui si può ancora ripristinare, ed elimina i suoi savestate; il profilo attivo non si può eliminare. |
-| **Apri cartella profili** | Apre la cartella dei profili in Esplora file. |
+*[English below](#english)*
 
-Tutte le operazioni sono bloccate mentre Control è in esecuzione: la finestra lo
-controlla ogni 2 secondi e disattiva i pulsanti.
+## Installazione
 
-## Percorsi
+1. Scarica `ControlSaveManager-<versione>-win-x64.zip` dalla pagina dei
+   rilasci ed estrai `ControlSaveManager.exe` dove vuoi.
+2. Avvialo. Non serve installare nulla: il programma contiene già tutto quello
+   che gli serve (per questo pesa circa 50 MB).
 
-| Cosa | Percorso |
-|---|---|
-| Salvataggi del gioco | `<Steam>\userdata\<IDAccount>\870780\` |
-| Profili | `Documenti\ControlSaves\<IDAccount>\Profili\Profilo_<nome>\` |
-| Backup | `Documenti\ControlSaves\<IDAccount>\Backup\<motivo>_<data>\` |
-| Savestate | `Documenti\ControlSaves\<IDAccount>\Savestate\Profilo_<nome>\<data>_<nome savestate>\` |
-| Stato | `Documenti\ControlSaves\<IDAccount>\stato.ini` |
-| Registro | `Documenti\ControlSaves\log.txt` (oltre 1 MB diventa `log.old.txt`) |
-| Ultimo account usato | `Documenti\ControlSaves\account.txt` |
+Requisiti: Windows 10 o 11 a 64 bit, Control su Steam avviato almeno una volta.
 
-Se più account Steam hanno i salvataggi di Control, all'avvio l'app chiede
-quale usare (nome letto da `userdata\<IDAccount>\config\localconfig.vdf`) e
-preseleziona l'ultimo scelto. Ogni account ha profili, backup e savestate
-separati.
+> **Windows potrebbe avvisarti o bloccarlo.** Il programma non è firmato
+> digitalmente, quindi SmartScreen può mostrare "Windows ha protetto il PC"
+> (scegli *Ulteriori informazioni → Esegui comunque*) e Smart App Control, se
+> attivo, può impedirne l'avvio.
 
-La cartella di Steam viene letta dal registro (`HKCU\Software\Valve\Steam\SteamPath`),
-con ripiego sui percorsi standard in `Program Files`.
+### Prima di cominciare: disattiva Steam Cloud per Control
 
-Il file `remotecache.vdf` di Steam non viene mai copiato né cancellato.
+Con Steam Cloud attivo, Steam può rimettere nella cartella del gioco i
+salvataggi che ha nel cloud e mescolare le partite. Disattivalo per Control:
+in Steam, **Libreria → tasto destro su Control → Proprietà → Generale** e
+spegni *Mantieni i salvataggi su Steam Cloud*.
 
-### Sicurezza delle copie
+Il programma mostra lo stato del cloud nella finestra principale (*Steam
+Cloud: Disattivato* in verde va bene).
 
-- Ogni backup e ogni copia viene confrontata byte per byte con l'originale.
-- Attivazione e "Salva i progressi" lavorano in due passaggi: la sorgente viene
-  copiata in `<cartella>.nuovo`, verificata, e poi le cartelle vengono
-  scambiate (la vecchia passa per `<cartella>.vecchio` ed è eliminata). Se la
-  cartella è in uso e non si può spostare, si ripiega sulla copia diretta dalla
-  copia già verificata. In caso di errore si ripristina il backup.
-- `stato.ini` viene scritto in `stato.ini.tmp` e poi sostituito.
-- Una sola istanza dell'app alla volta.
+## Come si usa
 
-### Formato di `stato.ini`
+**Chiudi Control prima di usare il programma**: finché il gioco è aperto i
+pulsanti restano disattivati.
 
-```ini
-ProfiloAttivo=Profilo_Mario
-AttivatoIl=22/10/2026 18:30:00
-SalvatoIl=-
-BackupDaConservare=20
-```
+### Profili
 
-`-` indica un valore vuoto. `BackupDaConservare=0` conserva tutti i backup.
+Un profilo è una partita. Il profilo con la barra rossa e la scritta
+*ATTIVO* è quello i cui salvataggi sono ora nel gioco.
 
-I backup `Prima_salvataggio_<profilo>` contengono il profilo prima del
-salvataggio, `Eliminato_<profilo>` un profilo eliminato; gli altri (`Prima_di_<profilo>`, `Prima_creazione`,
-`Prima_ripristino`) i salvataggi del gioco.
+- **Nuovo profilo...**: crea un profilo con i salvataggi attuali del gioco
+  oppure vuoto, per iniziare una nuova partita.
 
-## Nomi dei profili
+  ![Nuovo profilo](docs/img/newprofile.png)
 
-Lettere ASCII, cifre, `_` e `-`, massimo 50 caratteri. Le cartelle in `Profili`
-che non rispettano la regola vengono ignorate.
+- **Attiva profilo** (o doppio clic): passa a un altro profilo. I progressi
+  del profilo attivo vengono salvati da soli prima del cambio, quindi non si
+  perde nulla e non ci sono domande.
+- **Salva progressi**: copia subito i salvataggi del gioco nel profilo attivo.
+  Non è obbligatorio, il cambio di profilo lo fa già.
+- **Tasto destro su un profilo**: *Rinomina* (F2) ed *Elimina* (Canc). Un
+  profilo eliminato finisce tra i backup e si può ancora recuperare. Il
+  profilo attivo non si può eliminare.
 
-## Struttura del codice
+### Savestate
 
-| File | Contenuto |
-|---|---|
-| `SaveManager.cs` | Tutta la logica: ricerca di Steam, profili, attivazione, salvataggio. Nessun I/O di console. |
-| `FileOps.cs` | Copia e sincronizzazione di cartelle. |
-| `AppState.cs` | Lettura e scrittura di `stato.ini`. |
-| `Log.cs` | Registro delle operazioni e degli errori imprevisti. |
-| `Result.cs` | Esito delle operazioni (messaggio, backup creato, errore grave). |
-| `MainForm.cs` | Finestra principale (WinForms). |
-| `NewProfileForm.cs` | Finestra "Nuovo profilo", usata anche per rinominare. |
-| `AccountForm.cs` | Scelta dell'account Steam all'avvio. |
-| `SnapshotForms.cs` | Finestre "Savestate" e "Backup" e la loro lista. |
-| `Theme.cs` | Colori, caratteri e icona del tema scuro. |
-| `ThemedControls.cs` | Controlli disegnati a mano: pulsanti, schede, intestazione, barra di stato. |
-| `app.ico` | Icona dell'exe e delle finestre. |
-| `Program.cs` | Avvio dell'applicazione e versione. |
-| `Properties\PublishProfiles\win-x64.pubxml` | Profilo di pubblicazione dell'exe singolo. |
-| `scripts\release.ps1` | Crea lo zip di rilascio. |
-| `tests\ControlSaveManager.Tests\` | Test xUnit. |
+Un savestate è un'istantanea dei salvataggi attuali, per esempio prima di un
+boss: se va male, la rimetti e riparti da lì. Appartiene al profilo attivo e
+non lo modifica.
 
-La vecchia versione da console è nella cronologia git (commit `17cd279`).
+![Savestate](docs/img/savestate.png)
 
-## Compilazione
+Esci dal gioco, apri **Savestate...**, scrivi un nome (facoltativo) e premi
+*Crea savestate*. Per tornarci: selezionalo e premi *Ripristina*.
 
-Richiede .NET 10 SDK.
+### Backup
 
-```bash
-dotnet build ControlSaveManager.csproj -c Release
-```
+Prima di ogni operazione il programma copia i salvataggi in un backup. Dalla
+finestra **Backup...** puoi rimetterne uno nel gioco e scegliere quanti
+conservarne (20 di base, 0 = tutti).
 
-Exe singolo per Windows a 64 bit, con il runtime .NET incluso (chi lo usa non
-deve installare nulla, circa 50 MB), in `bin\publish\win-x64\`:
+![Backup](docs/img/backup.png)
 
-```bash
-dotnet publish ControlSaveManager.csproj -p:PublishProfile=win-x64
-```
+## Dove sono i file
 
-## Rilascio
+- Profili, savestate e backup: `Documenti\ControlSaves\`.
+- Registro delle operazioni: `Documenti\ControlSaves\log.txt`.
 
-1. Aggiorna `<Version>` in `ControlSaveManager.csproj` e fai il commit. La
-   versione compare nell'intestazione della finestra, nelle proprietà
-   dell'exe e nel registro.
-2. Crea lo zip:
+Il pulsante **Apri cartella profili** apre la cartella in Esplora file. Se più
+account Steam sul PC hanno Control, all'avvio il programma chiede quale usare;
+ogni account ha i suoi profili.
 
-   ```bash
-   powershell -ExecutionPolicy Bypass -File scripts/release.ps1
-   ```
+Per disinstallare basta cancellare l'exe. Se vuoi, cancella anche
+`Documenti\ControlSaves` (ma lì ci sono i tuoi profili).
 
-   Lo script rifiuta di partire con modifiche non committate, esegue i test,
-   pubblica l'exe e crea in `dist\` lo zip `ControlSaveManager-<versione>-win-x64.zip`
-   (exe e README) con il file `.sha256`.
-3. Crea il tag della versione e mandalo su Forgejo:
+## Domande
 
-   ```bash
-   git tag v0.9.0
-   ```
+**Ho attivato un profilo per sbaglio.** Riattiva quello di prima: i suoi
+progressi erano stati salvati prima del cambio.
 
-   ```bash
-   git push origin main v0.9.0
-   ```
+**Ho perso dei progressi.** Apri **Backup...**: c'è una copia dei salvataggi
+prima di ogni operazione, con data e motivo.
 
-4. Su Forgejo, in **Release → Nuova release**, scegli il tag, allega lo zip
-   e il file `.sha256` da `dist\` e pubblica. Non c'è CI: tutto il rilascio
-   (test compresi) passa dallo script in locale.
+**I salvataggi si mescolano tra i profili.** Quasi sempre è Steam Cloud:
+controlla che sia disattivato (vedi sopra).
 
-L'exe non è firmato: Smart App Control e SmartScreen possono bloccarlo o
-avvisare sui PC di chi lo scarica (vedi Avvertenze e la firma nel TODO).
+**Lingua.** Il programma è in italiano o in inglese, in base alla lingua di
+Windows.
 
-## Test
+## English
 
-Test xUnit in `tests/ControlSaveManager.Tests`: lavorano su cartelle finte in
-`%TEMP%` (non toccano Steam né `Documenti\ControlSaves`) e coprono copie e
-scambio delle cartelle, profili, savestate, backup, `stato.ini` e ricerca
-degli account. Il registro dei test va in `%TEMP%\csm_test_log.txt`.
+Several **Control** (Steam) playthroughs on the same account, switched with
+one click, plus savestates and an automatic backup before every operation.
+The app is in English or Italian, following the Windows language.
 
-```bash
-dotnet test tests/ControlSaveManager.Tests
-```
+![Main window](docs/img/main_en.png)
 
-Le finestre non sono coperte dai test. Non c'è CI (il repository è su
-Forgejo senza runner): i test si eseguono a mano e comunque da
-`scripts\release.ps1` prima di ogni rilascio.
+- Download the zip from the releases page, extract `ControlSaveManager.exe`
+  and run it. No installation needed (Windows 10/11, 64-bit). It is not
+  digitally signed, so SmartScreen may warn you and Smart App Control may
+  block it.
+- **Turn off Steam Cloud for Control** (Library → right-click Control →
+  Properties → General), otherwise Steam may mix the saves of different
+  profiles. The main window shows the current Steam Cloud state.
+- **Close Control** before using the app.
+- **Activate profile** switches playthrough; the active profile's progress is
+  saved first. **Savestates...** keeps snapshots (e.g. before a boss);
+  **Backups...** lists the automatic backups and restores them. Right-click a
+  profile to rename or delete it.
+- Files are in `Documents\ControlSaves\`, the log in
+  `Documents\ControlSaves\log.txt`.
 
-## Avvertenze
+## Licenza
 
-- **Steam Cloud**: se attivo per Control, Steam può risincronizzare i file dopo
-  lo scambio. Si consiglia di disattivarlo per il gioco o di chiudere Steam
-  durante l'uso.
-- **Smart App Control** (Windows 11) può bloccare l'exe compilato in proprio,
-  che non è firmato: l'app si chiude subito all'avvio e nel registro eventi
-  compare "An Application Control policy has blocked this file". È successo con
-  una versione che chiamava direttamente `dwmapi.dll` e `uxtheme.dll` (barra
-  del titolo e barre di scorrimento scure); senza quelle chiamate parte. Meglio
-  evitare `DllImport` nel progetto.
+[MIT](LICENSE). Novità di ogni versione nel [CHANGELOG](CHANGELOG.md). Per chi
+vuole lavorare sul codice: [docs/SVILUPPO.md](docs/SVILUPPO.md).
 
-  Il giudizio però è sul singolo file (hash), non solo sul codice: è capitato
-  che una build Debug venisse bloccata (`FileLoadException ... 0x800711C7`)
-  mentre la Release degli stessi sorgenti partiva. Una build deterministica
-  produce sempre lo stesso file, quindi ricompilare non serviva. Per questo in
-  Debug la build non è deterministica: se viene bloccata, si ricompila tutto
-  (task VS Code `rebuild`, oppure `dotnet build --no-incremental`) e di norma il
-  nuovo file passa. Per chi scarica l'exe la soluzione vera è la firma del
-  codice (vedi [TODO](docs/TODO.md)). Il registro degli eventi è
-  `Microsoft-Windows-CodeIntegrity/Operational` (eventi 3033 e 3077).
-- L'esito delle operazioni riuscite compare solo nella barra di stato; le
-  finestre di messaggio restano per gli errori e per l'avviso su Steam aperto,
-  mostrato una sola volta per sessione.
-
-## Documentazione
-
-- [Piano per l'interfaccia grafica](docs/PIANO_GUI.md)
-- [Bug noti](docs/BUG_NOTI.md)
-- [Cose da fare](docs/TODO.md)
+*Control è un marchio di Remedy Entertainment. Questo programma non è affiliato
+né approvato da Remedy o da Valve.*

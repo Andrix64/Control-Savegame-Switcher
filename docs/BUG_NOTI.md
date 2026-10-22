@@ -15,9 +15,10 @@ Revisione della versione console (`Program.cs`). Build: 0 errori, 3 warning.
 | 7 | `SaveState` ignora gli errori | ✅ Risolto (Fase 1, errore restituito nel `Result`) |
 | 8 | Ciclo infinito con input chiuso | ✅ Sparito con la versione grafica (Fase 3) |
 | 9 | Warning `CA1416` | ✅ Risolto (Fase 2) |
-| 10, 11, 14 | Priorità bassa | Aperti |
+| 10, 11 | Priorità bassa | Aperti |
 | 12 | Backup senza limite | ✅ Risolto (si conservano gli ultimi N, predefinito 20) |
 | 13 | Più account Steam | ✅ Risolto (scelta all'avvio, con l'ultimo account preselezionato) |
+| 14 | Formato data dipendente dalla lingua | ✅ Risolto (in `stato.ini` sempre `gg/MM/aaaa`, a video nel formato di Windows) |
 
 Priorità: **Alta** = rischio di perdere salvataggi, **Media** = comportamento
 sbagliato, **Bassa** = rifinitura.

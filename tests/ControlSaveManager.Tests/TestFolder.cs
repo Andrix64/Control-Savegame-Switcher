@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Runtime.CompilerServices;
 
 namespace ControlSaveManager.Tests;
@@ -57,11 +58,14 @@ public sealed class TestFolder : IDisposable
 internal static class TestSetup
 {
     /// <summary>
-    /// Il registro dei test non va nel log.txt vero.
+    /// Il registro dei test non va nel log.txt vero. I testi attesi nei test
+    /// sono in italiano, qualunque sia la lingua di Windows.
     /// </summary>
     [ModuleInitializer]
     internal static void Init()
     {
         Log.FilePath = Path.Combine(Path.GetTempPath(), "csm_test_log.txt");
+        CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("it-IT");
+        CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("it-IT");
     }
 }

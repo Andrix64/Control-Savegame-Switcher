@@ -56,12 +56,14 @@ Invoke-Checked 'Pubblicazione' { dotnet publish $project -p:PublishProfile=win-x
 $exe = Join-Path $publishDir 'ControlSaveManager.exe'
 if (-not (Test-Path $exe)) { throw "Exe non trovato: $exe" }
 
-# Contenuto dello zip: l'exe e il README.
+# Contenuto dello zip: l'exe, il README per l'utente, le novità e la licenza.
 $staging = Join-Path $dist $name
 if (Test-Path $staging) { Remove-Item $staging -Recurse -Force }
 New-Item -ItemType Directory -Force $staging | Out-Null
 Copy-Item $exe $staging
-Copy-Item (Join-Path $root 'README.md') $staging
+foreach ($file in 'README.md', 'CHANGELOG.md', 'LICENSE') {
+    Copy-Item (Join-Path $root $file) $staging
+}
 
 $zip = Join-Path $dist "$name.zip"
 if (Test-Path $zip) { Remove-Item $zip -Force }

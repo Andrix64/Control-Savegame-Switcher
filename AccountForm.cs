@@ -7,12 +7,12 @@ internal sealed class AccountForm : Form
 {
     private readonly ItemList list = new();
 
-    private readonly FlatButton okButton = new("Usa questo account", ButtonKind.Primary)
+    private readonly FlatButton okButton = new(Strings.UseThisAccount, ButtonKind.Primary)
     {
         DialogResult = DialogResult.OK
     };
 
-    private readonly FlatButton cancelButton = new("Esci")
+    private readonly FlatButton cancelButton = new(Strings.Exit)
     {
         DialogResult = DialogResult.Cancel
     };
@@ -47,8 +47,7 @@ internal sealed class AccountForm : Form
 
         var intro = new Label
         {
-            Text = "Su questo PC ci sono più account Steam con i salvataggi di Control.\n" +
-                   "Quale vuoi usare? Ogni account ha profili e backup separati.",
+            Text = Strings.AccountIntro,
             AutoSize = true,
             ForeColor = Theme.Text,
             Margin = new Padding(0, 0, 0, 14)
@@ -56,7 +55,7 @@ internal sealed class AccountForm : Form
 
         var caption = new Label
         {
-            Text = "ACCOUNT STEAM",
+            Text = Strings.CaptionSteamAccount,
             AutoSize = true,
             Font = Theme.Caption,
             ForeColor = Theme.TextMuted,
@@ -124,8 +123,8 @@ internal sealed class AccountForm : Form
     private static string Details(SteamAccount account)
     {
         string saved = account.LastSaved == null
-            ? "nessun salvataggio"
-            : "ultimo salvataggio " + account.LastSaved.Value.ToString("dd/MM/yyyy HH:mm");
+            ? Strings.AccountNoSaves
+            : Loc.F(Strings.AccountLastSaved, account.LastSaved.Value.ToString("g"));
 
         return $"ID {account.Id}  ·  {saved}";
     }

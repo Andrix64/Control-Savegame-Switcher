@@ -14,6 +14,21 @@ namespace ControlSaveManager;
 public sealed record Snapshot(string Path, DateTime Date, string Name);
 
 /// <summary>
+/// Stato di Steam Cloud per Control.
+/// </summary>
+public enum CloudState
+{
+    /// <summary>Disattivato nelle proprietà del gioco: Steam non tocca i salvataggi.</summary>
+    Disabled,
+
+    /// <summary>Attivo (o non disattivato): Steam può risincronizzare i salvataggi.</summary>
+    Enabled,
+
+    /// <summary>Impostazione non leggibile.</summary>
+    Unknown
+}
+
+/// <summary>
 /// Account Steam con i salvataggi di Control.
 /// </summary>
 /// <param name="Id">Nome della cartella in userdata (ID dell'account).</param>
@@ -22,7 +37,7 @@ public sealed record Snapshot(string Path, DateTime Date, string Name);
 /// <param name="LastSaved">Data del salvataggio più recente, se c'è.</param>
 public sealed record SteamAccount(string Id, string Name, string Folder, DateTime? LastSaved)
 {
-    public string DisplayName => Name != "" ? Name : "Account " + Id;
+    public string DisplayName => Name != "" ? Name : Loc.F(Strings.AccountFallbackName, Id);
 }
 
 /// <summary>
@@ -83,19 +98,19 @@ public sealed class SaveManager
         string steam = FindSteam();
 
         if (steam == "")
-            return Result<SaveManager>.Fail("Steam non trovato.");
+            return Result<SaveManager>.Fail(Strings.SteamNotFound);
 
         string userData = Path.Combine(steam, "userdata");
 
         if (!Directory.Exists(userData))
-            return Result<SaveManager>.Fail("Cartella userdata non trovata.");
+            return Result<SaveManager>.Fail(Strings.UserDataNotFound);
 
         IReadOnlyList<SteamAccount> accounts = FindAccounts(userData);
 
         if (accounts.Count == 0)
         {
             return Result<SaveManager>.Fail(
-                "Salvataggi di Control non trovati.\nAvvia il gioco almeno una volta.");
+                Strings.SavesNotFound);
         }
 
         string appData = Path.Combine(
@@ -123,7 +138,7 @@ public sealed class SaveManager
         }
         catch (Exception ex)
         {
-            return Result<SaveManager>.Fail("Errore di inizializzazione: " + ex.Message);
+            return Result<SaveManager>.Fail(Loc.F(Strings.InitError, ex.Message));
         }
     }
 
@@ -240,6 +255,50 @@ public sealed class SaveManager
         State.Load();
     }
 
+    /// <summary>
+    /// Data salvata in stato.ini mostrata nel formato della lingua di Windows.
+    /// In stato.ini è sempre gg/MM/aaaa; un valore illeggibile viene mostrato com'è.
+    /// </summary>
+    public static string FormatStoredDate(string stored)
+    {
+        return DateTime.TryParseExact(stored, DateFormat, CultureInfo.InvariantCulture,
+            DateTimeStyles.None, out DateTime date)
+            ? date.ToString("G", CultureInfo.CurrentCulture)
+            : stored;
+    }
+
+    // STEAM CLOUD
+
+    /// <summary>
+    /// Stato di Steam Cloud per Control, letto dall'impostazione del gioco in
+    /// userdata\IDAccount\7\remote\sharedconfig.vdf. Steam lo tiene attivo se
+    /// non è disattivato esplicitamente, quindi senza impostazione vale Enabled.
+    /// L'impostazione generale "Abilita Steam Cloud" non viene letta.
+    /// </summary>
+    public CloudState GetCloudState()
+    {
+        try
+        {
+            string? account = Path.GetDirectoryName(SavePath);
+
+            if (account == null)
+                return CloudState.Unknown;
+
+            string config = Path.Combine(account, "7", "remote", "sharedconfig.vdf");
+
+            if (!File.Exists(config))
+                return CloudState.Enabled;
+
+            string? value = Vdf.Find(Vdf.Parse(File.ReadAllText(config)), "apps", AppId, "cloudenabled");
+
+            return value == "0" ? CloudState.Disabled : CloudState.Enabled;
+        }
+        catch
+        {
+            return CloudState.Unknown;
+        }
+    }
+
     // PROFILI
 
     /// <summary>
@@ -350,25 +409,25 @@ public sealed class SaveManager
     private Result CreateProfileCore(string name, bool copyCurrentSaves)
     {
         if (!IsValidName(name))
-            return Result.Fail("Nome non valido.");
+            return Result.Fail(Strings.InvalidName);
 
         string profileName = ProfileFolderName(name);
         string profile = Path.Combine(ProfilesPath, profileName);
 
         if (Directory.Exists(profile))
-            return Result.Fail("Questo profilo esiste già.");
+            return Result.Fail(Strings.ProfileExists);
 
         if (!copyCurrentSaves)
         {
             try
             {
                 Directory.CreateDirectory(Path.Combine(profile, "remote"));
-                return Result.Ok("Profilo vuoto creato.");
+                return Result.Ok(Strings.EmptyProfileCreated);
             }
             catch (Exception ex)
             {
                 TryDeleteFolder(profile);
-                return Result.Fail("Errore: " + ex.Message);
+                return Result.Fail(Loc.F(Strings.ErrorWithMessage, ex.Message));
             }
         }
 
@@ -380,7 +439,7 @@ public sealed class SaveManager
         }
         catch (Exception ex)
         {
-            return Result.Fail("Backup non riuscito: " + ex.Message);
+            return Result.Fail(Loc.F(Strings.BackupNotDone, ex.Message));
         }
 
         try
@@ -391,10 +450,10 @@ public sealed class SaveManager
         {
             // Un profilo copiato a metà comparirebbe nella lista e bloccherebbe il nome.
             TryDeleteFolder(profile);
-            return Result.Fail("Copia non riuscita: " + ex.Message, backup);
+            return Result.Fail(Loc.F(Strings.CopyFailed, ex.Message), backup);
         }
 
-        return Result.Ok("Profilo creato.", backup);
+        return Result.Ok(Strings.ProfileCreated, backup);
     }
 
     /// <summary>
@@ -410,24 +469,24 @@ public sealed class SaveManager
     private Result RenameProfileCore(string profileName, string newName)
     {
         if (!IsValidName(newName))
-            return Result.Fail("Nome non valido.");
+            return Result.Fail(Strings.InvalidName);
 
         string newProfileName = ProfileFolderName(newName);
 
         if (newProfileName == profileName)
-            return Result.Ok("Nome invariato.");
+            return Result.Ok(Strings.NameUnchanged);
 
         string source = Path.Combine(ProfilesPath, profileName);
         string destination = Path.Combine(ProfilesPath, newProfileName);
 
         if (!Directory.Exists(source))
-            return Result.Fail("Profilo non trovato.");
+            return Result.Fail(Strings.ProfileNotFound);
 
         // Su Windows "Mario" e "mario" sono la stessa cartella.
         bool caseOnly = string.Equals(profileName, newProfileName, StringComparison.OrdinalIgnoreCase);
 
         if (!caseOnly && Directory.Exists(destination))
-            return Result.Fail("Esiste già un profilo con questo nome.");
+            return Result.Fail(Strings.ProfileExists);
 
         try
         {
@@ -435,7 +494,7 @@ public sealed class SaveManager
         }
         catch (Exception ex)
         {
-            return Result.Fail("Profilo non rinominato: " + ex.Message);
+            return Result.Fail(Loc.F(Strings.ProfileNotRenamed, ex.Message));
         }
 
         string savestates = Path.Combine(SavestatePath, profileName);
@@ -449,8 +508,7 @@ public sealed class SaveManager
             }
             catch (Exception ex)
             {
-                savestateError = "\nI savestate non sono stati spostati: " + ex.Message +
-                                 "\nSono ancora in:\n" + savestates;
+                savestateError = Loc.F(Strings.SavestatesNotMoved, ex.Message, savestates);
             }
         }
 
@@ -465,13 +523,13 @@ public sealed class SaveManager
             catch (Exception ex)
             {
                 return Result.Fail(
-                    "Profilo rinominato, ma lo stato non è stato salvato: " + ex.Message + savestateError);
+                    Loc.F(Strings.RenamedStateNotSaved, ex.Message) + savestateError);
             }
         }
 
         return savestateError == ""
-            ? Result.Ok("Profilo rinominato.")
-            : Result.Fail("Profilo rinominato." + savestateError);
+            ? Result.Ok(Strings.ProfileRenamed)
+            : Result.Fail(Strings.ProfileRenamed + savestateError);
     }
 
     private static void MoveFolder(string source, string destination, bool caseOnly)
@@ -500,12 +558,12 @@ public sealed class SaveManager
     private Result DeleteProfileCore(string profileName)
     {
         if (profileName == State.ActiveProfile)
-            return Result.Fail("Non si può eliminare il profilo attivo.\nAttiva prima un altro profilo.");
+            return Result.Fail(Strings.CannotDeleteActive);
 
         string profile = Path.Combine(ProfilesPath, profileName);
 
         if (!Directory.Exists(profile))
-            return Result.Fail("Profilo non trovato.");
+            return Result.Fail(Strings.ProfileNotFound);
 
         string backup = NewBackupPath(DeletedBackupPrefix + profileName);
 
@@ -515,7 +573,7 @@ public sealed class SaveManager
         }
         catch (Exception ex)
         {
-            return Result.Fail("Profilo non eliminato: " + ex.Message);
+            return Result.Fail(Loc.F(Strings.ProfileNotDeleted, ex.Message));
         }
 
         string savestates = Path.Combine(SavestatePath, profileName);
@@ -528,11 +586,11 @@ public sealed class SaveManager
         catch (Exception ex)
         {
             return Result.Fail(
-                "Profilo eliminato, ma i savestate no: " + ex.Message + "\nSono in:\n" + savestates,
+                Loc.F(Strings.ProfileDeletedSavestatesNot, ex.Message, savestates),
                 backup);
         }
 
-        return Result.Ok("Profilo eliminato. Una copia resta tra i backup.", backup);
+        return Result.Ok(Strings.ProfileDeleted, backup);
     }
 
     /// <summary>
@@ -577,12 +635,12 @@ public sealed class SaveManager
     private Result ActivateProfileCore(string profileName)
     {
         if (IsGameRunning())
-            return Result.Fail("Chiudi Control prima di continuare.");
+            return Result.Fail(Strings.CloseControlFirst);
 
         string profile = Path.Combine(ProfilesPath, profileName);
 
         if (!Directory.Exists(profile))
-            return Result.Fail("Profilo non trovato.");
+            return Result.Fail(Strings.ProfileNotFound);
 
         Result replaced = ReplaceGameSaves(profile, ActivateBackupPrefix + profileName);
 
@@ -592,7 +650,7 @@ public sealed class SaveManager
         string backup = replaced.BackupPath!;
 
         State.ActiveProfile = profileName;
-        State.ActiveSince = DateTime.Now.ToString(DateFormat);
+        State.ActiveSince = DateTime.Now.ToString(DateFormat, CultureInfo.InvariantCulture);
         State.LastSaved = "";
 
         try
@@ -602,11 +660,11 @@ public sealed class SaveManager
         catch (Exception ex)
         {
             return Result.Fail(
-                "Profilo attivato, ma lo stato non è stato salvato: " + ex.Message,
+                Loc.F(Strings.ActivatedStateNotSaved, ex.Message),
                 backup);
         }
 
-        return Result.Ok("Profilo attivato correttamente.", backup);
+        return Result.Ok(Strings.ProfileActivated, backup);
     }
 
     // SALVATAGGIO DEI PROGRESSI
@@ -627,16 +685,14 @@ public sealed class SaveManager
     private Result SaveProgressCore(bool allowEmptySaves)
     {
         if (!HasActiveProfile)
-            return Result.Fail("Non c'è un profilo attivo valido.");
+            return Result.Fail(Strings.NoValidActiveProfile);
 
         if (IsGameRunning())
-            return Result.Fail("Chiudi Control prima di continuare.");
+            return Result.Fail(Strings.CloseControlFirst);
 
         if (!allowEmptySaves && GameSavesAreEmpty())
         {
-            return Result.Fail(
-                "La cartella dei salvataggi del gioco è vuota.\n" +
-                "Salvando, il profilo verrebbe svuotato.");
+            return Result.Fail(Strings.GameSavesEmptyWouldClear);
         }
 
         string profile = Path.Combine(ProfilesPath, State.ActiveProfile);
@@ -649,7 +705,7 @@ public sealed class SaveManager
         }
         catch (Exception ex)
         {
-            return Result.Fail("Backup fallito. Operazione annullata.\n" + ex.Message);
+            return Result.Fail(Loc.F(Strings.BackupFailedCancelled, ex.Message));
         }
 
         try
@@ -663,21 +719,18 @@ public sealed class SaveManager
                 FileOps.ReplaceFolder(backup, profile);
 
                 return Result.Fail(
-                    "Salvataggio fallito: " + ex.Message +
-                    "\nIl profilo è stato ripristinato.",
+                    Loc.F(Strings.SaveFailedProfileRestored, ex.Message),
                     backup);
             }
             catch (Exception restoreEx)
             {
                 return Result.Fail(
-                    "Salvataggio fallito: " + ex.Message +
-                    "\nRipristino del profilo fallito: " + restoreEx.Message +
-                    "\nIl profilo precedente è nel backup.",
+                    Loc.F(Strings.SaveFailedRestoreFailed, ex.Message, restoreEx.Message),
                     backup);
             }
         }
 
-        State.LastSaved = DateTime.Now.ToString(DateFormat);
+        State.LastSaved = DateTime.Now.ToString(DateFormat, CultureInfo.InvariantCulture);
 
         try
         {
@@ -686,11 +739,11 @@ public sealed class SaveManager
         catch (Exception ex)
         {
             return Result.Fail(
-                "Progressi salvati, ma lo stato non è stato salvato: " + ex.Message,
+                Loc.F(Strings.ProgressSavedStateNotSaved, ex.Message),
                 backup);
         }
 
-        return Result.Ok("Progressi salvati nel profilo.", backup);
+        return Result.Ok(Strings.ProgressSaved, backup);
     }
 
     /// <summary>
@@ -707,7 +760,7 @@ public sealed class SaveManager
         }
         catch (Exception ex)
         {
-            return Result.Fail("Backup fallito. Operazione annullata.\n" + ex.Message);
+            return Result.Fail(Loc.F(Strings.BackupFailedCancelled, ex.Message));
         }
 
         try
@@ -721,16 +774,13 @@ public sealed class SaveManager
                 FileOps.ReplaceFolder(backup, SavePath);
 
                 return Result.Fail(
-                    "Errore durante la sostituzione dei salvataggi: " + ex.Message +
-                    "\nI salvataggi precedenti sono stati ripristinati.",
+                    Loc.F(Strings.ReplaceFailedRestored, ex.Message),
                     backup);
             }
             catch (Exception restoreEx)
             {
                 return Result.Fatal(
-                    "Errore durante la sostituzione dei salvataggi: " + ex.Message +
-                    "\nRipristino fallito: " + restoreEx.Message +
-                    "\nNON avviare il gioco. Il backup è in:\n" + backup,
+                    Loc.F(Strings.ReplaceFailedFatal, ex.Message, restoreEx.Message, backup),
                     backup);
             }
         }
@@ -814,22 +864,22 @@ public sealed class SaveManager
     private Result CreateSavestateCore(string name)
     {
         if (!HasActiveProfile)
-            return Result.Fail("Non c'è un profilo attivo valido.");
+            return Result.Fail(Strings.NoValidActiveProfile);
 
         if (!IsValidSavestateName(name))
-            return Result.Fail("Nome non valido.");
+            return Result.Fail(Strings.InvalidName);
 
         if (IsGameRunning())
-            return Result.Fail("Chiudi Control prima di continuare.");
+            return Result.Fail(Strings.CloseControlFirst);
 
         if (GameSavesAreEmpty())
-            return Result.Fail("La cartella dei salvataggi del gioco è vuota.");
+            return Result.Fail(Strings.GameSavesEmpty);
 
         string folder = DateTime.Now.ToString(SavestateDateFormat) + (name == "" ? "" : "_" + name);
         string path = Path.Combine(ActiveSavestatePath, folder);
 
         if (Directory.Exists(path))
-            return Result.Fail("Esiste già un savestate con questo nome e questa data.");
+            return Result.Fail(Strings.SavestateExists);
 
         try
         {
@@ -838,10 +888,10 @@ public sealed class SaveManager
         catch (Exception ex)
         {
             TryDeleteFolder(path);
-            return Result.Fail("Savestate non creato: " + ex.Message);
+            return Result.Fail(Loc.F(Strings.SavestateNotCreated, ex.Message));
         }
 
-        return Result.Ok(name == "" ? "Savestate creato." : $"Savestate \"{name}\" creato.");
+        return Result.Ok(name == "" ? Strings.SavestateCreated : Loc.F(Strings.SavestateCreatedNamed, name));
     }
 
     /// <summary>
@@ -851,7 +901,7 @@ public sealed class SaveManager
     public Result RestoreSavestate(Snapshot savestate)
     {
         return Finish("Ripristina savestate " + savestate.Path,
-            RestoreToGame(savestate, SavestatePath, "Savestate ripristinato."));
+            RestoreToGame(savestate, SavestatePath, Strings.SavestateRestored));
     }
 
     public Result DeleteSavestate(Snapshot savestate)
@@ -862,7 +912,7 @@ public sealed class SaveManager
     private Result DeleteSavestateCore(Snapshot savestate)
     {
         if (!IsInside(savestate.Path, SavestatePath))
-            return Result.Fail("Savestate non valido.");
+            return Result.Fail(Strings.SavestateInvalid);
 
         try
         {
@@ -870,10 +920,10 @@ public sealed class SaveManager
         }
         catch (Exception ex)
         {
-            return Result.Fail("Savestate non eliminato: " + ex.Message);
+            return Result.Fail(Loc.F(Strings.SavestateNotDeleted, ex.Message));
         }
 
-        return Result.Ok("Savestate eliminato.");
+        return Result.Ok(Strings.SavestateDeleted);
     }
 
     // BACKUP
@@ -913,19 +963,19 @@ public sealed class SaveManager
     public static string BackupReasonText(string reason)
     {
         if (reason.StartsWith(ActivateBackupPrefix))
-            return "Prima di attivare " + ProfileDisplayName(reason[ActivateBackupPrefix.Length..]);
+            return Loc.F(Strings.ReasonBeforeActivating, ProfileDisplayName(reason[ActivateBackupPrefix.Length..]));
 
         if (reason.StartsWith(DeletedBackupPrefix))
-            return "Profilo " + ProfileDisplayName(reason[DeletedBackupPrefix.Length..]) + " eliminato";
+            return Loc.F(Strings.ReasonProfileDeleted, ProfileDisplayName(reason[DeletedBackupPrefix.Length..]));
 
         if (reason.StartsWith(SaveBackupPrefix))
-            return "Profilo " + ProfileDisplayName(reason[SaveBackupPrefix.Length..]) + " prima del salvataggio";
+            return Loc.F(Strings.ReasonBeforeSaving, ProfileDisplayName(reason[SaveBackupPrefix.Length..]));
 
         return reason switch
         {
-            "Prima_salvataggio" => "Profilo prima del salvataggio",
-            "Prima_creazione" => "Prima di creare un profilo",
-            RestoreBackupName => "Prima di un ripristino",
+            "Prima_salvataggio" => Strings.ReasonBeforeSavingOld,
+            "Prima_creazione" => Strings.ReasonBeforeCreating,
+            RestoreBackupName => Strings.ReasonBeforeRestoring,
             _ => reason.Replace('_', ' ')
         };
     }
@@ -937,16 +987,16 @@ public sealed class SaveManager
     public Result RestoreBackup(Snapshot backup)
     {
         return Finish("Ripristina backup " + backup.Path,
-            RestoreToGame(backup, BackupPath, "Backup ripristinato."));
+            RestoreToGame(backup, BackupPath, Strings.BackupRestored));
     }
 
     private Result RestoreToGame(Snapshot snapshot, string root, string message)
     {
         if (IsGameRunning())
-            return Result.Fail("Chiudi Control prima di continuare.");
+            return Result.Fail(Strings.CloseControlFirst);
 
         if (!IsInside(snapshot.Path, root) || !Directory.Exists(snapshot.Path))
-            return Result.Fail("Cartella non trovata:\n" + snapshot.Path);
+            return Result.Fail(Loc.F(Strings.FolderNotFound, snapshot.Path));
 
         // La pulizia dei backup avviene solo in Finish, a ripristino concluso:
         // il backup da ripristinare non può sparire durante la copia.
@@ -968,14 +1018,14 @@ public sealed class SaveManager
         }
         catch (Exception ex)
         {
-            return Result.Fail("Impostazione non salvata: " + ex.Message);
+            return Result.Fail(Loc.F(Strings.SettingNotSaved, ex.Message));
         }
 
         int deleted = PruneBackups();
 
         return Result.Ok(deleted == 0
-            ? "Impostazione salvata."
-            : $"Impostazione salvata. Backup eliminati: {deleted}.");
+            ? Strings.SettingSaved
+            : Loc.F(Strings.SettingSavedPruned, deleted));
     }
 
     /// <summary>

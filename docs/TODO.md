@@ -51,7 +51,12 @@ I bug noti sono in [BUG_NOTI.md](BUG_NOTI.md).
 
 ## Rifiniture
 
-- [ ] **Finestre di conferma a tema** al posto delle `MessageBox` chiare di Windows.
-- [ ] **Lingua.** Spostare i testi in file `.resx` per aggiungere l'inglese.
-- [ ] **Steam Cloud.** Provarlo con il cloud attivo, documentarlo o rilevarlo.
-- [ ] **Licenza, changelog e README per l'utente finale** con le schermate.
+- [x] **Finestre di conferma a tema** al posto delle `MessageBox` chiare di Windows
+  (`MessageDialog.cs`).
+- [x] **Lingua.** Spostare i testi in file `.resx` per aggiungere l'inglese.
+  Inglese in `Strings.resx`, italiano in `Strings.it.resx`; la lingua segue Windows.
+- [x] **Steam Cloud.** Provarlo con il cloud attivo, documentarlo o rilevarlo.
+  Rilevato da `sharedconfig.vdf` e mostrato nella finestra; documentato nel
+  README. Non ancora provato un cambio di profilo con il cloud attivo.
+- [x] **Licenza, changelog e README per l'utente finale** con le schermate.
+  MIT, `CHANGELOG.md`, README per l'utente e note tecniche in `docs/SVILUPPO.md`.

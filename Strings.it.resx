@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>  <data name="AppAlreadyRunning" xml:space="preserve"><value>Control Save Manager è già aperto.</value></data>
+  <data name="UnexpectedErrorWithLog" xml:space="preserve"><value>Si è verificato un errore imprevisto:
+{0}
+
+I dettagli sono nel registro:
+{1}</value></data>
+  <data name="UnexpectedError" xml:space="preserve"><value>Errore imprevisto: {0}
+I dettagli sono nel registro:
+{1}</value></data>
+  <data name="SteamNotFound" xml:space="preserve"><value>Steam non trovato.</value></data>
+  <data name="UserDataNotFound" xml:space="preserve"><value>Cartella userdata di Steam non trovata.</value></data>
+  <data name="SavesNotFound" xml:space="preserve"><value>Salvataggi di Control non trovati.
+Avvia il gioco almeno una volta.</value></data>
+  <data name="InitError" xml:space="preserve"><value>Errore di inizializzazione: {0}</value></data>
+  <data name="InvalidName" xml:space="preserve"><value>Nome non valido.</value></data>
+  <data name="ProfileExists" xml:space="preserve"><value>Esiste già un profilo con questo nome.</value></data>
+  <data name="EmptyProfileCreated" xml:space="preserve"><value>Profilo vuoto creato.</value></data>
+  <data name="ErrorWithMessage" xml:space="preserve"><value>Errore: {0}</value></data>
+  <data name="BackupNotDone" xml:space="preserve"><value>Backup non riuscito: {0}</value></data>
+  <data name="CopyFailed" xml:space="preserve"><value>Copia non riuscita: {0}</value></data>
+  <data name="ProfileCreated" xml:space="preserve"><value>Profilo creato.</value></data>
+  <data name="NameUnchanged" xml:space="preserve"><value>Nome invariato.</value></data>
+  <data name="ProfileNotFound" xml:space="preserve"><value>Profilo non trovato.</value></data>
+  <data name="ProfileNotRenamed" xml:space="preserve"><value>Profilo non rinominato: {0}</value></data>
+  <data name="SavestatesNotMoved" xml:space="preserve"><value>
+I savestate non sono stati spostati: {0}
+Sono ancora in:
+{1}</value></data>
+  <data name="RenamedStateNotSaved" xml:space="preserve"><value>Profilo rinominato, ma lo stato non è stato salvato: {0}</value></data>
+  <data name="ProfileRenamed" xml:space="preserve"><value>Profilo rinominato.</value></data>
+  <data name="CannotDeleteActive" xml:space="preserve"><value>Non si può eliminare il profilo attivo.
+Attiva prima un altro profilo.</value></data>
+  <data name="ProfileNotDeleted" xml:space="preserve"><value>Profilo non eliminato: {0}</value></data>
+  <data name="ProfileDeletedSavestatesNot" xml:space="preserve"><value>Profilo eliminato, ma i savestate no: {0}
+Sono in:
+{1}</value></data>
+  <data name="ProfileDeleted" xml:space="preserve"><value>Profilo eliminato. Una copia resta tra i backup.</value></data>
+  <data name="CloseControlFirst" xml:space="preserve"><value>Chiudi Control prima di continuare.</value></data>
+  <data name="ActivatedStateNotSaved" xml:space="preserve"><value>Profilo attivato, ma lo stato non è stato salvato: {0}</value></data>
+  <data name="ProfileActivated" xml:space="preserve"><value>Profilo attivato.</value></data>
+  <data name="NoValidActiveProfile" xml:space="preserve"><value>Non c&apos;è un profilo attivo valido.</value></data>
+  <data name="GameSavesEmptyWouldClear" xml:space="preserve"><value>La cartella dei salvataggi del gioco è vuota.
+Salvando, il profilo verrebbe svuotato.</value></data>
+  <data name="BackupFailedCancelled" xml:space="preserve"><value>Backup fallito. Operazione annullata.
+{0}</value></data>
+  <data name="SaveFailedProfileRestored" xml:space="preserve"><value>Salvataggio fallito: {0}
+Il profilo è stato ripristinato.</value></data>
+  <data name="SaveFailedRestoreFailed" xml:space="preserve"><value>Salvataggio fallito: {0}
+Ripristino del profilo fallito: {1}
+Il profilo precedente è nel backup.</value></data>
+  <data name="ProgressSavedStateNotSaved" xml:space="preserve"><value>Progressi salvati, ma lo stato non è stato salvato: {0}</value></data>
+  <data name="ProgressSaved" xml:space="preserve"><value>Progressi salvati nel profilo.</value></data>
+  <data name="ReplaceFailedRestored" xml:space="preserve"><value>Errore durante la sostituzione dei salvataggi: {0}
+I salvataggi precedenti sono stati ripristinati.</value></data>
+  <data name="ReplaceFailedFatal" xml:space="preserve"><value>Errore durante la sostituzione dei salvataggi: {0}
+Ripristino fallito: {1}
+NON avviare il gioco. Il backup è in:
+{2}</value></data>
+  <data name="GameSavesEmpty" xml:space="preserve"><value>La cartella dei salvataggi del gioco è vuota.</value></data>
+  <data name="SavestateExists" xml:space="preserve"><value>Esiste già un savestate con questo nome e questa data.</value></data>
+  <data name="SavestateNotCreated" xml:space="preserve"><value>Savestate non creato: {0}</value></data>
+  <data name="SavestateCreated" xml:space="preserve"><value>Savestate creato.</value></data>
+  <data name="SavestateCreatedNamed" xml:space="preserve"><value>Savestate &quot;{0}&quot; creato.</value></data>
+  <data name="SavestateRestored" xml:space="preserve"><value>Savestate ripristinato.</value></data>
+  <data name="SavestateInvalid" xml:space="preserve"><value>Savestate non valido.</value></data>
+  <data name="SavestateNotDeleted" xml:space="preserve"><value>Savestate non eliminato: {0}</value></data>
+  <data name="SavestateDeleted" xml:space="preserve"><value>Savestate eliminato.</value></data>
+  <data name="ReasonBeforeActivating" xml:space="preserve"><value>Prima di attivare {0}</value></data>
+  <data name="ReasonProfileDeleted" xml:space="preserve"><value>Profilo {0} eliminato</value></data>
+  <data name="ReasonBeforeSaving" xml:space="preserve"><value>Profilo {0} prima del salvataggio</value></data>
+  <data name="ReasonBeforeSavingOld" xml:space="preserve"><value>Profilo prima del salvataggio</value></data>
+  <data name="ReasonBeforeCreating" xml:space="preserve"><value>Prima di creare un profilo</value></data>
+  <data name="ReasonBeforeRestoring" xml:space="preserve"><value>Prima di un ripristino</value></data>
+  <data name="BackupRestored" xml:space="preserve"><value>Backup ripristinato.</value></data>
+  <data name="FolderNotFound" xml:space="preserve"><value>Cartella non trovata:
+{0}</value></data>
+  <data name="SettingNotSaved" xml:space="preserve"><value>Impostazione non salvata: {0}</value></data>
+  <data name="SettingSaved" xml:space="preserve"><value>Impostazione salvata.</value></data>
+  <data name="SettingSavedPruned" xml:space="preserve"><value>Impostazione salvata. Backup eliminati: {0}.</value></data>
+  <data name="AccountFallbackName" xml:space="preserve"><value>Account {0}</value></data>
+  <data name="ReadyHint" xml:space="preserve"><value>Pronto. Tasto destro su un profilo per rinominarlo o eliminarlo.</value></data>
+  <data name="NoProfiles" xml:space="preserve"><value>Nessun profilo.
+Creane uno con «Nuovo profilo».</value></data>
+  <data name="ActivateProfile" xml:space="preserve"><value>Attiva profilo</value></data>
+  <data name="SaveProgress" xml:space="preserve"><value>Salva progressi</value></data>
+  <data name="SavestatesButton" xml:space="preserve"><value>Savestate...</value></data>
+  <data name="NewProfileButton" xml:space="preserve"><value>Nuovo profilo...</value></data>
+  <data name="BackupsButton" xml:space="preserve"><value>Backup...</value></data>
+  <data name="OpenProfilesFolder" xml:space="preserve"><value>Apri cartella profili</value></data>
+  <data name="RenameMenu" xml:space="preserve"><value>Rinomina...</value></data>
+  <data name="DeleteMenu" xml:space="preserve"><value>Elimina...</value></data>
+  <data name="DeleteKey" xml:space="preserve"><value>Canc</value></data>
+  <data name="ActiveCannotBeDeleted" xml:space="preserve"><value>Il profilo attivo non si può eliminare.</value></data>
+  <data name="WaitForOperation" xml:space="preserve"><value>Attendi la fine dell&apos;operazione in corso.</value></data>
+  <data name="CaptionActiveProfile" xml:space="preserve"><value>PROFILO ATTIVO</value></data>
+  <data name="CaptionActivatedOn" xml:space="preserve"><value>ATTIVATO IL</value></data>
+  <data name="CaptionLastSaved" xml:space="preserve"><value>ULTIMO SALVATAGGIO</value></data>
+  <data name="CaptionSteamCloud" xml:space="preserve"><value>STEAM CLOUD</value></data>
+  <data name="CaptionProfiles" xml:space="preserve"><value>PROFILI</value></data>
+  <data name="NoSaves" xml:space="preserve"><value>Nessun salvataggio</value></data>
+  <data name="LastModified" xml:space="preserve"><value>Ultima modifica: {0}</value></data>
+  <data name="ActiveSuffix" xml:space="preserve"><value>, attivo</value></data>
+  <data name="ActiveBadge" xml:space="preserve"><value>ATTIVO</value></data>
+  <data name="CannotReadState" xml:space="preserve"><value>Impossibile leggere lo stato: {0}</value></data>
+  <data name="CannotReadProfiles" xml:space="preserve"><value>Impossibile leggere i profili: {0}</value></data>
+  <data name="NoneValue" xml:space="preserve"><value>Nessuno</value></data>
+  <data name="Never" xml:space="preserve"><value>Mai</value></data>
+  <data name="CloudOff" xml:space="preserve"><value>Disattivato</value></data>
+  <data name="CloudOn" xml:space="preserve"><value>Attivo</value></data>
+  <data name="CloudUnknown" xml:space="preserve"><value>Sconosciuto</value></data>
+  <data name="GameRunning" xml:space="preserve"><value>Control è in esecuzione: chiudilo per cambiare o salvare.</value></data>
+  <data name="BusyActivating" xml:space="preserve"><value>Attivo &quot;{0}&quot;...</value></data>
+  <data name="SwitchSaveFailed" xml:space="preserve"><value>Profilo non cambiato: salvataggio di &quot;{0}&quot; non riuscito.
+{1}</value></data>
+  <data name="SavedAndActivated" xml:space="preserve"><value>Progressi salvati in &quot;{0}&quot;. Profilo &quot;{1}&quot; attivato.</value></data>
+  <data name="ActivatedNamed" xml:space="preserve"><value>Profilo &quot;{0}&quot; attivato.</value></data>
+  <data name="ConfirmSaveEmpty" xml:space="preserve"><value>La cartella dei salvataggi del gioco è vuota.
+Salvando, il profilo &quot;{0}&quot; verrà svuotato.
+
+Continuare comunque?</value></data>
+  <data name="BusySavingProgress" xml:space="preserve"><value>Salvo i progressi...</value></data>
+  <data name="BusyCreatingProfile" xml:space="preserve"><value>Creo il profilo...</value></data>
+  <data name="BusyRenamingProfile" xml:space="preserve"><value>Rinomino il profilo...</value></data>
+  <data name="ActiveCannotDeleteStatus" xml:space="preserve"><value>&quot;{0}&quot; è il profilo attivo: attivane un altro prima di eliminarlo.</value></data>
+  <data name="ConfirmDeleteProfile" xml:space="preserve"><value>Eliminare il profilo &quot;{0}&quot;?
+
+Una copia resta nella finestra Backup, da cui si può ripristinare finché la pulizia automatica non la elimina.</value></data>
+  <data name="ConfirmDeleteProfileSavestates" xml:space="preserve"><value>
+
+I suoi savestate ({0}) vengono eliminati definitivamente.</value></data>
+  <data name="BusyDeletingProfile" xml:space="preserve"><value>Elimino il profilo...</value></data>
+  <data name="TitleSeriousError" xml:space="preserve"><value>Errore grave</value></data>
+  <data name="TitleOperationFailed" xml:space="preserve"><value>Operazione non riuscita</value></data>
+  <data name="BackupLine" xml:space="preserve"><value>
+
+Backup:
+{0}</value></data>
+  <data name="AskOpenBackupFolder" xml:space="preserve"><value>
+
+Aprire la cartella del backup?</value></data>
+  <data name="CloudOnWarning" xml:space="preserve"><value>Steam Cloud è attivo per Control: Steam potrebbe sovrascrivere i salvataggi dopo l&apos;operazione.</value></data>
+  <data name="CloudMaybeWarning" xml:space="preserve"><value>Se Steam Cloud è attivo per Control, Steam potrebbe sovrascrivere i salvataggi dopo l&apos;operazione.</value></data>
+  <data name="SteamRunningWarning" xml:space="preserve"><value>Steam è aperto.
+
+{0}
+
+Consiglio: disattiva Steam Cloud nelle proprietà di Control.
+
+Continuare comunque? L&apos;avviso non verrà ripetuto fino alla chiusura dell&apos;app.</value></data>
+  <data name="CannotOpenFolder" xml:space="preserve"><value>Impossibile aprire la cartella: {0}</value></data>
+  <data name="ProfileNameHint" xml:space="preserve"><value>Lettere, cifre, _ e - (massimo 50 caratteri).</value></data>
+  <data name="CopyCurrentSaves" xml:space="preserve"><value>Copia i salvataggi attuali del gioco</value></data>
+  <data name="EmptyProfileOption" xml:space="preserve"><value>Profilo vuoto (nuova partita)</value></data>
+  <data name="ActivateNow" xml:space="preserve"><value>Attiva subito il profilo</value></data>
+  <data name="Create" xml:space="preserve"><value>Crea</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Annulla</value></data>
+  <data name="NewProfileTitle" xml:space="preserve"><value>Nuovo profilo</value></data>
+  <data name="RenameProfileTitle" xml:space="preserve"><value>Rinomina profilo</value></data>
+  <data name="CaptionProfileName" xml:space="preserve"><value>NOME DEL PROFILO</value></data>
+  <data name="CaptionContent" xml:space="preserve"><value>CONTENUTO</value></data>
+  <data name="Rename" xml:space="preserve"><value>Rinomina</value></data>
+  <data name="InvalidNameHint" xml:space="preserve"><value>Nome non valido. {0}</value></data>
+  <data name="UseThisAccount" xml:space="preserve"><value>Usa questo account</value></data>
+  <data name="Exit" xml:space="preserve"><value>Esci</value></data>
+  <data name="AccountIntro" xml:space="preserve"><value>Su questo PC ci sono più account Steam con i salvataggi di Control.
+Quale vuoi usare? Ogni account ha profili e backup separati.</value></data>
+  <data name="CaptionSteamAccount" xml:space="preserve"><value>ACCOUNT STEAM</value></data>
+  <data name="AccountNoSaves" xml:space="preserve"><value>nessun salvataggio</value></data>
+  <data name="AccountLastSaved" xml:space="preserve"><value>ultimo salvataggio {0}</value></data>
+  <data name="Close" xml:space="preserve"><value>Chiudi</value></data>
+  <data name="CannotReadList" xml:space="preserve"><value>Impossibile leggere l&apos;elenco: {0}</value></data>
+  <data name="SavestateHint" xml:space="preserve"><value>Facoltativo, es. &quot;Prima di Ahti&quot;. Lettere, cifre, spazi, _ e -.</value></data>
+  <data name="SavestatesTitle" xml:space="preserve"><value>Savestate</value></data>
+  <data name="NoSavestates" xml:space="preserve"><value>Nessun savestate.
+Creane uno prima di un punto difficile.</value></data>
+  <data name="Restore" xml:space="preserve"><value>Ripristina</value></data>
+  <data name="Delete" xml:space="preserve"><value>Elimina</value></data>
+  <data name="OpenFolder" xml:space="preserve"><value>Apri cartella</value></data>
+  <data name="CreateSavestate" xml:space="preserve"><value>Crea savestate</value></data>
+  <data name="CaptionNewSavestate" xml:space="preserve"><value>NUOVO SAVESTATE DAI SALVATAGGI ATTUALI</value></data>
+  <data name="Unnamed" xml:space="preserve"><value>Senza nome</value></data>
+  <data name="UnnamedLower" xml:space="preserve"><value>senza nome</value></data>
+  <data name="CaptionSavestatesOf" xml:space="preserve"><value>SAVESTATE DI {0}</value></data>
+  <data name="InvalidSavestateName" xml:space="preserve"><value>Nome non valido. Lettere, cifre, spazi, _ e - (massimo 50).</value></data>
+  <data name="BusyCreatingSavestate" xml:space="preserve"><value>Creo il savestate...</value></data>
+  <data name="BusyRestoringSavestate" xml:space="preserve"><value>Ripristino il savestate...</value></data>
+  <data name="ConfirmDeleteSavestate" xml:space="preserve"><value>Eliminare il savestate {0} del {1}?
+
+L&apos;eliminazione è definitiva.</value></data>
+  <data name="BusyDeletingSavestate" xml:space="preserve"><value>Elimino il savestate...</value></data>
+  <data name="BackupsTitle" xml:space="preserve"><value>Backup</value></data>
+  <data name="NoBackups" xml:space="preserve"><value>Nessun backup.</value></data>
+  <data name="Apply" xml:space="preserve"><value>Applica</value></data>
+  <data name="KeepLast" xml:space="preserve"><value>Conserva gli ultimi</value></data>
+  <data name="KeepLastSuffix" xml:space="preserve"><value>backup  (0 = tutti)</value></data>
+  <data name="CaptionBackups" xml:space="preserve"><value>BACKUP</value></data>
+  <data name="ConfirmPrune" xml:space="preserve"><value>Verranno eliminati subito i {0} backup più vecchi.
+
+Continuare?</value></data>
+  <data name="BusySavingSetting" xml:space="preserve"><value>Salvo l&apos;impostazione...</value></data>
+  <data name="RestoreGoesToActive" xml:space="preserve"><value>Al prossimo salvataggio o cambio profilo finiranno nel profilo attivo &quot;{0}&quot;.</value></data>
+  <data name="NoActiveProfile" xml:space="preserve"><value>Non c&apos;è un profilo attivo.</value></data>
+  <data name="ConfirmRestoreBackup" xml:space="preserve"><value>Rimettere nel gioco il backup &quot;{0}&quot; del {1}?
+
+I salvataggi attuali vanno prima in un nuovo backup.
+{2}</value></data>
+  <data name="BusyRestoringBackup" xml:space="preserve"><value>Ripristino il backup...</value></data>
+  <data name="Yes" xml:space="preserve"><value>Sì</value></data>
+  <data name="No" xml:space="preserve"><value>No</value></data>
+  <data name="OK" xml:space="preserve"><value>OK</value></data>
+</root>

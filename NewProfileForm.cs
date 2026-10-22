@@ -5,7 +5,7 @@ namespace ControlSaveManager;
 /// </summary>
 internal sealed class NewProfileForm : Form
 {
-    private const string Hint = "Lettere, cifre, _ e - (massimo 50 caratteri).";
+    private static readonly string Hint = Strings.ProfileNameHint;
 
     private readonly Func<string, bool> profileExists;
 
@@ -39,7 +39,7 @@ internal sealed class NewProfileForm : Form
 
     private readonly RadioButton copyRadio = new()
     {
-        Text = "Copia i salvataggi attuali del gioco",
+        Text = Strings.CopyCurrentSaves,
         AutoSize = true,
         Checked = true,
         Margin = new Padding(0, 0, 0, 4)
@@ -47,26 +47,26 @@ internal sealed class NewProfileForm : Form
 
     private readonly RadioButton emptyRadio = new()
     {
-        Text = "Profilo vuoto (nuova partita)",
+        Text = Strings.EmptyProfileOption,
         AutoSize = true,
         Margin = new Padding(0, 0, 0, 18)
     };
 
     private readonly CheckBox activateCheck = new()
     {
-        Text = "Attiva subito il profilo",
+        Text = Strings.ActivateNow,
         AutoSize = true,
         Checked = true,
         Margin = new Padding(0)
     };
 
-    private readonly FlatButton createButton = new("Crea", ButtonKind.Primary)
+    private readonly FlatButton createButton = new(Strings.Create, ButtonKind.Primary)
     {
         DialogResult = DialogResult.OK,
         Enabled = false
     };
 
-    private readonly FlatButton cancelButton = new("Annulla")
+    private readonly FlatButton cancelButton = new(Strings.Cancel)
     {
         DialogResult = DialogResult.Cancel
     };
@@ -84,7 +84,7 @@ internal sealed class NewProfileForm : Form
         this.profileExists = profileExists;
         this.currentName = currentName;
 
-        Text = currentName == null ? "Nuovo profilo" : "Rinomina profilo";
+        Text = currentName == null ? Strings.NewProfileTitle : Strings.RenameProfileTitle;
         Icon = Theme.AppIcon;
         ShowIcon = false;
         FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -126,13 +126,13 @@ internal sealed class NewProfileForm : Form
             WrapContents = false,
             Padding = new Padding(22, 20, 22, 20)
         };
-        layout.Controls.AddRange(new Control[] { MakeCaption("NOME DEL PROFILO"), nameCard, hintLabel });
+        layout.Controls.AddRange(new Control[] { MakeCaption(Strings.CaptionProfileName), nameCard, hintLabel });
 
         if (currentName == null)
         {
             layout.Controls.AddRange(new Control[]
             {
-                MakeCaption("CONTENUTO"),
+                MakeCaption(Strings.CaptionContent),
                 copyRadio,
                 emptyRadio,
                 activateCheck
@@ -140,7 +140,7 @@ internal sealed class NewProfileForm : Form
         }
         else
         {
-            createButton.Text = "Rinomina";
+            createButton.Text = Strings.Rename;
             nameBox.Text = currentName;
             buttons.Margin = new Padding(0, 6, 0, 0);
         }
@@ -174,9 +174,9 @@ internal sealed class NewProfileForm : Form
         string error = "";
 
         if (name != "" && !SaveManager.IsValidName(name))
-            error = "Nome non valido. " + Hint;
+            error = Loc.F(Strings.InvalidNameHint, Hint);
         else if (name != "" && profileExists(name) && !IsCurrentName(name))
-            error = "Esiste già un profilo con questo nome.";
+            error = Strings.ProfileExists;
 
         hintLabel.Text = error == "" ? Hint : error;
         hintLabel.ForeColor = error == "" ? Theme.TextMuted : Theme.Error;
