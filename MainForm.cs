@@ -252,7 +252,7 @@ internal sealed class MainForm : Form
         // L'ultimo aggiunto viene ancorato per primo.
         Controls.Add(root);
         Controls.Add(statusBar);
-        Controls.Add(new HeaderPanel("CONTROL", "SAVE MANAGER"));
+        Controls.Add(new HeaderPanel("CONTROL", "SAVE MANAGER  ·  v" + Program.Version));
     }
 
     private static Label MakeLabel(Font font, Color color)

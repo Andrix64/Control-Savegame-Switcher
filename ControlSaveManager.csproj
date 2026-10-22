@@ -9,7 +9,19 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <!-- I test hanno il loro progetto. -->
-    <DefaultItemExcludes>$(DefaultItemExcludes);tests/**</DefaultItemExcludes>
+    <DefaultItemExcludes>$(DefaultItemExcludes);tests/**;dist/**;scripts/**</DefaultItemExcludes>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Dati del prodotto: compaiono nelle proprietà dell'exe. Version è l'unica da cambiare a ogni rilascio. -->
+    <Version>0.9.0</Version>
+    <Product>Control Save Manager</Product>
+    <AssemblyTitle>Control Save Manager</AssemblyTitle>
+    <Description>Gestione di più profili di salvataggio per Control (Steam).</Description>
+    <Company>Andrix64</Company>
+    <Authors>Andrix64</Authors>
+    <Copyright>© 2026 Andrix64</Copyright>
+    <NeutralLanguage>it-IT</NeutralLanguage>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">

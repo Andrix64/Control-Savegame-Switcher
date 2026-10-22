@@ -41,12 +41,13 @@ I bug noti sono in [BUG_NOTI.md](BUG_NOTI.md).
   pulsante "Ripristina".
 - [x] **Rinominare ed eliminare i profili** dalla finestra.
 - [x] **Più account Steam.** Chiedere quale usare se ce n'è più di uno (bug 13).
-- [x] **Test nel repository.** Progetto xUnit con i test su cartelle finte
-  (oggi sono fuori dal repo) e GitHub Actions che compila e li esegue.
-  Fatto in `tests/ControlSaveManager.Tests` e `.github/workflows/build.yml`;
-  il workflow girerà quando il repository sarà su GitHub.
-- [ ] **Pubblicazione.** Exe singolo, versione, nome prodotto e copyright nel
-  `.csproj`, zip di rilascio.
+- [x] **Test nel repository.** Progetto xUnit con i test su cartelle finte in
+  `tests/ControlSaveManager.Tests`. Niente CI: il repository è su Forgejo
+  senza runner, i test girano a mano e in `scripts\release.ps1`.
+- [x] **Pubblicazione.** Exe singolo, versione, nome prodotto e copyright nel
+  `.csproj`, zip di rilascio. Fatto: profilo `win-x64` (exe singolo con il
+  runtime incluso) e `scripts\release.ps1`; lo zip si carica a mano nelle
+  Release di Forgejo.
 
 ## Rifiniture
 

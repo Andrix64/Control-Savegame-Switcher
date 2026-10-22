@@ -89,7 +89,10 @@ che non rispettano la regola vengono ignorate.
 | `Theme.cs` | Colori, caratteri e icona del tema scuro. |
 | `ThemedControls.cs` | Controlli disegnati a mano: pulsanti, schede, intestazione, barra di stato. |
 | `app.ico` | Icona dell'exe e delle finestre. |
-| `Program.cs` | Avvio dell'applicazione. |
+| `Program.cs` | Avvio dell'applicazione e versione. |
+| `Properties\PublishProfiles\win-x64.pubxml` | Profilo di pubblicazione dell'exe singolo. |
+| `scripts\release.ps1` | Crea lo zip di rilascio. |
+| `tests\ControlSaveManager.Tests\` | Test xUnit. |
 
 La vecchia versione da console è nella cronologia git (commit `17cd279`).
 
@@ -101,9 +104,43 @@ Richiede .NET 10 SDK.
 dotnet build ControlSaveManager.csproj -c Release
 ```
 
+Exe singolo per Windows a 64 bit, con il runtime .NET incluso (chi lo usa non
+deve installare nulla, circa 50 MB), in `bin\publish\win-x64\`:
+
 ```bash
-dotnet publish ControlSaveManager.csproj -c Release
+dotnet publish ControlSaveManager.csproj -p:PublishProfile=win-x64
 ```
+
+## Rilascio
+
+1. Aggiorna `<Version>` in `ControlSaveManager.csproj` e fai il commit. La
+   versione compare nell'intestazione della finestra, nelle proprietà
+   dell'exe e nel registro.
+2. Crea lo zip:
+
+   ```bash
+   powershell -ExecutionPolicy Bypass -File scripts/release.ps1
+   ```
+
+   Lo script rifiuta di partire con modifiche non committate, esegue i test,
+   pubblica l'exe e crea in `dist\` lo zip `ControlSaveManager-<versione>-win-x64.zip`
+   (exe e README) con il file `.sha256`.
+3. Crea il tag della versione e mandalo su Forgejo:
+
+   ```bash
+   git tag v0.9.0
+   ```
+
+   ```bash
+   git push origin main v0.9.0
+   ```
+
+4. Su Forgejo, in **Release → Nuova release**, scegli il tag, allega lo zip
+   e il file `.sha256` da `dist\` e pubblica. Non c'è CI: tutto il rilascio
+   (test compresi) passa dallo script in locale.
+
+L'exe non è firmato: Smart App Control e SmartScreen possono bloccarlo o
+avvisare sui PC di chi lo scarica (vedi Avvertenze e la firma nel TODO).
 
 ## Test
 
@@ -116,9 +153,9 @@ degli account. Il registro dei test va in `%TEMP%\csm_test_log.txt`.
 dotnet test tests/ControlSaveManager.Tests
 ```
 
-Le finestre non sono coperte dai test. GitHub Actions
-(`.github/workflows/build.yml`) compila ed esegue i test a ogni push su `main`
-e a ogni pull request, su un runner Windows.
+Le finestre non sono coperte dai test. Non c'è CI (il repository è su
+Forgejo senza runner): i test si eseguono a mano e comunque da
+`scripts\release.ps1` prima di ogni rilascio.
 
 ## Avvertenze
 

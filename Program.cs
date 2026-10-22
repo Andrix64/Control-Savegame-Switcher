@@ -4,6 +4,12 @@ internal static class Program
 {
     private const string Title = "Control Save Manager";
 
+    /// <summary>
+    /// Versione dell'app (es. "0.9.0"), dal tag Version del .csproj.
+    /// </summary>
+    public static string Version { get; } =
+        typeof(Program).Assembly.GetName().Version?.ToString(3) ?? "";
+
     [STAThread]
     static void Main()
     {
@@ -27,7 +33,7 @@ internal static class Program
 
         ApplicationConfiguration.Initialize();
 
-        Log.Write("Avvio");
+        Log.Write("Avvio versione " + Version);
 
         Result<SaveManager> init = SaveManager.Initialize(AccountForm.Choose);
 
