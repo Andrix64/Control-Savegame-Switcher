@@ -7,23 +7,23 @@ I bug noti sono in [BUG_NOTI.md](BUG_NOTI.md).
 
 - [ ] **Firma del codice.** Senza firma Smart App Control e SmartScreen bloccano
   o avvisano chi scarica l'exe. Opzione più economica: Azure Trusted Signing.
-- [ ] **Attivazione in due passaggi.** Copiare il profilo in una cartella
+- [x] **Attivazione in due passaggi.** Copiare il profilo in una cartella
   temporanea accanto a quella del gioco, verificarla e poi scambiare le
   cartelle, invece di cancellare e copiare direttamente. Stesso schema per
   "Salva progressi".
-- [ ] **Verifica dopo la copia.** Usare `FileOps.FoldersAreEqual` dopo ogni
+- [x] **Verifica dopo la copia.** Usare `FileOps.FoldersAreEqual` dopo ogni
   copia; se non coincide, ripristinare il backup.
-- [ ] **Scrittura sicura di `stato.ini`.** Scrivere un file temporaneo e poi
+- [x] **Scrittura sicura di `stato.ini`.** Scrivere un file temporaneo e poi
   sostituirlo, così un'interruzione non lo lascia vuoto.
-- [ ] **Una sola istanza.** `Mutex` all'avvio per impedire due finestre aperte
+- [x] **Una sola istanza.** `Mutex` all'avvio per impedire due finestre aperte
   che lavorano sugli stessi file.
-- [ ] **Errori imprevisti e registro.** Gestore globale delle eccezioni con
+- [x] **Errori imprevisti e registro.** Gestore globale delle eccezioni con
   messaggio comprensibile; file `ControlSaves\log.txt` con ogni operazione
   (data, profilo, backup, esito).
 
 ## Importante
 
-- [ ] **Savestate senza cambiare profilo.** Salvare un'istantanea dei
+- [x] **Savestate senza cambiare profilo.** Salvare un'istantanea dei
   salvataggi attuali del gioco (per esempio prima di un boss) senza
   attivare un altro profilo e senza sovrascrivere il profilo attivo.
   - Pulsante "Crea savestate" con un nome facoltativo (es. "Prima di Ahti").
@@ -34,9 +34,10 @@ I bug noti sono in [BUG_NOTI.md](BUG_NOTI.md).
     rimette nella cartella del gioco (con backup prima, come le altre
     operazioni) ed "Elimina".
   - Si può riusare la logica di backup e ripristino del punto successivo.
-- [ ] **Pulizia dei backup.** Tenere per esempio gli ultimi 20 o quelli degli
-  ultimi 30 giorni, impostabile (bug 12).
-- [ ] **Ripristinare un backup dall'app.** Elenco dei backup con data e motivo,
+- [x] **Pulizia dei backup.** Tenere per esempio gli ultimi 20 o quelli degli
+  ultimi 30 giorni, impostabile (bug 12). Fatto con "ultimi N" (predefinito 20,
+  0 = tutti), impostabile dalla finestra Backup.
+- [x] **Ripristinare un backup dall'app.** Elenco dei backup con data e motivo,
   pulsante "Ripristina".
 - [ ] **Rinominare ed eliminare i profili** dalla finestra.
 - [ ] **Più account Steam.** Chiedere quale usare se ce n'è più di uno (bug 13).

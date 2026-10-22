@@ -2,7 +2,7 @@ namespace ControlSaveManager;
 
 /// <summary>
 /// Copia e sincronizzazione di cartelle.
-/// Entrambi i metodi lanciano un'eccezione al primo errore, anche nelle
+/// I metodi di copia lanciano un'eccezione al primo errore, anche nelle
 /// sottocartelle, così un backup incompleto non viene mai considerato riuscito.
 /// </summary>
 internal static class FileOps
@@ -92,6 +92,138 @@ internal static class FileOps
                 continue;
 
             MirrorFolder(dir, Path.Combine(destination, name));
+        }
+    }
+
+    /// <summary>
+    /// Copia source in destination e controlla che la copia coincida.
+    /// </summary>
+    public static void CopyFolderVerified(string source, string destination)
+    {
+        CopyFolder(source, destination);
+        Verify(source, destination);
+    }
+
+    /// <summary>
+    /// Rende destination identica a source in due passaggi: copia source in una
+    /// cartella temporanea accanto a destination, la verifica e poi scambia le
+    /// cartelle. Se qualcosa va storto prima dello scambio, destination resta
+    /// com'era. Il file di Steam Cloud e le cartelle escluse di destination
+    /// vengono conservati.
+    /// </summary>
+    public static void ReplaceFolder(string source, string destination)
+    {
+        string temp = destination + ".nuovo";
+        string old = destination + ".vecchio";
+
+        // Un'interruzione tra i due spostamenti lascia solo la cartella vecchia.
+        if (!Directory.Exists(destination) && Directory.Exists(old))
+            Directory.Move(old, destination);
+
+        DeleteIfExists(temp);
+        DeleteIfExists(old);
+
+        try
+        {
+            CopyFolder(source, temp);
+
+            if (Directory.Exists(destination))
+                CopyExcluded(destination, temp);
+
+            Verify(source, temp);
+
+            if (!Directory.Exists(destination))
+            {
+                Directory.Move(temp, destination);
+                return;
+            }
+
+            try
+            {
+                Directory.Move(destination, old);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                // Cartella in uso (per esempio da Steam): copia diretta dalla
+                // copia già verificata.
+                MirrorFolder(temp, destination);
+                Verify(source, destination);
+                return;
+            }
+
+            try
+            {
+                Directory.Move(temp, destination);
+            }
+            catch
+            {
+                Directory.Move(old, destination);
+                throw;
+            }
+
+            TryDelete(old);
+        }
+        finally
+        {
+            TryDelete(temp);
+        }
+    }
+
+    private static void Verify(string source, string destination)
+    {
+        if (!FoldersAreEqual(source, destination))
+            throw new IOException("La copia non coincide con l'originale: " + destination);
+    }
+
+    /// <summary>
+    /// Copia nella destinazione il file di Steam Cloud e le cartelle escluse
+    /// che si trovano al primo livello di source.
+    /// </summary>
+    private static void CopyExcluded(string source, string destination)
+    {
+        string cache = Path.Combine(source, SteamCacheFile);
+
+        if (File.Exists(cache))
+            File.Copy(cache, Path.Combine(destination, SteamCacheFile), true);
+
+        foreach (string dir in Directory.GetDirectories(source))
+        {
+            string name = Path.GetFileName(dir);
+
+            if (IsExcluded(name))
+                CopyAll(dir, Path.Combine(destination, name));
+        }
+    }
+
+    /// <summary>
+    /// Copia tutto, senza esclusioni.
+    /// </summary>
+    private static void CopyAll(string source, string destination)
+    {
+        Directory.CreateDirectory(destination);
+
+        foreach (string file in Directory.GetFiles(source))
+            File.Copy(file, Path.Combine(destination, Path.GetFileName(file)), true);
+
+        foreach (string dir in Directory.GetDirectories(source))
+            CopyAll(dir, Path.Combine(destination, Path.GetFileName(dir)));
+    }
+
+    private static void DeleteIfExists(string path)
+    {
+        if (Directory.Exists(path))
+            Directory.Delete(path, true);
+    }
+
+    private static void TryDelete(string path)
+    {
+        try
+        {
+            DeleteIfExists(path);
+        }
+        catch
+        {
+            // Resta una cartella temporanea: viene eliminata alla prossima operazione.
         }
     }
 

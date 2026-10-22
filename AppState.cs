@@ -13,6 +13,13 @@ public sealed class AppState
     public string ActiveSince { get; set; } = "";
     public string LastSaved { get; set; } = "";
 
+    /// <summary>
+    /// Quanti backup conservare (i più recenti). 0 = tutti.
+    /// </summary>
+    public int BackupsToKeep { get; set; } = DefaultBackupsToKeep;
+
+    public const int DefaultBackupsToKeep = 20;
+
     public AppState(string path)
     {
         this.path = path;
@@ -23,6 +30,7 @@ public sealed class AppState
         ActiveProfile = "";
         ActiveSince = "";
         LastSaved = "";
+        BackupsToKeep = DefaultBackupsToKeep;
 
         if (!File.Exists(path))
             return;
@@ -49,21 +57,37 @@ public sealed class AppState
                 case "SalvatoIl":
                     LastSaved = value;
                     break;
+
+                case "BackupDaConservare":
+                    if (int.TryParse(value, out int keep) && keep >= 0)
+                        BackupsToKeep = keep;
+                    break;
             }
         }
     }
 
     /// <summary>
     /// Scrive lo stato su disco. Lancia un'eccezione in caso di errore.
+    /// Scrive prima un file temporaneo e poi sostituisce stato.ini, così
+    /// un'interruzione non lo lascia vuoto o a metà.
     /// </summary>
     public void Save()
     {
-        File.WriteAllLines(path, new[]
+        string temp = path + ".tmp";
+
+        using (FileStream stream = new(temp, FileMode.Create, FileAccess.Write))
+        using (StreamWriter writer = new(stream))
         {
-            "ProfiloAttivo=" + Format(ActiveProfile),
-            "AttivatoIl=" + Format(ActiveSince),
-            "SalvatoIl=" + Format(LastSaved)
-        });
+            writer.WriteLine("ProfiloAttivo=" + Format(ActiveProfile));
+            writer.WriteLine("AttivatoIl=" + Format(ActiveSince));
+            writer.WriteLine("SalvatoIl=" + Format(LastSaved));
+            writer.WriteLine("BackupDaConservare=" + BackupsToKeep);
+
+            writer.Flush();
+            stream.Flush(flushToDisk: true);
+        }
+
+        File.Move(temp, path, overwrite: true);
     }
 
     private static string Format(string value)

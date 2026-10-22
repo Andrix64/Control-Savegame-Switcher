@@ -38,7 +38,9 @@ internal sealed class MainForm : Form
 
     private readonly FlatButton activateButton = new("Attiva profilo", ButtonKind.Primary);
     private readonly FlatButton saveButton = new("Salva progressi");
+    private readonly FlatButton savestateButton = new("Savestate...");
     private readonly FlatButton newButton = new("Nuovo profilo...");
+    private readonly FlatButton backupButton = new("Backup...", ButtonKind.Ghost);
     private readonly FlatButton folderButton = new("Apri cartella profili", ButtonKind.Ghost);
 
     private readonly StatusBar statusBar = new();
@@ -49,6 +51,7 @@ internal sealed class MainForm : Form
     private bool busy;
     private bool gameRunning;
     private bool checkingGame;
+    private bool steamWarningAccepted;
     private string lastMessage = "Pronto.";
     private StatusKind lastKind = StatusKind.Info;
 
@@ -63,8 +66,8 @@ internal sealed class MainForm : Form
         Font = Theme.Base;
         BackColor = Theme.Background;
         ForeColor = Theme.Text;
-        ClientSize = new Size(620, 520);
-        MinimumSize = new Size(540, 480);
+        ClientSize = new Size(620, 600);
+        MinimumSize = new Size(540, 560);
 
         BuildLayout();
 
@@ -81,6 +84,8 @@ internal sealed class MainForm : Form
         activateButton.Click += ActivateClicked;
         saveButton.Click += SaveClicked;
         newButton.Click += NewClicked;
+        savestateButton.Click += (_, _) => ShowListDialog(new SavestateForm(manager, ConfirmSteamClosed));
+        backupButton.Click += (_, _) => ShowListDialog(new BackupForm(manager, ConfirmSteamClosed));
         folderButton.Click += (_, _) => OpenFolder(manager.ProfilesPath);
 
         gameTimer.Tick += async (_, _) => await CheckGameAsync();
@@ -165,14 +170,18 @@ internal sealed class MainForm : Form
             Margin = new Padding(16, 0, 0, 0)
         };
 
-        foreach (FlatButton button in new[] { activateButton, saveButton, newButton, folderButton })
+        foreach (FlatButton button in new[]
+                 {
+                     activateButton, saveButton, savestateButton, newButton, backupButton, folderButton
+                 })
         {
             button.Size = new Size(190, 40);
             button.Margin = new Padding(0, 0, 0, 10);
             buttons.Controls.Add(button);
         }
 
-        folderButton.Margin = new Padding(0, 14, 0, 0);
+        backupButton.Margin = new Padding(0, 14, 0, 4);
+        folderButton.Margin = new Padding(0);
 
         var root = new TableLayoutPanel
         {
@@ -372,7 +381,9 @@ internal sealed class MainForm : Form
 
         activateButton.Enabled = canAct && selected != null && !selected.Active;
         saveButton.Enabled = canAct && manager.HasActiveProfile;
+        savestateButton.Enabled = canAct && manager.HasActiveProfile;
         newButton.Enabled = canAct;
+        backupButton.Enabled = canAct;
 
         if (gameRunning && !busy)
             statusBar.SetStatus("Control è in esecuzione: chiudilo per cambiare o salvare.", StatusKind.Warning);
@@ -419,83 +430,56 @@ internal sealed class MainForm : Form
         if (profileList.SelectedItem is not ProfileItem item)
             return;
 
-        await ActivateAsync(item.FolderName, confirm: true);
+        await ActivateAsync(item.FolderName);
     }
 
     /// <summary>
-    /// Attiva un profilo, offrendo prima di salvare i progressi non salvati
-    /// del profilo attivo.
+    /// Attiva un profilo senza chiedere conferme: se i salvataggi del gioco
+    /// contengono progressi non salvati, li salva prima nel profilo attivo.
+    /// Entrambe le operazioni fanno un backup.
     /// </summary>
-    /// <param name="confirm">
-    /// Chiede conferma anche quando non ci sono progressi da salvare.
-    /// </param>
-    private async Task ActivateAsync(string profileName, bool confirm)
+    private async Task ActivateAsync(string profileName)
     {
-        string name = SaveManager.ProfileDisplayName(profileName);
-        bool saveFirst = false;
-
-        if (await CheckUnsavedProgressAsync())
-        {
-            string active = SaveManager.ProfileDisplayName(manager.State.ActiveProfile);
-
-            DialogResult answer = MessageBox.Show(this,
-                $"I salvataggi del gioco contengono progressi non salvati nel profilo \"{active}\".\n\n" +
-                $"Salvarli in \"{active}\" prima di attivare \"{name}\"?\n\n" +
-                "Sì: salva i progressi, poi attiva.\n" +
-                "No: attiva senza salvare (i progressi restano solo nel backup).\n" +
-                "Annulla: non fare nulla.",
-                Text, MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
-
-            if (answer == DialogResult.Cancel)
-                return;
-
-            saveFirst = answer == DialogResult.Yes;
-        }
-        else if (confirm &&
-                 !Ask($"Attivare il profilo \"{name}\"?\n\n" +
-                      "I salvataggi attuali del gioco verranno sostituiti.\n" +
-                      "Prima viene creato un backup."))
-        {
-            return;
-        }
-
         if (!ConfirmSteamClosed())
             return;
 
-        if (saveFirst)
+        string name = SaveManager.ProfileDisplayName(profileName);
+        string active = SaveManager.ProfileDisplayName(manager.State.ActiveProfile);
+
+        Result result = await RunBusyAsync($"Attivo \"{name}\"...", () =>
         {
-            Result saved = await RunBusyAsync("Salvo i progressi...",
-                () => manager.SaveProgress());
+            bool saved = false;
 
-            ShowResult(saved);
+            if (manager.HasUnsavedProgress())
+            {
+                Result save = manager.SaveProgress();
 
-            if (!saved.Success)
-                return;
-        }
+                if (!save.Success)
+                {
+                    return save with
+                    {
+                        Message = $"Profilo non cambiato: salvataggio di \"{active}\" non riuscito.\n" +
+                                  save.Message
+                    };
+                }
 
-        Result result = await RunBusyAsync("Attivo il profilo...",
-            () => manager.ActivateProfile(profileName));
+                saved = true;
+            }
+
+            Result activation = manager.ActivateProfile(profileName);
+
+            if (!activation.Success)
+                return activation;
+
+            return activation with
+            {
+                Message = saved
+                    ? $"Progressi salvati in \"{active}\". Profilo \"{name}\" attivato."
+                    : $"Profilo \"{name}\" attivato."
+            };
+        });
 
         ShowResult(result);
-    }
-
-    private async Task<bool> CheckUnsavedProgressAsync()
-    {
-        string previousMessage = lastMessage;
-        StatusKind previousKind = lastKind;
-
-        busy = true;
-        SetStatus("Controllo i progressi...", StatusKind.Busy);
-
-        try
-        {
-            return await Task.Run(manager.HasUnsavedProgress);
-        }
-        finally
-        {
-            busy = false;
-            SetStatus(previousMessage, previousKind);
-        }
     }
 
     private async void SaveClicked(object? sender, EventArgs e)
@@ -515,11 +499,6 @@ internal sealed class MainForm : Form
                 return;
 
             allowEmpty = true;
-        }
-        else if (!Ask($"Sovrascrivere il profilo \"{name}\" con i salvataggi attuali del gioco?\n\n" +
-                      "Prima viene creato un backup del profilo."))
-        {
-            return;
         }
 
         if (!ConfirmSteamClosed())
@@ -555,7 +534,22 @@ internal sealed class MainForm : Form
         SelectProfile(profileName);
 
         if (activate)
-            await ActivateAsync(profileName, confirm: false);
+            await ActivateAsync(profileName);
+    }
+
+    /// <summary>
+    /// Apre la finestra dei savestate o dei backup e poi aggiorna la finestra.
+    /// </summary>
+    private void ShowListDialog(ListDialog dialog)
+    {
+        using (dialog)
+            dialog.ShowDialog(this);
+
+        if (dialog.Changed)
+        {
+            SetStatus("Pronto.", StatusKind.Info);
+            RefreshAll();
+        }
     }
 
     /// <summary>
@@ -572,7 +566,9 @@ internal sealed class MainForm : Form
         }
         catch (Exception ex)
         {
-            return Result.Fail("Errore imprevisto: " + ex.Message);
+            Log.Write("Errore imprevisto (" + message + ")", ex);
+            return Result.Fail("Errore imprevisto: " + ex.Message +
+                               "\nI dettagli sono nel registro:\n" + Log.FilePath);
         }
         finally
         {
@@ -611,16 +607,22 @@ internal sealed class MainForm : Form
             OpenFolder(result.BackupPath);
     }
 
+    /// <summary>
+    /// Avvisa che Steam è aperto, una sola volta per sessione.
+    /// </summary>
     private bool ConfirmSteamClosed()
     {
-        if (!SaveManager.IsSteamRunning())
+        if (steamWarningAccepted || !SaveManager.IsSteamRunning())
             return true;
 
-        return Ask("Steam è aperto.\n\n" +
-                   "Se Steam Cloud è attivo per Control, potrebbe sovrascrivere " +
-                   "i salvataggi dopo l'operazione.\n\n" +
-                   "Continuare comunque?",
-                   MessageBoxIcon.Warning);
+        steamWarningAccepted = Ask("Steam è aperto.\n\n" +
+                                   "Se Steam Cloud è attivo per Control, potrebbe sovrascrivere " +
+                                   "i salvataggi dopo l'operazione.\n\n" +
+                                   "Continuare comunque? L'avviso non verrà ripetuto fino alla " +
+                                   "chiusura dell'app.",
+                                   MessageBoxIcon.Warning);
+
+        return steamWarningAccepted;
     }
 
     private bool Ask(string question, MessageBoxIcon icon = MessageBoxIcon.Question)
