@@ -4,10 +4,13 @@ namespace ControlSaveManager;
 /// Copia e sincronizzazione di cartelle.
 /// I metodi di copia lanciano un'eccezione al primo errore, anche nelle
 /// sottocartelle, così un backup incompleto non viene mai considerato riuscito.
+/// L'unica eccezione è il file di Steam Cloud al primo livello della cartella.
 /// </summary>
 internal static class FileOps
 {
-    // File di Steam Cloud: non va mai copiato né cancellato.
+    // File di Steam Cloud, al primo livello della cartella del gioco: non va mai
+    // copiato né cancellato. Un file con lo stesso nome più in basso è un file
+    // come gli altri.
     private const string SteamCacheFile = "remotecache.vdf";
 
     // Cartelle accanto alla destinazione durante ReplaceFolder.
@@ -19,27 +22,25 @@ internal static class FileOps
         if (!Directory.Exists(source))
             throw new DirectoryNotFoundException("Cartella non trovata: " + source);
 
+        CopyFolder(source, destination, topLevel: true);
+    }
+
+    private static void CopyFolder(string source, string destination, bool topLevel)
+    {
         Directory.CreateDirectory(destination);
 
         foreach (string file in Directory.GetFiles(source))
         {
             string name = Path.GetFileName(file);
 
-            if (name == SteamCacheFile)
+            if (IsSteamCache(name, topLevel))
                 continue;
 
             File.Copy(file, Path.Combine(destination, name), true);
         }
 
         foreach (string dir in Directory.GetDirectories(source))
-        {
-            string name = Path.GetFileName(dir);
-
-            if (IsExcluded(name))
-                continue;
-
-            CopyFolder(dir, Path.Combine(destination, name));
-        }
+            CopyFolder(dir, Path.Combine(destination, Path.GetFileName(dir)), topLevel: false);
     }
 
     /// <summary>
@@ -50,6 +51,11 @@ internal static class FileOps
         if (!Directory.Exists(source))
             throw new DirectoryNotFoundException("Cartella non trovata: " + source);
 
+        MirrorFolder(source, destination, topLevel: true);
+    }
+
+    private static void MirrorFolder(string source, string destination, bool topLevel)
+    {
         Directory.CreateDirectory(destination);
 
         // Elimina i file che non esistono più nella sorgente.
@@ -57,7 +63,7 @@ internal static class FileOps
         {
             string name = Path.GetFileName(file);
 
-            if (name == SteamCacheFile)
+            if (IsSteamCache(name, topLevel))
                 continue;
 
             if (!File.Exists(Path.Combine(source, name)))
@@ -67,12 +73,7 @@ internal static class FileOps
         // Elimina le cartelle non presenti nella sorgente.
         foreach (string dir in Directory.GetDirectories(destination))
         {
-            string name = Path.GetFileName(dir);
-
-            if (IsExcluded(name))
-                continue;
-
-            if (!Directory.Exists(Path.Combine(source, name)))
+            if (!Directory.Exists(Path.Combine(source, Path.GetFileName(dir))))
                 Directory.Delete(dir, true);
         }
 
@@ -81,7 +82,7 @@ internal static class FileOps
         {
             string name = Path.GetFileName(file);
 
-            if (name == SteamCacheFile)
+            if (IsSteamCache(name, topLevel))
                 continue;
 
             File.Copy(file, Path.Combine(destination, name), true);
@@ -89,14 +90,7 @@ internal static class FileOps
 
         // Sincronizza le sottocartelle.
         foreach (string dir in Directory.GetDirectories(source))
-        {
-            string name = Path.GetFileName(dir);
-
-            if (IsExcluded(name))
-                continue;
-
-            MirrorFolder(dir, Path.Combine(destination, name));
-        }
+            MirrorFolder(dir, Path.Combine(destination, Path.GetFileName(dir)), topLevel: false);
     }
 
     /// <summary>
@@ -112,8 +106,7 @@ internal static class FileOps
     /// Rende destination identica a source in due passaggi: copia source in una
     /// cartella temporanea accanto a destination, la verifica e poi scambia le
     /// cartelle. Se qualcosa va storto prima dello scambio, destination resta
-    /// com'era. Il file di Steam Cloud e le cartelle escluse di destination
-    /// vengono conservati.
+    /// com'era. Il file di Steam Cloud di destination viene conservato.
     /// </summary>
     public static void ReplaceFolder(string source, string destination)
     {
@@ -130,7 +123,7 @@ internal static class FileOps
             CopyFolder(source, temp);
 
             if (Directory.Exists(destination))
-                CopyExcluded(destination, temp);
+                CopySteamCache(destination, temp);
 
             Verify(source, temp);
 
@@ -215,23 +208,14 @@ internal static class FileOps
     }
 
     /// <summary>
-    /// Copia nella destinazione il file di Steam Cloud e le cartelle escluse
-    /// che si trovano al primo livello di source.
+    /// Copia nella destinazione il file di Steam Cloud di source, se c'è.
     /// </summary>
-    private static void CopyExcluded(string source, string destination)
+    private static void CopySteamCache(string source, string destination)
     {
         string cache = Path.Combine(source, SteamCacheFile);
 
         if (File.Exists(cache))
             File.Copy(cache, Path.Combine(destination, SteamCacheFile), true);
-
-        foreach (string dir in Directory.GetDirectories(source))
-        {
-            string name = Path.GetFileName(dir);
-
-            if (IsExcluded(name))
-                CopyAll(dir, Path.Combine(destination, name));
-        }
     }
 
     /// <summary>
@@ -290,24 +274,31 @@ internal static class FileOps
         if (!Directory.Exists(path))
             return true;
 
+        string cache = Path.Combine(path, SteamCacheFile);
+
         return !Directory
             .EnumerateFiles(path, "*", SearchOption.AllDirectories)
-            .Any(file => Path.GetFileName(file) != SteamCacheFile);
+            .Any(file => !string.Equals(file, cache, StringComparison.OrdinalIgnoreCase));
     }
 
     /// <summary>
     /// true se le due cartelle contengono gli stessi file con lo stesso contenuto,
-    /// con le stesse esclusioni di CopyFolder e MirrorFolder.
+    /// a parte il file di Steam Cloud al primo livello, come CopyFolder e MirrorFolder.
     /// </summary>
     public static bool FoldersAreEqual(string first, string second)
     {
         if (!Directory.Exists(first) || !Directory.Exists(second))
             return Directory.Exists(first) == Directory.Exists(second);
 
-        List<string> files = ListNames(Directory.GetFiles(first), name => name != SteamCacheFile);
+        return FoldersAreEqual(first, second, topLevel: true);
+    }
+
+    private static bool FoldersAreEqual(string first, string second, bool topLevel)
+    {
+        List<string> files = ListNames(Directory.GetFiles(first), name => !IsSteamCache(name, topLevel));
 
         if (!files.SequenceEqual(
-                ListNames(Directory.GetFiles(second), name => name != SteamCacheFile),
+                ListNames(Directory.GetFiles(second), name => !IsSteamCache(name, topLevel)),
                 StringComparer.OrdinalIgnoreCase))
             return false;
 
@@ -317,15 +308,15 @@ internal static class FileOps
                 return false;
         }
 
-        List<string> dirs = ListNames(Directory.GetDirectories(first), name => !IsExcluded(name));
+        List<string> dirs = ListNames(Directory.GetDirectories(first), _ => true);
 
         if (!dirs.SequenceEqual(
-                ListNames(Directory.GetDirectories(second), name => !IsExcluded(name)),
+                ListNames(Directory.GetDirectories(second), _ => true),
                 StringComparer.OrdinalIgnoreCase))
             return false;
 
         return dirs.All(name =>
-            FoldersAreEqual(Path.Combine(first, name), Path.Combine(second, name)));
+            FoldersAreEqual(Path.Combine(first, name), Path.Combine(second, name), topLevel: false));
     }
 
     private static List<string> ListNames(string[] paths, Func<string, bool> include)
@@ -363,8 +354,8 @@ internal static class FileOps
         }
     }
 
-    private static bool IsExcluded(string name)
+    private static bool IsSteamCache(string name, bool topLevel)
     {
-        return name == "Backup" || name == "Profili" || name.StartsWith("Profilo_");
+        return topLevel && string.Equals(name, SteamCacheFile, StringComparison.OrdinalIgnoreCase);
     }
 }

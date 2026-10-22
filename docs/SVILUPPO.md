@@ -39,7 +39,10 @@ quale usare (nome letto da `userdata\<IDAccount>\config\localconfig.vdf`) e
 preseleziona l'ultimo scelto. Ogni account ha profili, backup e savestate
 separati.
 
-Il file `remotecache.vdf` di Steam non viene mai copiato né cancellato.
+Il file `remotecache.vdf` di Steam, al primo livello della cartella del gioco,
+non viene mai copiato né cancellato. Tutto il resto viene copiato e verificato,
+a qualsiasi profondità: non ci sono altre esclusioni (un file con lo stesso
+nome più in basso è un salvataggio come gli altri).
 
 ## Sicurezza delle copie
 
@@ -61,8 +64,15 @@ Il file `remotecache.vdf` di Steam non viene mai copiato né cancellato.
 - Un account viene riconosciuto se ha la cartella `870780`, anche senza
   `remote` (che manca dopo aver attivato un profilo creato a mano).
 - Una sola istanza dell'app alla volta (`Mutex`).
-- Tutte le operazioni sono bloccate mentre Control è in esecuzione: la finestra
-  lo controlla ogni 2 secondi.
+- Tutte le operazioni che toccano i salvataggi del gioco sono bloccate mentre
+  Control è in esecuzione, sia nella logica (`IsGameRunning` in ogni operazione)
+  sia nell'interfaccia: la finestra principale e le finestre Savestate e Backup
+  lo controllano ogni 2 secondi e disattivano i pulsanti. Il launcher si chiama
+  `Control.exe` come il Pannello di controllo: si scarta quello nella cartella
+  di Windows, e se il percorso non è leggibile (processo avviato come
+  amministratore) nel dubbio conta come gioco aperto.
+- All'avvio la finestra principale segnala nella barra di stato (e nel
+  registro) le cartelle in `Profili` ignorate perché il nome non è valido.
 
 ## Formati
 
@@ -167,7 +177,8 @@ Per il debug in VS Code ci sono `.vscode\launch.json` e `.vscode\tasks.json`.
 Test xUnit in `tests/ControlSaveManager.Tests`: lavorano su cartelle finte in
 `%TEMP%` (non toccano Steam né i dati veri dell'app) e coprono copie e
 scambio delle cartelle, profili, savestate, backup, `stato.ini`, Steam Cloud,
-account, recupero delle operazioni interrotte, spostamento dei dati da
+account, recupero delle operazioni interrotte, rilevamento del launcher,
+spostamento dei dati da
 Documenti e testi tradotti. Il registro dei
 test va in `%TEMP%\csm_test_log.txt`.
 I test girano in italiano qualunque sia la lingua di Windows.

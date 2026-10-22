@@ -17,6 +17,8 @@ Prima versione distribuita.
   Un profilo eliminato finisce tra i backup e si può ancora ripristinare.
 - Se sul PC ci sono più account Steam con Control, all'avvio si sceglie quale
   usare.
+- Le cartelle in `Profili` con un nome non valido vengono segnalate all'avvio
+  invece di essere ignorate in silenzio.
 
 ### Savestate e backup
 
@@ -33,7 +35,8 @@ Prima versione distribuita.
 - Sostituzione in due passaggi: i nuovi salvataggi vengono preparati e
   verificati in una cartella a parte prima dello scambio; in caso di errore si
   ripristina il backup.
-- Operazioni bloccate mentre Control è aperto; una sola istanza dell'app.
+- Operazioni bloccate mentre Control è aperto, anche nelle finestre Savestate
+  e Backup; una sola istanza dell'app.
 - Dati (profili, savestate, backup, registro) in
   `%LOCALAPPDATA%\ControlSaveManager`, che OneDrive non sincronizza. I dati
   delle versioni di prova in `Documenti\ControlSaves` vengono spostati da soli

@@ -234,4 +234,5 @@ a:
 {2}
 
 L&apos;app continua a usare la vecchia cartella. Non è andato perso nulla.</value></data>
+  <data name="IgnoredProfileFolders" xml:space="preserve"><value>Cartelle ignorate in Profili (nome non valido, usa lettere, cifre, _ e -): {0}</value></data>
 </root>

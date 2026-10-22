@@ -143,6 +143,7 @@ internal sealed class MainForm : Form
         {
             profileList.ItemHeight = profileList.LogicalToDeviceUnits(ItemHeight);
             RefreshAll();
+            ReportIgnoredProfileFolders();
             await CheckGameAsync();
             gameTimer.Start();
         };
@@ -459,6 +460,30 @@ internal sealed class MainForm : Form
         lastMessage = message;
         lastKind = kind;
         UpdateControls();
+    }
+
+    /// <summary>
+    /// Dice all'avvio quali cartelle in Profili non compaiono nell'elenco e perché.
+    /// </summary>
+    private void ReportIgnoredProfileFolders()
+    {
+        IReadOnlyList<string> ignored;
+
+        try
+        {
+            ignored = manager.GetIgnoredProfileFolders();
+        }
+        catch
+        {
+            return;
+        }
+
+        if (ignored.Count == 0)
+            return;
+
+        string names = string.Join(", ", ignored);
+        Log.Write("Cartelle ignorate in Profili (nome non valido): " + names);
+        SetStatus(Loc.F(Strings.IgnoredProfileFolders, names), StatusKind.Warning);
     }
 
     private async Task CheckGameAsync()

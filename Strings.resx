@@ -234,4 +234,5 @@ to:
 {2}
 
 The app keeps using the old folder. Nothing has been lost.</value></data>
+  <data name="IgnoredProfileFolders" xml:space="preserve"><value>Ignored folders in Profiles (invalid name, use letters, digits, _ and -): {0}</value></data>
 </root>

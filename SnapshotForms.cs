@@ -139,8 +139,23 @@ internal abstract class ListDialog : Form
         DialogResult = DialogResult.Cancel
     };
 
+    // Come nella finestra principale: il gioco viene controllato ogni 2 secondi.
+    private readonly System.Windows.Forms.Timer gameTimer = new() { Interval = 2000 };
+    private bool checkingGame;
+
     // true mentre un'operazione sui file è in corso.
     protected bool Busy { get; private set; }
+
+    /// <summary>
+    /// true mentre Control è in esecuzione: le operazioni sui salvataggi del
+    /// gioco vanno disattivate.
+    /// </summary>
+    protected bool GameRunning { get; private set; }
+
+    /// <summary>
+    /// true se si possono toccare i salvataggi del gioco.
+    /// </summary>
+    protected bool CanTouchGame => !Busy && !GameRunning;
 
     /// <summary>
     /// true se è stata fatta almeno un'operazione: la finestra principale va aggiornata.
@@ -233,7 +248,14 @@ internal abstract class ListDialog : Form
 
         List.SelectedIndexChanged += (_, _) => UpdateButtons();
 
-        Load += (_, _) => Reload();
+        gameTimer.Tick += async (_, _) => await CheckGameAsync();
+
+        Load += async (_, _) =>
+        {
+            Reload();
+            await CheckGameAsync();
+            gameTimer.Start();
+        };
 
         FormClosing += (_, e) =>
         {
@@ -241,6 +263,36 @@ internal abstract class ListDialog : Form
             if (Busy)
                 e.Cancel = true;
         };
+
+        FormClosed += (_, _) => gameTimer.Dispose();
+    }
+
+    private async Task CheckGameAsync()
+    {
+        if (checkingGame)
+            return;
+
+        checkingGame = true;
+
+        try
+        {
+            bool running = await Task.Run(SaveManager.IsGameRunning);
+
+            if (running == GameRunning || IsDisposed)
+                return;
+
+            GameRunning = running;
+
+            // Il messaggio sul gioco aperto prende il posto dell'ultimo esito.
+            if (!Busy)
+                SetStatus(running ? Strings.GameRunning : "", running ? Theme.Warning : Theme.TextMuted);
+
+            UpdateButtons();
+        }
+        finally
+        {
+            checkingGame = false;
+        }
     }
 
     protected static Label MakeCaption(string text)
@@ -369,11 +421,30 @@ internal abstract class ListDialog : Form
         statusLabel.ForeColor = color;
     }
 
-    protected void OpenFolder(string path)
+    /// <param name="createIfMissing">
+    /// true solo per le cartelle radice (Backup, Savestate del profilo): un
+    /// singolo backup o savestate sparito non va ricreato vuoto.
+    /// </param>
+    protected void OpenFolder(string path, bool createIfMissing)
     {
+        if (path == "")
+            return;
+
         try
         {
-            Directory.CreateDirectory(path);
+            if (!Directory.Exists(path))
+            {
+                if (!createIfMissing)
+                {
+                    // Eliminata da fuori mentre la finestra era aperta.
+                    Reload();
+                    SetStatus(Loc.F(Strings.FolderNotFound, path).Replace('\n', ' '), Theme.Error);
+                    return;
+                }
+
+                Directory.CreateDirectory(path);
+            }
+
             Process.Start(new ProcessStartInfo { FileName = path, UseShellExecute = true });
         }
         catch (Exception ex)
@@ -420,7 +491,7 @@ internal sealed class SavestateForm : ListDialog
         deleteButton = AddButton(Strings.Delete, ButtonKind.Secondary, DeleteAsync);
         FlatButton folderButton = AddButton(Strings.OpenFolder, ButtonKind.Ghost, () =>
         {
-            OpenFolder(Manager.ActiveSavestatePath);
+            OpenFolder(Manager.ActiveSavestatePath, createIfMissing: true);
             return Task.CompletedTask;
         });
         folderButton.Margin = new Padding(0, 14, 0, 0);
@@ -531,8 +602,9 @@ internal sealed class SavestateForm : ListDialog
 
         bool selected = List.SelectedSnapshot != null;
 
-        createButton.Enabled = !Busy && valid && Manager.HasActiveProfile;
-        restoreButton.Enabled = !Busy && selected;
+        // Creare e ripristinare toccano i salvataggi del gioco, eliminare no.
+        createButton.Enabled = CanTouchGame && valid && Manager.HasActiveProfile;
+        restoreButton.Enabled = CanTouchGame && selected;
         deleteButton.Enabled = !Busy && selected;
     }
 
@@ -600,7 +672,10 @@ internal sealed class BackupForm : ListDialog
         restoreButton = AddButton(Strings.Restore, ButtonKind.Primary, RestoreAsync);
         FlatButton folderButton = AddButton(Strings.OpenFolder, ButtonKind.Ghost, () =>
         {
-            OpenFolder(List.SelectedSnapshot?.Path ?? Manager.BackupPath);
+            if (List.SelectedSnapshot is Snapshot backup)
+                OpenFolder(backup.Path, createIfMissing: false);
+            else
+                OpenFolder(Manager.BackupPath, createIfMissing: true);
             return Task.CompletedTask;
         });
         folderButton.Margin = new Padding(0, 14, 0, 0);
@@ -676,7 +751,7 @@ internal sealed class BackupForm : ListDialog
         if (restoreButton == null)
             return;
 
-        restoreButton.Enabled = !Busy && List.SelectedSnapshot != null;
+        restoreButton.Enabled = CanTouchGame && List.SelectedSnapshot != null;
         keepBox.Enabled = !Busy;
         applyButton.Enabled = !Busy && (int)keepBox.Value != Manager.State.BackupsToKeep;
     }

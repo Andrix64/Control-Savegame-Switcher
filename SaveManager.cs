@@ -398,6 +398,22 @@ public sealed class SaveManager
             .ToList();
     }
 
+    /// <summary>
+    /// Cartelle in Profili che non sono profili validi e quindi non compaiono
+    /// nell'elenco (nome senza "Profilo_", con spazi, accenti...).
+    /// </summary>
+    public IReadOnlyList<string> GetIgnoredProfileFolders()
+    {
+        IReadOnlyList<string> profiles = GetProfiles();
+
+        return Directory.GetDirectories(ProfilesPath)
+            .Select(Path.GetFileName)
+            .OfType<string>()
+            .Where(name => !profiles.Contains(name))
+            .Order(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
     public static string ProfileFolderName(string name)
     {
         return ProfilePrefix + name;
@@ -512,6 +528,10 @@ public sealed class SaveManager
                 return Result.Fail(Loc.F(Strings.ErrorWithMessage, ex.Message));
             }
         }
+
+        // Copiando mentre il gioco scrive si otterrebbe un profilo incoerente.
+        if (IsGameRunning())
+            return Result.Fail(Strings.CloseControlFirst);
 
         string backup = NewBackupPath("Prima_creazione");
 
@@ -1177,17 +1197,18 @@ public sealed class SaveManager
         {
             try
             {
-                string? file = process.MainModule?.FileName;
-
-                if (file != null &&
-                    !file.StartsWith(windows + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
-                {
+                if (IsGameLauncher(process.MainModule?.FileName, windows))
                     found = true;
-                }
+            }
+            catch (Exception) when (!HasExited(process))
+            {
+                // Percorso non leggibile, per esempio perché il processo è avviato
+                // come amministratore: nel dubbio si considera il gioco aperto.
+                found = true;
             }
             catch
             {
-                // Processo non accessibile (di sistema o già chiuso): non è il gioco.
+                // Processo già chiuso.
             }
             finally
             {
@@ -1196,6 +1217,31 @@ public sealed class SaveManager
         }
 
         return found;
+    }
+
+    /// <summary>
+    /// true se l'eseguibile non è nella cartella di Windows. Un percorso
+    /// sconosciuto (null) conta come gioco: meglio bloccare per errore che
+    /// cambiare profilo con il gioco aperto.
+    /// </summary>
+    internal static bool IsGameLauncher(string? file, string windowsFolder)
+    {
+        return file == null ||
+               !file.StartsWith(windowsFolder.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar,
+                   StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool HasExited(Process process)
+    {
+        try
+        {
+            return process.HasExited;
+        }
+        catch
+        {
+            // Nemmeno lo stato è leggibile: il processo esiste ancora.
+            return false;
+        }
     }
 
     /// <summary>
