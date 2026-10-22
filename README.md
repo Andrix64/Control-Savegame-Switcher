@@ -14,7 +14,8 @@ ogni operazione.
 | **Crea profilo** | Nuovo profilo vuoto oppure copia dei salvataggi attuali; può essere attivato subito. |
 | **Apri cartella profili** | Apre la cartella dei profili in Esplora file. |
 
-Tutte le operazioni sono bloccate mentre Control è in esecuzione.
+Tutte le operazioni sono bloccate mentre Control è in esecuzione: la finestra lo
+controlla ogni 2 secondi e disattiva i pulsanti.
 
 ## Percorsi
 
@@ -53,7 +54,11 @@ che non rispettano la regola vengono ignorate.
 | `FileOps.cs` | Copia e sincronizzazione di cartelle. |
 | `AppState.cs` | Lettura e scrittura di `stato.ini`. |
 | `Result.cs` | Esito delle operazioni (messaggio, backup creato, errore grave). |
-| `Program.cs` | Menu da console. |
+| `MainForm.cs` | Finestra principale (WinForms). |
+| `NewProfileForm.cs` | Finestra "Nuovo profilo". |
+| `Program.cs` | Avvio dell'applicazione. |
+
+La vecchia versione da console è nella cronologia git (commit `17cd279`).
 
 ## Compilazione
 

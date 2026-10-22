@@ -13,8 +13,8 @@ Revisione della versione console (`Program.cs`). Build: 0 errori, 3 warning.
 | 5 | Falso positivo `Control` | Aperto (risolto solo il `Dispose`) |
 | 6 | Cambio profilo senza avviso | Aperto |
 | 7 | `SaveState` ignora gli errori | ✅ Risolto (Fase 1, errore restituito nel `Result`) |
-| 8 | Ciclo infinito con input chiuso | ✅ Risolto nel menu principale (Fase 1) |
-| 9 | Warning `CA1416` | Aperto (Fase 2) |
+| 8 | Ciclo infinito con input chiuso | ✅ Sparito con la versione grafica (Fase 3) |
+| 9 | Warning `CA1416` | ✅ Risolto (Fase 2) |
 | 10–14 | Priorità bassa | Aperti |
 
 Priorità: **Alta** = rischio di perdere salvataggi, **Media** = comportamento

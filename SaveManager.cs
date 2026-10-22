@@ -123,6 +123,16 @@ public sealed class SaveManager
         return ProfilePrefix + name;
     }
 
+    /// <summary>
+    /// Nome da mostrare all'utente: "Profilo_Mario" diventa "Mario".
+    /// </summary>
+    public static string ProfileDisplayName(string profileName)
+    {
+        return profileName.StartsWith(ProfilePrefix)
+            ? profileName[ProfilePrefix.Length..]
+            : profileName;
+    }
+
     public bool ProfileExists(string profileName)
     {
         return Directory.Exists(Path.Combine(ProfilesPath, profileName));

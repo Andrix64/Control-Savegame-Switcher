@@ -74,7 +74,7 @@ così l'interfaccia decide come mostrarlo.
 Nella stessa fase si correggono i bug di [BUG_NOTI.md](BUG_NOTI.md), almeno
 quelli con priorità alta.
 
-## Fase 2 — Progetto WinForms
+## Fase 2 — Progetto WinForms ✅
 
 Modifiche al `.csproj`:
 
@@ -86,7 +86,15 @@ Modifiche al `.csproj`:
 
 Questo elimina anche i warning `CA1416` sul registro.
 
-## Fase 3 — Finestre
+## Fase 3 — Finestre ✅
+
+Completata: `MainForm.cs` e `NewProfileForm.cs`, scritte in codice (senza
+file `.Designer.cs`) con `TableLayoutPanel`/`FlowLayoutPanel`, così il layout
+si adatta al ridimensionamento e ai DPI. Altri dettagli:
+
+- I profili sono mostrati senza il prefisso `Profilo_`.
+- Durante un'operazione la finestra non si può chiudere.
+- Gli errori con backup chiedono se aprire la cartella del backup.
 
 ### Finestra principale (`MainForm`)
 
@@ -150,8 +158,8 @@ l'operazione i pulsanti sono disabilitati e il cursore è in attesa.
 
 ## Fase 4 — Pulizia
 
-- [ ] Rimuovere il vecchio `Program.cs` da console (o tenerlo in un progetto a parte).
-- [ ] Aggiornare il [README](../README.md).
+- [x] Rimuovere il vecchio `Program.cs` da console (resta nella cronologia git).
+- [x] Aggiornare il [README](../README.md).
 - [ ] Prova manuale completa (vedi sotto).
 
 ## Prova manuale
