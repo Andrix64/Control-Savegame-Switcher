@@ -157,7 +157,8 @@ Per il debug in VS Code ci sono `.vscode\launch.json` e `.vscode\tasks.json`.
 Test xUnit in `tests/ControlSaveManager.Tests`: lavorano su cartelle finte in
 `%TEMP%` (non toccano Steam né i dati veri dell'app) e coprono copie e
 scambio delle cartelle, profili, savestate, backup, `stato.ini`, Steam Cloud,
-account e testi tradotti. Il registro dei test va in `%TEMP%\csm_test_log.txt`.
+account, spostamento dei dati da Documenti e testi tradotti. Il registro dei
+test va in `%TEMP%\csm_test_log.txt`.
 I test girano in italiano qualunque sia la lingua di Windows.
 
 ```bash
@@ -216,6 +217,9 @@ passa. Per chi scarica l'exe la soluzione vera è la firma del codice (vedi
 
 ## Altri documenti
 
-- [Piano per l'interfaccia grafica](PIANO_GUI.md)
 - [Bug noti](BUG_NOTI.md)
 - [Cose da fare](TODO.md)
+- [Novità di ogni versione](../CHANGELOG.md)
+
+Il piano originale per passare dalla console all'interfaccia grafica è stato
+completato ed eliminato; è nella cronologia git (fino al commit `90c00da`).

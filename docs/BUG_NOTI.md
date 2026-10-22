@@ -1,138 +1,122 @@
 # Bug noti
 
-Revisione della versione console (`Program.cs`). Build: 0 errori, 3 warning.
+Bug ancora aperti, trovati rileggendo il codice della 0.9.0 e verificati con
+prove su cartelle finte dove indicato. I bug già risolti sono stati tolti: la
+loro storia è nella cronologia git.
 
-## Stato
+Priorità: **Media** = può impedire di usare l'app o confondere l'utente,
+**Bassa** = caso raro o solo estetico. Nessun bug aperto fa perdere salvataggi:
+prima di ogni operazione c'è un backup verificato.
 
-| # | Bug | Stato |
-|---|---|---|
-| 1 | Backup incompleto non rilevato | ✅ Risolto (Fase 1) |
-| 2 | `SaveProgress` può svuotare il profilo | ✅ Risolto (Fase 1) |
-| 3 | Steam Cloud / Steam aperto | ✅ Avviso se Steam è aperto (Fase 1) |
-| 4 | Profilo parziale lasciato su disco | ✅ Risolto (la cartella viene eliminata se la copia fallisce) |
-| 5 | Falso positivo `Control` | ✅ Risolto (si scarta `Control.exe` nella cartella di Windows) |
-| 6 | Cambio profilo senza avviso | ✅ Risolto (i progressi non salvati vengono salvati da soli nel profilo attivo prima del cambio) |
-| 7 | `SaveState` ignora gli errori | ✅ Risolto (Fase 1, errore restituito nel `Result`) |
-| 8 | Ciclo infinito con input chiuso | ✅ Sparito con la versione grafica (Fase 3) |
-| 9 | Warning `CA1416` | ✅ Risolto (Fase 2) |
-| 10, 11 | Priorità bassa | Aperti |
-| 12 | Backup senza limite | ✅ Risolto (si conservano gli ultimi N, predefinito 20) |
-| 13 | Più account Steam | ✅ Risolto (scelta all'avvio, con l'ultimo account preselezionato) |
-| 14 | Formato data dipendente dalla lingua | ✅ Risolto (in `stato.ini` sempre `gg/MM/aaaa`, a video nel formato di Windows) |
-
-Priorità: **Alta** = rischio di perdere salvataggi, **Media** = comportamento
-sbagliato, **Bassa** = rifinitura.
-
-## Alta
-
-### 1. Backup incompleto non rilevato
-
-`CopyFolder` ignora il risultato della chiamata ricorsiva sulle sottocartelle:
-
-```csharp
-CopyFolder(dir, Path.Combine(destination, name)); // risultato ignorato
-```
-
-Se una sottocartella non viene copiata, la funzione restituisce comunque `true`
-e l'operazione prosegue sovrascrivendo i salvataggi. Peggio: in caso di errore
-`ChangeToProfile` ripristina con `MirrorFolder(backup, savePath)`, che
-**cancella** dai salvataggi tutti i file assenti nel backup incompleto.
-
-**Correzione**: `if (!CopyFolder(...)) return false;`
-
-### 2. `SaveProgress` può svuotare il profilo
-
-`MirrorFolder(savePath, profile)` copia la cartella del gioco così com'è. Se è
-vuota o corrotta (per esempio dopo una sincronizzazione Steam Cloud sbagliata),
-il contenuto del profilo viene cancellato. Il backup `Prima_salvataggio` copre il
-caso, ma l'utente non viene avvisato.
-
-**Correzione**: se la cartella `remote` del gioco non contiene file, chiedere
-conferma prima di procedere.
-
-### 3. Steam Cloud / Steam aperto
-
-Non si controlla se Steam è in esecuzione. Il client può risincronizzare la
-cartella `remote` dopo lo scambio e annullarlo o creare conflitti.
-
-**Correzione**: almeno un avviso se il processo `steam` è attivo; idealmente
-documentare di disattivare Steam Cloud per Control.
+| # | Bug | Priorità | Verificato |
+|---|---|---|---|
+| 1 | Scambio interrotto: l'app non parte più | Media | Sì |
+| 2 | Profilo senza cartella `remote`: l'account sparisce | Media | Sì |
+| 3 | Profili ignorati in silenzio | Bassa | Sì |
+| 4 | Le finestre Savestate e Backup non sanno se il gioco è aperto | Bassa | No |
+| 5 | "Crea profilo" non controlla che il gioco sia chiuso | Bassa | No |
+| 6 | Launcher del gioco non rilevato se avviato come amministratore | Bassa | No |
+| 7 | "Apri cartella" può creare una cartella di backup vuota | Bassa | No |
+| 8 | Esclusioni delle cartelle applicate a ogni livello | Bassa | Sì |
 
 ## Media
 
-### 4. Profilo parziale lasciato su disco
+### 1. Scambio interrotto: l'app non parte più
 
-In `CreateProfile`, se la copia dei salvataggi nel nuovo profilo fallisce, la
-cartella `Profilo_<nome>` resta. Compare nella lista e impedisce di ricreare un
-profilo con lo stesso nome.
+`FileOps.ReplaceFolder` scambia le cartelle con due spostamenti:
+`870780` → `870780.vecchio`, poi `870780.nuovo` → `870780`. Se il PC si spegne
+proprio tra i due (una frazione di secondo), resta solo `870780.vecchio`.
 
-**Correzione**: eliminare la cartella del profilo nel ramo di errore.
+Il recupero esiste (rimette a posto `.vecchio`), ma parte solo alla
+*successiva* sostituzione della stessa cartella. All'avvio però
+`SaveManager.FindAccounts` cerca `870780\remote`, non lo trova e l'app si
+ferma con "Salvataggi di Control non trovati": la sostituzione successiva non
+arriva mai. Stessa cosa per un profilo (`Profilo_X.vecchio`): sparisce
+dall'elenco e, se è quello attivo, "Salva progressi" rifiuta di partire.
 
-### 5. Falso positivo nel rilevamento del gioco
+Verificato: con solo `userdata\<ID>\870780.vecchio`, `FindAccounts` non trova
+l'account. Nessun dato perso: i salvataggi sono in `.vecchio` e nel backup.
 
-`IsGameRunning` cerca anche il processo `Control`, che coincide con
-`control.exe` (Pannello di controllo di Windows). Se è aperto, l'app crede che
-il gioco sia in esecuzione e si blocca.
+**Correzione proposta**: all'avvio, prima di cercare gli account, rimettere a
+posto ogni `<cartella>.vecchio` la cui cartella originale manca (nella cartella
+del gioco di ogni account e in `Profili`), e cancellare i `.nuovo` rimasti.
 
-**Correzione**: cercare solo `Control_DX12` e `Control_DX11`. Rilasciare gli
-oggetti `Process` restituiti (`Dispose`).
+### 2. Profilo senza cartella `remote`: l'account sparisce
 
-**Correzione applicata**: `Control.exe` resta tra i processi cercati, perché è
-il launcher del gioco, ma viene scartato se l'eseguibile si trova nella
-cartella di Windows.
+`FindAccounts` riconosce un account solo se esiste `870780\remote`. Attivando
+un profilo che non ha la cartella `remote` (per esempio una cartella
+`Profilo_X` creata a mano in `Profili`), la cartella del gioco resta senza
+`remote` e al prossimo avvio l'app dice "Salvataggi di Control non trovati",
+finché non si avvia il gioco.
 
-### 6. Cambio profilo senza avviso sui progressi
+Verificato: l'attivazione riesce, poi l'account non viene più trovato. I
+profili creati dall'app hanno sempre `remote`.
 
-Cambiando profilo, i progressi non salvati del profilo attivo finiscono solo nel
-backup `Prima_di_<profilo>`, senza che l'utente lo sappia.
-
-**Correzione**: chiedere "Salvare prima i progressi nel profilo attivo?".
-
-**Correzione applicata**: `SaveManager.HasUnsavedProgress()` confronta file e
-contenuti della cartella del gioco con il profilo attivo (ignorando
-`remotecache.vdf`). Se sono diversi, prima di attivare un altro profilo la
-finestra chiede: Sì (salva e poi attiva), No (attiva senza salvare), Annulla.
-Con i salvataggi del gioco vuoti non viene chiesto nulla.
-
-### 7. `SaveState` ignora gli errori
-
-Se la scrittura di `stato.ini` fallisce, l'errore viene solo stampato: il
-profilo attivo mostrato può non corrispondere ai file reali.
-
-**Correzione**: restituire l'esito e mostrarlo come errore.
-
-### 8. Ciclo infinito con input chiuso
-
-Se `Console.ReadLine()` restituisce `null` (stdin chiuso), il menu principale
-stampa "Scelta non valida" all'infinito. Sparisce con l'interfaccia grafica.
+**Correzione proposta**: in `FindAccounts` bastare la cartella `870780`, oppure
+creare `remote` (vuota) in `ActivateProfile` se il profilo non ce l'ha.
 
 ## Bassa
 
-### 9. Warning `CA1416` sul registro
+### 3. Profili ignorati in silenzio
 
-`Registry.CurrentUser` è usato senza dichiarare il progetto come solo Windows.
+Le cartelle in `Profili` con un nome non valido (es. `Profilo_Mio Nome`, con
+lo spazio, o con lettere accentate) non compaiono nell'elenco e non viene
+detto perché.
 
-**Correzione**: `<TargetFramework>net10.0-windows</TargetFramework>`.
+**Correzione proposta**: una riga nella barra di stato ("1 cartella ignorata:
+nome non valido") o nel registro.
 
-### 10. Conflitto file/cartella in `MirrorFolder`
+### 4. Le finestre Savestate e Backup non sanno se il gioco è aperto
 
-Se uno stesso nome è un file da una parte e una cartella dall'altra, la copia
-lancia un'eccezione e la destinazione resta in stato parziale.
+La finestra principale disattiva i pulsanti mentre Control è in esecuzione; le
+finestre Savestate e Backup no. Se si avvia il gioco con una delle due aperte,
+"Ripristina" e "Crea savestate" restano attivi: l'operazione viene comunque
+rifiutata con "Chiudi Control prima di continuare", quindi non succede nulla di
+grave.
 
-### 11. Profili ignorati in silenzio
+**Correzione proposta**: passare alle due finestre lo stato del gioco della
+finestra principale e disattivare i pulsanti.
 
-Cartelle create a mano con nomi non validi (es. `Profilo_Mio Nome`) non
-compaiono nella lista e non viene detto perché.
+### 5. "Crea profilo" non controlla che il gioco sia chiuso
 
-### 12. Backup senza limite
+`SaveManager.CreateProfile` con la copia dei salvataggi non controlla
+`IsGameRunning`, a differenza delle altre operazioni. Oggi lo impedisce solo
+l'interfaccia (il pulsante è disattivato col gioco aperto). Copiando mentre il
+gioco scrive si potrebbe ottenere un profilo incoerente.
 
-La cartella `Backup` cresce all'infinito. Valutare una pulizia dei più vecchi.
+**Correzione proposta**: lo stesso controllo delle altre operazioni.
 
-### 13. Più account Steam
+### 6. Launcher del gioco non rilevato se avviato come amministratore
 
-`Initialize` prende il primo account con salvataggi di Control, senza chiedere
-quale usare se ce n'è più di uno.
+Per riconoscere il launcher `Control.exe` (e non confonderlo con il Pannello di
+controllo) l'app legge il percorso dell'eseguibile. Se il processo è avviato
+come amministratore e l'app no, il percorso non è leggibile e il processo viene
+ignorato. Il gioco vero (`Control_DX11` / `Control_DX12`) viene comunque
+rilevato per nome, quindi il rischio è solo nella finestra di avvio del
+launcher.
 
-### 14. Formato data dipendente dalla lingua
+### 7. "Apri cartella" può creare una cartella di backup vuota
 
-`dd/MM/yyyy` usa il separatore della cultura corrente. Solo estetico.
+`ListDialog.OpenFolder` crea la cartella se non esiste. Se il backup
+selezionato è stato cancellato da fuori (in Esplora file) mentre la finestra
+Backup è aperta, "Apri cartella" lo ricrea vuoto e al prossimo aggiornamento
+compare come backup vuoto.
+
+**Correzione proposta**: creare la cartella solo per la radice (Backup o
+Savestate del profilo), non per un singolo backup.
+
+### 8. Esclusioni delle cartelle applicate a ogni livello
+
+`FileOps` salta le cartelle `Backup`, `Profili` e `Profilo_*` e il file
+`remotecache.vdf` a qualsiasi profondità, anche dentro `remote`, e la verifica
+dopo la copia li ignora allo stesso modo. Le esclusioni delle cartelle vengono
+dalla prima versione e oggi non servono: i dati dell'app non sono mai dentro la
+cartella del gioco.
+
+Verificato sui salvataggi reali: `870780` contiene solo `remotecache.vdf` e
+`remote\` con `preferences_data` e `savegame-slot-00_*`, quindi oggi non
+cambia nulla. Se una versione futura di Control creasse una sottocartella con
+uno di quei nomi, non verrebbe copiata e la verifica non se ne accorgerebbe.
+
+**Correzione proposta**: togliere le esclusioni delle cartelle e limitare
+quella di `remotecache.vdf` al primo livello.
