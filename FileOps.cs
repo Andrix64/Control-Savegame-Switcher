@@ -108,6 +108,74 @@ internal static class FileOps
             .Any(file => Path.GetFileName(file) != SteamCacheFile);
     }
 
+    /// <summary>
+    /// true se le due cartelle contengono gli stessi file con lo stesso contenuto,
+    /// con le stesse esclusioni di CopyFolder e MirrorFolder.
+    /// </summary>
+    public static bool FoldersAreEqual(string first, string second)
+    {
+        if (!Directory.Exists(first) || !Directory.Exists(second))
+            return Directory.Exists(first) == Directory.Exists(second);
+
+        List<string> files = ListNames(Directory.GetFiles(first), name => name != SteamCacheFile);
+
+        if (!files.SequenceEqual(
+                ListNames(Directory.GetFiles(second), name => name != SteamCacheFile),
+                StringComparer.OrdinalIgnoreCase))
+            return false;
+
+        foreach (string name in files)
+        {
+            if (!FilesAreEqual(Path.Combine(first, name), Path.Combine(second, name)))
+                return false;
+        }
+
+        List<string> dirs = ListNames(Directory.GetDirectories(first), name => !IsExcluded(name));
+
+        if (!dirs.SequenceEqual(
+                ListNames(Directory.GetDirectories(second), name => !IsExcluded(name)),
+                StringComparer.OrdinalIgnoreCase))
+            return false;
+
+        return dirs.All(name =>
+            FoldersAreEqual(Path.Combine(first, name), Path.Combine(second, name)));
+    }
+
+    private static List<string> ListNames(string[] paths, Func<string, bool> include)
+    {
+        return paths
+            .Select(Path.GetFileName)
+            .OfType<string>()
+            .Where(include)
+            .Order(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    private static bool FilesAreEqual(string first, string second)
+    {
+        if (new FileInfo(first).Length != new FileInfo(second).Length)
+            return false;
+
+        using FileStream a = File.OpenRead(first);
+        using FileStream b = File.OpenRead(second);
+
+        byte[] bufferA = new byte[81920];
+        byte[] bufferB = new byte[81920];
+
+        while (true)
+        {
+            int readA = a.ReadAtLeast(bufferA, bufferA.Length, throwOnEndOfStream: false);
+            int readB = b.ReadAtLeast(bufferB, bufferB.Length, throwOnEndOfStream: false);
+
+            if (readA != readB ||
+                !bufferA.AsSpan(0, readA).SequenceEqual(bufferB.AsSpan(0, readB)))
+                return false;
+
+            if (readA == 0)
+                return true;
+        }
+    }
+
     private static bool IsExcluded(string name)
     {
         return name == "Backup" || name == "Profili" || name.StartsWith("Profilo_");

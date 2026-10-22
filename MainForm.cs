@@ -254,25 +254,84 @@ internal sealed class MainForm : Form
         if (profileList.SelectedItem is not ProfileItem item)
             return;
 
-        string name = SaveManager.ProfileDisplayName(item.FolderName);
-
-        if (!Ask($"Attivare il profilo \"{name}\"?\n\n" +
-                 "I salvataggi attuali del gioco verranno sostituiti.\n" +
-                 "Prima viene creato un backup."))
-            return;
-
-        await ActivateAsync(item.FolderName);
+        await ActivateAsync(item.FolderName, confirm: true);
     }
 
-    private async Task ActivateAsync(string profileName)
+    /// <summary>
+    /// Attiva un profilo, offrendo prima di salvare i progressi non salvati
+    /// del profilo attivo.
+    /// </summary>
+    /// <param name="confirm">
+    /// Chiede conferma anche quando non ci sono progressi da salvare.
+    /// </param>
+    private async Task ActivateAsync(string profileName, bool confirm)
     {
+        string name = SaveManager.ProfileDisplayName(profileName);
+        bool saveFirst = false;
+
+        if (await CheckUnsavedProgressAsync())
+        {
+            string active = SaveManager.ProfileDisplayName(manager.State.ActiveProfile);
+
+            DialogResult answer = MessageBox.Show(this,
+                $"I salvataggi del gioco contengono progressi non salvati nel profilo \"{active}\".\n\n" +
+                $"Salvarli in \"{active}\" prima di attivare \"{name}\"?\n\n" +
+                "Sì: salva i progressi, poi attiva.\n" +
+                "No: attiva senza salvare (i progressi restano solo nel backup).\n" +
+                "Annulla: non fare nulla.",
+                Text, MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
+
+            if (answer == DialogResult.Cancel)
+                return;
+
+            saveFirst = answer == DialogResult.Yes;
+        }
+        else if (confirm &&
+                 !Ask($"Attivare il profilo \"{name}\"?\n\n" +
+                      "I salvataggi attuali del gioco verranno sostituiti.\n" +
+                      "Prima viene creato un backup."))
+        {
+            return;
+        }
+
         if (!ConfirmSteamClosed())
             return;
+
+        if (saveFirst)
+        {
+            Result saved = await RunBusyAsync("Salvo i progressi...",
+                () => manager.SaveProgress());
+
+            ShowResult(saved);
+
+            if (!saved.Success)
+                return;
+        }
 
         Result result = await RunBusyAsync("Attivo il profilo...",
             () => manager.ActivateProfile(profileName));
 
         ShowResult(result);
+    }
+
+    private async Task<bool> CheckUnsavedProgressAsync()
+    {
+        string previousMessage = lastMessage;
+
+        busy = true;
+        lastMessage = "Controllo i progressi...";
+        UpdateControls();
+
+        try
+        {
+            return await Task.Run(manager.HasUnsavedProgress);
+        }
+        finally
+        {
+            busy = false;
+            lastMessage = previousMessage;
+            UpdateControls();
+        }
     }
 
     private async void SaveClicked(object? sender, EventArgs e)
@@ -332,7 +391,7 @@ internal sealed class MainForm : Form
         SelectProfile(profileName);
 
         if (activate)
-            await ActivateAsync(profileName);
+            await ActivateAsync(profileName, confirm: false);
     }
 
     /// <summary>

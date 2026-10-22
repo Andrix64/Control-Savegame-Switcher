@@ -150,6 +150,28 @@ public sealed class SaveManager
     }
 
     /// <summary>
+    /// true se i salvataggi del gioco sono diversi dal profilo attivo, cioè se
+    /// cambiando profilo i progressi finirebbero solo nel backup.
+    /// </summary>
+    public bool HasUnsavedProgress()
+    {
+        if (!HasActiveProfile || GameSavesAreEmpty())
+            return false;
+
+        try
+        {
+            return !FileOps.FoldersAreEqual(
+                SavePath,
+                Path.Combine(ProfilesPath, State.ActiveProfile));
+        }
+        catch
+        {
+            // Nel dubbio meglio chiedere all'utente.
+            return true;
+        }
+    }
+
+    /// <summary>
     /// Crea un profilo. Non lo attiva: per farlo chiamare ActivateProfile.
     /// </summary>
     public Result CreateProfile(string name, bool copyCurrentSaves)
@@ -172,6 +194,7 @@ public sealed class SaveManager
             }
             catch (Exception ex)
             {
+                TryDeleteFolder(profile);
                 return Result.Fail("Errore: " + ex.Message);
             }
         }
@@ -193,10 +216,25 @@ public sealed class SaveManager
         }
         catch (Exception ex)
         {
+            // Un profilo copiato a metà comparirebbe nella lista e bloccherebbe il nome.
+            TryDeleteFolder(profile);
             return Result.Fail("Copia non riuscita: " + ex.Message, backup);
         }
 
         return Result.Ok("Profilo creato.", backup);
+    }
+
+    private static void TryDeleteFolder(string path)
+    {
+        try
+        {
+            if (Directory.Exists(path))
+                Directory.Delete(path, true);
+        }
+        catch
+        {
+            // Se non si riesce a eliminarla, resta la cartella parziale.
+        }
     }
 
     /// <summary>
@@ -338,14 +376,43 @@ public sealed class SaveManager
 
     public static bool IsGameRunning()
     {
-        string[] processNames =
-        {
-            "Control_DX12",
-            "Control_DX11",
-            "Control"
-        };
+        return IsProcessRunning("Control_DX12") ||
+               IsProcessRunning("Control_DX11") ||
+               IsGameLauncherRunning();
+    }
 
-        return processNames.Any(IsProcessRunning);
+    /// <summary>
+    /// Il launcher del gioco si chiama Control.exe, come il Pannello di
+    /// controllo di Windows: si scartano gli eseguibili nella cartella di Windows.
+    /// </summary>
+    private static bool IsGameLauncherRunning()
+    {
+        string windows = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+        bool found = false;
+
+        foreach (Process process in Process.GetProcessesByName("Control"))
+        {
+            try
+            {
+                string? file = process.MainModule?.FileName;
+
+                if (file != null &&
+                    !file.StartsWith(windows + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+                {
+                    found = true;
+                }
+            }
+            catch
+            {
+                // Processo non accessibile (di sistema o già chiuso): non è il gioco.
+            }
+            finally
+            {
+                process.Dispose();
+            }
+        }
+
+        return found;
     }
 
     /// <summary>

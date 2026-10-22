@@ -9,9 +9,9 @@ Revisione della versione console (`Program.cs`). Build: 0 errori, 3 warning.
 | 1 | Backup incompleto non rilevato | ✅ Risolto (Fase 1) |
 | 2 | `SaveProgress` può svuotare il profilo | ✅ Risolto (Fase 1) |
 | 3 | Steam Cloud / Steam aperto | ✅ Avviso se Steam è aperto (Fase 1) |
-| 4 | Profilo parziale lasciato su disco | Aperto |
-| 5 | Falso positivo `Control` | Aperto (risolto solo il `Dispose`) |
-| 6 | Cambio profilo senza avviso | Aperto |
+| 4 | Profilo parziale lasciato su disco | ✅ Risolto (la cartella viene eliminata se la copia fallisce) |
+| 5 | Falso positivo `Control` | ✅ Risolto (si scarta `Control.exe` nella cartella di Windows) |
+| 6 | Cambio profilo senza avviso | ✅ Risolto (confronto salvataggi/profilo e scelta Salva/Non salvare/Annulla) |
 | 7 | `SaveState` ignora gli errori | ✅ Risolto (Fase 1, errore restituito nel `Result`) |
 | 8 | Ciclo infinito con input chiuso | ✅ Sparito con la versione grafica (Fase 3) |
 | 9 | Warning `CA1416` | ✅ Risolto (Fase 2) |
@@ -74,12 +74,22 @@ il gioco sia in esecuzione e si blocca.
 **Correzione**: cercare solo `Control_DX12` e `Control_DX11`. Rilasciare gli
 oggetti `Process` restituiti (`Dispose`).
 
+**Correzione applicata**: `Control.exe` resta tra i processi cercati, perché è
+il launcher del gioco, ma viene scartato se l'eseguibile si trova nella
+cartella di Windows.
+
 ### 6. Cambio profilo senza avviso sui progressi
 
 Cambiando profilo, i progressi non salvati del profilo attivo finiscono solo nel
 backup `Prima_di_<profilo>`, senza che l'utente lo sappia.
 
 **Correzione**: chiedere "Salvare prima i progressi nel profilo attivo?".
+
+**Correzione applicata**: `SaveManager.HasUnsavedProgress()` confronta file e
+contenuti della cartella del gioco con il profilo attivo (ignorando
+`remotecache.vdf`). Se sono diversi, prima di attivare un altro profilo la
+finestra chiede: Sì (salva e poi attiva), No (attiva senza salvare), Annulla.
+Con i salvataggi del gioco vuoti non viene chiesto nulla.
 
 ### 7. `SaveState` ignora gli errori
 
