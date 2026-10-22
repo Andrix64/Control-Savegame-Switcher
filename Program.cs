@@ -29,10 +29,14 @@ internal static class Program
 
         Log.Write("Avvio");
 
-        Result<SaveManager> init = SaveManager.Initialize();
+        Result<SaveManager> init = SaveManager.Initialize(AccountForm.Choose);
 
         if (!init.Success)
         {
+            // Messaggio vuoto: l'utente ha chiuso la scelta dell'account.
+            if (init.Message == "")
+                return;
+
             Log.Write("Avvio fallito: " + init.Message);
 
             MessageBox.Show(

@@ -9,6 +9,7 @@ namespace ControlSaveManager;
 internal sealed class MainForm : Form
 {
     private const int ItemHeight = 58;
+    private const string ReadyMessage = "Pronto. Tasto destro su un profilo per rinominarlo o eliminarlo.";
 
     private readonly SaveManager manager;
 
@@ -43,6 +44,16 @@ internal sealed class MainForm : Form
     private readonly FlatButton backupButton = new("Backup...", ButtonKind.Ghost);
     private readonly FlatButton folderButton = new("Apri cartella profili", ButtonKind.Ghost);
 
+    private readonly ContextMenuStrip profileMenu = new()
+    {
+        Renderer = new ThemedMenuRenderer(),
+        ShowImageMargin = false,
+        Font = Theme.Base
+    };
+
+    private readonly ToolStripMenuItem renameItem = new("Rinomina...") { ShortcutKeyDisplayString = "F2" };
+    private readonly ToolStripMenuItem deleteItem = new("Elimina...") { ShortcutKeyDisplayString = "Canc" };
+
     private readonly StatusBar statusBar = new();
 
     private readonly System.Windows.Forms.Timer gameTimer = new() { Interval = 2000 };
@@ -52,14 +63,16 @@ internal sealed class MainForm : Form
     private bool gameRunning;
     private bool checkingGame;
     private bool steamWarningAccepted;
-    private string lastMessage = "Pronto.";
+    private string lastMessage = ReadyMessage;
     private StatusKind lastKind = StatusKind.Info;
 
     public MainForm(SaveManager manager)
     {
         this.manager = manager;
 
-        Text = "Control Save Manager";
+        Text = manager.AccountName == ""
+            ? "Control Save Manager"
+            : "Control Save Manager  ·  " + manager.AccountName;
         Icon = Theme.AppIcon;
         StartPosition = FormStartPosition.CenterScreen;
         AutoScaleMode = AutoScaleMode.Font;
@@ -80,6 +93,40 @@ internal sealed class MainForm : Form
             if (activateButton.Enabled)
                 activateButton.PerformClick();
         };
+
+        // Menu del tasto destro: prima seleziona il profilo sotto il mouse.
+        profileMenu.Items.AddRange(new ToolStripItem[] { renameItem, deleteItem });
+        profileList.ContextMenuStrip = profileMenu;
+        profileList.MouseDown += (_, e) =>
+        {
+            if (e.Button != MouseButtons.Right)
+                return;
+
+            int index = profileList.IndexFromPoint(e.Location);
+
+            if (index >= 0)
+                profileList.SelectedIndex = index;
+        };
+        profileMenu.Opening += (_, e) =>
+        {
+            if (busy || profileList.SelectedItem is not ProfileItem item)
+            {
+                e.Cancel = true;
+                return;
+            }
+
+            deleteItem.Enabled = !item.Active;
+            deleteItem.ToolTipText = item.Active ? "Il profilo attivo non si può eliminare." : "";
+        };
+        profileList.KeyDown += (_, e) =>
+        {
+            if (e.KeyCode == Keys.F2)
+                RenameClicked(null, EventArgs.Empty);
+            else if (e.KeyCode == Keys.Delete)
+                DeleteClicked(null, EventArgs.Empty);
+        };
+        renameItem.Click += RenameClicked;
+        deleteItem.Click += DeleteClicked;
 
         activateButton.Click += ActivateClicked;
         saveButton.Click += SaveClicked;
@@ -537,6 +584,64 @@ internal sealed class MainForm : Form
             await ActivateAsync(profileName);
     }
 
+    private async void RenameClicked(object? sender, EventArgs e)
+    {
+        if (busy || profileList.SelectedItem is not ProfileItem item)
+            return;
+
+        using var dialog = new NewProfileForm(
+            name => manager.ProfileExists(SaveManager.ProfileFolderName(name)),
+            SaveManager.ProfileDisplayName(item.FolderName));
+
+        if (dialog.ShowDialog(this) != DialogResult.OK)
+            return;
+
+        string newName = dialog.ProfileName;
+
+        Result result = await RunBusyAsync("Rinomino il profilo...",
+            () => manager.RenameProfile(item.FolderName, newName));
+
+        ShowResult(result);
+
+        if (result.Success)
+            SelectProfile(SaveManager.ProfileFolderName(newName));
+    }
+
+    /// <summary>
+    /// Elimina il profilo selezionato, che finisce nei backup.
+    /// </summary>
+    private async void DeleteClicked(object? sender, EventArgs e)
+    {
+        if (busy || profileList.SelectedItem is not ProfileItem item)
+            return;
+
+        string name = SaveManager.ProfileDisplayName(item.FolderName);
+
+        if (item.Active)
+        {
+            SetStatus($"\"{name}\" è il profilo attivo: attivane un altro prima di eliminarlo.",
+                StatusKind.Warning);
+            return;
+        }
+
+        string question = $"Eliminare il profilo \"{name}\"?\n\n" +
+                          "Una copia resta nella finestra Backup, da cui si può ripristinare " +
+                          "finché la pulizia automatica non la elimina.";
+
+        int savestates = manager.CountSavestates(item.FolderName);
+
+        if (savestates > 0)
+            question += $"\n\nI suoi savestate ({savestates}) vengono eliminati definitivamente.";
+
+        if (!Ask(question, MessageBoxIcon.Warning))
+            return;
+
+        Result result = await RunBusyAsync("Elimino il profilo...",
+            () => manager.DeleteProfile(item.FolderName));
+
+        ShowResult(result);
+    }
+
     /// <summary>
     /// Apre la finestra dei savestate o dei backup e poi aggiorna la finestra.
     /// </summary>
@@ -547,7 +652,7 @@ internal sealed class MainForm : Form
 
         if (dialog.Changed)
         {
-            SetStatus("Pronto.", StatusKind.Info);
+            SetStatus(ReadyMessage, StatusKind.Info);
             RefreshAll();
         }
     }

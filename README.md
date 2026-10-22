@@ -14,6 +14,7 @@ ogni operazione.
 | **Savestate** | Istantanea dei salvataggi attuali del gioco (es. prima di un boss), con nome facoltativo, senza cambiare né sovrascrivere il profilo attivo. Si ripristina (con backup prima) o si elimina dalla finestra Savestate. |
 | **Backup** | Elenco dei backup automatici con data e motivo; "Ripristina" li rimette nel gioco (con backup prima). Si conservano gli ultimi N (predefinito 20, 0 = tutti). |
 | **Crea profilo** | Nuovo profilo vuoto oppure copia dei salvataggi attuali; può essere attivato subito. |
+| **Rinomina / Elimina** | Tasto destro su un profilo (o F2 / Canc). La rinomina sposta anche i savestate. L'eliminazione sposta il profilo nei backup (`Eliminato_<profilo>`), da cui si può ancora ripristinare, ed elimina i suoi savestate; il profilo attivo non si può eliminare. |
 | **Apri cartella profili** | Apre la cartella dei profili in Esplora file. |
 
 Tutte le operazioni sono bloccate mentre Control è in esecuzione: la finestra lo
@@ -29,6 +30,12 @@ controlla ogni 2 secondi e disattiva i pulsanti.
 | Savestate | `Documenti\ControlSaves\<IDAccount>\Savestate\Profilo_<nome>\<data>_<nome savestate>\` |
 | Stato | `Documenti\ControlSaves\<IDAccount>\stato.ini` |
 | Registro | `Documenti\ControlSaves\log.txt` (oltre 1 MB diventa `log.old.txt`) |
+| Ultimo account usato | `Documenti\ControlSaves\account.txt` |
+
+Se più account Steam hanno i salvataggi di Control, all'avvio l'app chiede
+quale usare (nome letto da `userdata\<IDAccount>\config\localconfig.vdf`) e
+preseleziona l'ultimo scelto. Ogni account ha profili, backup e savestate
+separati.
 
 La cartella di Steam viene letta dal registro (`HKCU\Software\Valve\Steam\SteamPath`),
 con ripiego sui percorsi standard in `Program Files`.
@@ -58,7 +65,7 @@ BackupDaConservare=20
 `-` indica un valore vuoto. `BackupDaConservare=0` conserva tutti i backup.
 
 I backup `Prima_salvataggio_<profilo>` contengono il profilo prima del
-salvataggio; gli altri (`Prima_di_<profilo>`, `Prima_creazione`,
+salvataggio, `Eliminato_<profilo>` un profilo eliminato; gli altri (`Prima_di_<profilo>`, `Prima_creazione`,
 `Prima_ripristino`) i salvataggi del gioco.
 
 ## Nomi dei profili
@@ -76,7 +83,8 @@ che non rispettano la regola vengono ignorate.
 | `Log.cs` | Registro delle operazioni e degli errori imprevisti. |
 | `Result.cs` | Esito delle operazioni (messaggio, backup creato, errore grave). |
 | `MainForm.cs` | Finestra principale (WinForms). |
-| `NewProfileForm.cs` | Finestra "Nuovo profilo". |
+| `NewProfileForm.cs` | Finestra "Nuovo profilo", usata anche per rinominare. |
+| `AccountForm.cs` | Scelta dell'account Steam all'avvio. |
 | `SnapshotForms.cs` | Finestre "Savestate" e "Backup" e la loro lista. |
 | `Theme.cs` | Colori, caratteri e icona del tema scuro. |
 | `ThemedControls.cs` | Controlli disegnati a mano: pulsanti, schede, intestazione, barra di stato. |
@@ -108,6 +116,16 @@ dotnet publish -c Release
   una versione che chiamava direttamente `dwmapi.dll` e `uxtheme.dll` (barra
   del titolo e barre di scorrimento scure); senza quelle chiamate parte. Meglio
   evitare `DllImport` nel progetto.
+
+  Il giudizio però è sul singolo file (hash), non solo sul codice: è capitato
+  che una build Debug venisse bloccata (`FileLoadException ... 0x800711C7`)
+  mentre la Release degli stessi sorgenti partiva. Una build deterministica
+  produce sempre lo stesso file, quindi ricompilare non serviva. Per questo in
+  Debug la build non è deterministica: se viene bloccata, si ricompila tutto
+  (task VS Code `rebuild`, oppure `dotnet build --no-incremental`) e di norma il
+  nuovo file passa. Per chi scarica l'exe la soluzione vera è la firma del
+  codice (vedi [TODO](docs/TODO.md)). Il registro degli eventi è
+  `Microsoft-Windows-CodeIntegrity/Operational` (eventi 3033 e 3077).
 - L'esito delle operazioni riuscite compare solo nella barra di stato; le
   finestre di messaggio restano per gli errori e per l'avviso su Steam aperto,
   mostrato una sola volta per sessione.

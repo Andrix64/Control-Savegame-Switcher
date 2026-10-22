@@ -11,11 +11,13 @@ Revisione della versione console (`Program.cs`). Build: 0 errori, 3 warning.
 | 3 | Steam Cloud / Steam aperto | ✅ Avviso se Steam è aperto (Fase 1) |
 | 4 | Profilo parziale lasciato su disco | ✅ Risolto (la cartella viene eliminata se la copia fallisce) |
 | 5 | Falso positivo `Control` | ✅ Risolto (si scarta `Control.exe` nella cartella di Windows) |
-| 6 | Cambio profilo senza avviso | ✅ Risolto (confronto salvataggi/profilo e scelta Salva/Non salvare/Annulla) |
+| 6 | Cambio profilo senza avviso | ✅ Risolto (i progressi non salvati vengono salvati da soli nel profilo attivo prima del cambio) |
 | 7 | `SaveState` ignora gli errori | ✅ Risolto (Fase 1, errore restituito nel `Result`) |
 | 8 | Ciclo infinito con input chiuso | ✅ Sparito con la versione grafica (Fase 3) |
 | 9 | Warning `CA1416` | ✅ Risolto (Fase 2) |
-| 10–14 | Priorità bassa | Aperti |
+| 10, 11, 14 | Priorità bassa | Aperti |
+| 12 | Backup senza limite | ✅ Risolto (si conservano gli ultimi N, predefinito 20) |
+| 13 | Più account Steam | ✅ Risolto (scelta all'avvio, con l'ultimo account preselezionato) |
 
 Priorità: **Alta** = rischio di perdere salvataggi, **Media** = comportamento
 sbagliato, **Bassa** = rifinitura.

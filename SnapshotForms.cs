@@ -4,23 +4,28 @@ using System.Drawing.Drawing2D;
 namespace ControlSaveManager;
 
 /// <summary>
-/// Lista a tema di savestate o backup: titolo e data su due righe.
+/// Lista a tema (savestate, backup, account): titolo e dettagli su due righe.
 /// </summary>
-internal sealed class SnapshotList : ListBox
+internal sealed class ItemList : ListBox
 {
     private const int RowHeight = 50;
 
-    /// <param name="Item">Savestate o backup.</param>
+    /// <param name="Item">Oggetto rappresentato dalla riga.</param>
     /// <param name="Title">Riga principale.</param>
-    public sealed record Row(Snapshot Item, string Title)
+    /// <param name="Details">Riga secondaria.</param>
+    public sealed record Row(object Item, string Title, string Details)
     {
-        public string Details => Item.Date.ToString("dd/MM/yyyy  HH:mm:ss");
+        /// <summary>
+        /// Riga di un savestate o backup, con la data come dettaglio.
+        /// </summary>
+        public static Row For(Snapshot snapshot, string title) =>
+            new(snapshot, title, snapshot.Date.ToString("dd/MM/yyyy  HH:mm:ss"));
 
         // Usato dagli screen reader.
         public override string ToString() => Title + ", " + Details;
     }
 
-    public SnapshotList()
+    public ItemList()
     {
         Dock = DockStyle.Fill;
         IntegralHeight = false;
@@ -30,11 +35,13 @@ internal sealed class SnapshotList : ListBox
         ForeColor = Theme.Text;
     }
 
-    public Snapshot? SelectedSnapshot => (SelectedItem as Row)?.Item;
+    public object? SelectedRowItem => (SelectedItem as Row)?.Item;
+
+    public Snapshot? SelectedSnapshot => SelectedRowItem as Snapshot;
 
     public void SetRows(IEnumerable<Row> rows)
     {
-        string? selected = SelectedSnapshot?.Path;
+        object? selected = SelectedRowItem;
 
         BeginUpdate();
         Items.Clear();
@@ -43,7 +50,7 @@ internal sealed class SnapshotList : ListBox
         {
             Items.Add(row);
 
-            if (row.Item.Path == selected)
+            if (row.Item.Equals(selected))
                 SelectedItem = row;
         }
 
@@ -111,7 +118,7 @@ internal sealed class SnapshotList : ListBox
 internal abstract class ListDialog : Form
 {
     protected readonly SaveManager Manager;
-    protected readonly SnapshotList List = new();
+    protected readonly ItemList List = new();
 
     private readonly Func<bool> confirmSteamClosed;
 
@@ -269,7 +276,7 @@ internal abstract class ListDialog : Form
     /// <summary>
     /// Elementi da mostrare, dal più recente.
     /// </summary>
-    protected abstract IEnumerable<SnapshotList.Row> LoadRows();
+    protected abstract IEnumerable<ItemList.Row> LoadRows();
 
     protected abstract string CaptionText(int count);
 
@@ -498,10 +505,10 @@ internal sealed class SavestateForm : ListDialog
         return top;
     }
 
-    protected override IEnumerable<SnapshotList.Row> LoadRows()
+    protected override IEnumerable<ItemList.Row> LoadRows()
     {
         return Manager.GetSavestates()
-            .Select(s => new SnapshotList.Row(s, s.Name == "" ? "Senza nome" : s.Name));
+            .Select(s => ItemList.Row.For(s, s.Name == "" ? "Senza nome" : s.Name));
     }
 
     protected override string CaptionText(int count)
@@ -653,10 +660,10 @@ internal sealed class BackupForm : ListDialog
         return top;
     }
 
-    protected override IEnumerable<SnapshotList.Row> LoadRows()
+    protected override IEnumerable<ItemList.Row> LoadRows()
     {
         return Manager.GetBackups()
-            .Select(b => new SnapshotList.Row(b, SaveManager.BackupReasonText(b.Name)));
+            .Select(b => ItemList.Row.For(b, SaveManager.BackupReasonText(b.Name)));
     }
 
     protected override string CaptionText(int count)

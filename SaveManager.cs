@@ -1,6 +1,7 @@
 using Microsoft.Win32;
 using System.Diagnostics;
 using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace ControlSaveManager;
 
@@ -11,6 +12,18 @@ namespace ControlSaveManager;
 /// <param name="Date">Data di creazione, letta dal nome della cartella.</param>
 /// <param name="Name">Nome del savestate (anche vuoto) o motivo del backup.</param>
 public sealed record Snapshot(string Path, DateTime Date, string Name);
+
+/// <summary>
+/// Account Steam con i salvataggi di Control.
+/// </summary>
+/// <param name="Id">Nome della cartella in userdata (ID dell'account).</param>
+/// <param name="Name">Nome Steam, o "" se non si riesce a leggerlo.</param>
+/// <param name="Folder">Cartella userdata\ID.</param>
+/// <param name="LastSaved">Data del salvataggio più recente, se c'è.</param>
+public sealed record SteamAccount(string Id, string Name, string Folder, DateTime? LastSaved)
+{
+    public string DisplayName => Name != "" ? Name : "Account " + Id;
+}
 
 /// <summary>
 /// Logica dei profili di salvataggio, senza input/output di console.
@@ -27,6 +40,7 @@ public sealed class SaveManager
     private const string ActivateBackupPrefix = "Prima_di_";
     private const string SaveBackupPrefix = "Prima_salvataggio_";
     private const string RestoreBackupName = "Prima_ripristino";
+    private const string DeletedBackupPrefix = "Eliminato_";
 
     public string SavePath { get; }
     public string ProfilesPath { get; }
@@ -34,11 +48,17 @@ public sealed class SaveManager
     public string SavestatePath { get; }
     public AppState State { get; }
 
+    /// <summary>
+    /// Nome dell'account Steam in uso, o "" se non è noto.
+    /// </summary>
+    public string AccountName { get; }
+
     /// <param name="savePath">Cartella dei salvataggi del gioco (…\870780).</param>
     /// <param name="basePath">Cartella dei dati dell'app (…\ControlSaves\IDAccount).</param>
-    internal SaveManager(string savePath, string basePath)
+    internal SaveManager(string savePath, string basePath, string accountName = "")
     {
         SavePath = savePath;
+        AccountName = accountName;
         ProfilesPath = Path.Combine(basePath, "Profili");
         BackupPath = Path.Combine(basePath, "Backup");
         SavestatePath = Path.Combine(basePath, "Savestate");
@@ -52,7 +72,13 @@ public sealed class SaveManager
 
     // INIZIALIZZAZIONE
 
-    public static Result<SaveManager> Initialize()
+    /// <param name="chooseAccount">
+    /// Chiamata solo se ci sono più account con i salvataggi di Control: riceve
+    /// gli account e l'ID dell'ultimo usato (o null) e restituisce quello scelto,
+    /// o null se l'utente annulla. In quel caso il messaggio del risultato è vuoto.
+    /// </param>
+    public static Result<SaveManager> Initialize(
+        Func<IReadOnlyList<SteamAccount>, string?, SteamAccount?> chooseAccount)
     {
         string steam = FindSteam();
 
@@ -64,28 +90,123 @@ public sealed class SaveManager
         if (!Directory.Exists(userData))
             return Result<SaveManager>.Fail("Cartella userdata non trovata.");
 
-        // Cerca un account Steam con i salvataggi di Control.
-        string? account = Directory.GetDirectories(userData)
-            .FirstOrDefault(dir =>
-                Directory.Exists(Path.Combine(dir, AppId, "remote")));
+        IReadOnlyList<SteamAccount> accounts = FindAccounts(userData);
 
-        if (account == null)
+        if (accounts.Count == 0)
         {
             return Result<SaveManager>.Fail(
                 "Salvataggi di Control non trovati.\nAvvia il gioco almeno una volta.");
         }
 
-        string documents = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-        string basePath = Path.Combine(documents, "ControlSaves", Path.GetFileName(account));
+        string appData = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "ControlSaves");
+        string lastAccountFile = Path.Combine(appData, "account.txt");
+
+        SteamAccount? account = accounts[0];
+
+        if (accounts.Count > 1)
+        {
+            account = chooseAccount(accounts, ReadLastAccount(lastAccountFile));
+
+            if (account == null)
+                return Result<SaveManager>.Fail("");
+
+            WriteLastAccount(lastAccountFile, account.Id);
+        }
 
         try
         {
-            return Result<SaveManager>.Ok(
-                new SaveManager(Path.Combine(account, AppId), basePath));
+            return Result<SaveManager>.Ok(new SaveManager(
+                Path.Combine(account.Folder, AppId),
+                Path.Combine(appData, account.Id),
+                account.Name));
         }
         catch (Exception ex)
         {
             return Result<SaveManager>.Fail("Errore di inizializzazione: " + ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// Account in userdata che hanno i salvataggi di Control, dal più usato di recente.
+    /// </summary>
+    internal static IReadOnlyList<SteamAccount> FindAccounts(string userData)
+    {
+        var accounts = new List<SteamAccount>();
+
+        foreach (string dir in Directory.GetDirectories(userData))
+        {
+            string remote = Path.Combine(dir, AppId, "remote");
+
+            if (!Directory.Exists(remote))
+                continue;
+
+            DateTime? lastSaved = null;
+
+            try
+            {
+                foreach (string file in Directory.EnumerateFiles(remote, "*", SearchOption.AllDirectories))
+                {
+                    DateTime time = File.GetLastWriteTime(file);
+
+                    if (lastSaved == null || time > lastSaved)
+                        lastSaved = time;
+                }
+            }
+            catch
+            {
+                // Cartella non leggibile: nessuna data.
+            }
+
+            accounts.Add(new SteamAccount(Path.GetFileName(dir), ReadPersonaName(dir), dir, lastSaved));
+        }
+
+        return accounts.OrderByDescending(a => a.LastSaved ?? DateTime.MinValue).ToList();
+    }
+
+    /// <summary>
+    /// Nome Steam dell'account, letto da config\localconfig.vdf.
+    /// </summary>
+    private static string ReadPersonaName(string accountFolder)
+    {
+        try
+        {
+            string config = Path.Combine(accountFolder, "config", "localconfig.vdf");
+
+            if (!File.Exists(config))
+                return "";
+
+            Match match = Regex.Match(File.ReadAllText(config), "\"PersonaName\"\\s+\"([^\"]*)\"");
+            return match.Success ? match.Groups[1].Value : "";
+        }
+        catch
+        {
+            return "";
+        }
+    }
+
+    private static string? ReadLastAccount(string file)
+    {
+        try
+        {
+            return File.Exists(file) ? File.ReadAllText(file).Trim() : null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static void WriteLastAccount(string file, string id)
+    {
+        try
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(file)!);
+            File.WriteAllText(file, id);
+        }
+        catch
+        {
+            // Solo una comodità: la prossima volta non sarà preselezionato.
         }
     }
 
@@ -274,6 +395,161 @@ public sealed class SaveManager
         }
 
         return Result.Ok("Profilo creato.", backup);
+    }
+
+    /// <summary>
+    /// Rinomina un profilo e la cartella dei suoi savestate. Se è il profilo
+    /// attivo, aggiorna anche lo stato.
+    /// </summary>
+    public Result RenameProfile(string profileName, string newName)
+    {
+        return Log.Write($"Rinomina {profileName} in {ProfileFolderName(newName)}",
+            RenameProfileCore(profileName, newName));
+    }
+
+    private Result RenameProfileCore(string profileName, string newName)
+    {
+        if (!IsValidName(newName))
+            return Result.Fail("Nome non valido.");
+
+        string newProfileName = ProfileFolderName(newName);
+
+        if (newProfileName == profileName)
+            return Result.Ok("Nome invariato.");
+
+        string source = Path.Combine(ProfilesPath, profileName);
+        string destination = Path.Combine(ProfilesPath, newProfileName);
+
+        if (!Directory.Exists(source))
+            return Result.Fail("Profilo non trovato.");
+
+        // Su Windows "Mario" e "mario" sono la stessa cartella.
+        bool caseOnly = string.Equals(profileName, newProfileName, StringComparison.OrdinalIgnoreCase);
+
+        if (!caseOnly && Directory.Exists(destination))
+            return Result.Fail("Esiste già un profilo con questo nome.");
+
+        try
+        {
+            MoveFolder(source, destination, caseOnly);
+        }
+        catch (Exception ex)
+        {
+            return Result.Fail("Profilo non rinominato: " + ex.Message);
+        }
+
+        string savestates = Path.Combine(SavestatePath, profileName);
+        string savestateError = "";
+
+        if (Directory.Exists(savestates))
+        {
+            try
+            {
+                MoveFolder(savestates, Path.Combine(SavestatePath, newProfileName), caseOnly);
+            }
+            catch (Exception ex)
+            {
+                savestateError = "\nI savestate non sono stati spostati: " + ex.Message +
+                                 "\nSono ancora in:\n" + savestates;
+            }
+        }
+
+        if (State.ActiveProfile == profileName)
+        {
+            State.ActiveProfile = newProfileName;
+
+            try
+            {
+                State.Save();
+            }
+            catch (Exception ex)
+            {
+                return Result.Fail(
+                    "Profilo rinominato, ma lo stato non è stato salvato: " + ex.Message + savestateError);
+            }
+        }
+
+        return savestateError == ""
+            ? Result.Ok("Profilo rinominato.")
+            : Result.Fail("Profilo rinominato." + savestateError);
+    }
+
+    private static void MoveFolder(string source, string destination, bool caseOnly)
+    {
+        if (!caseOnly)
+        {
+            Directory.Move(source, destination);
+            return;
+        }
+
+        // Un cambio solo di maiuscole passa per un nome intermedio.
+        string temp = destination + ".rinomina";
+        Directory.Move(source, temp);
+        Directory.Move(temp, destination);
+    }
+
+    /// <summary>
+    /// Elimina un profilo non attivo spostandolo nei backup, da cui si può
+    /// ancora ripristinare. I suoi savestate vengono eliminati.
+    /// </summary>
+    public Result DeleteProfile(string profileName)
+    {
+        return Finish("Elimina " + profileName, DeleteProfileCore(profileName));
+    }
+
+    private Result DeleteProfileCore(string profileName)
+    {
+        if (profileName == State.ActiveProfile)
+            return Result.Fail("Non si può eliminare il profilo attivo.\nAttiva prima un altro profilo.");
+
+        string profile = Path.Combine(ProfilesPath, profileName);
+
+        if (!Directory.Exists(profile))
+            return Result.Fail("Profilo non trovato.");
+
+        string backup = NewBackupPath(DeletedBackupPrefix + profileName);
+
+        try
+        {
+            Directory.Move(profile, backup);
+        }
+        catch (Exception ex)
+        {
+            return Result.Fail("Profilo non eliminato: " + ex.Message);
+        }
+
+        string savestates = Path.Combine(SavestatePath, profileName);
+
+        try
+        {
+            if (Directory.Exists(savestates))
+                Directory.Delete(savestates, true);
+        }
+        catch (Exception ex)
+        {
+            return Result.Fail(
+                "Profilo eliminato, ma i savestate no: " + ex.Message + "\nSono in:\n" + savestates,
+                backup);
+        }
+
+        return Result.Ok("Profilo eliminato. Una copia resta tra i backup.", backup);
+    }
+
+    /// <summary>
+    /// Quanti savestate ha un profilo.
+    /// </summary>
+    public int CountSavestates(string profileName)
+    {
+        string folder = Path.Combine(SavestatePath, profileName);
+
+        try
+        {
+            return Directory.Exists(folder) ? Directory.GetDirectories(folder).Length : 0;
+        }
+        catch
+        {
+            return 0;
+        }
     }
 
     private static void TryDeleteFolder(string path)
@@ -638,6 +914,9 @@ public sealed class SaveManager
     {
         if (reason.StartsWith(ActivateBackupPrefix))
             return "Prima di attivare " + ProfileDisplayName(reason[ActivateBackupPrefix.Length..]);
+
+        if (reason.StartsWith(DeletedBackupPrefix))
+            return "Profilo " + ProfileDisplayName(reason[DeletedBackupPrefix.Length..]) + " eliminato";
 
         if (reason.StartsWith(SaveBackupPrefix))
             return "Profilo " + ProfileDisplayName(reason[SaveBackupPrefix.Length..]) + " prima del salvataggio";

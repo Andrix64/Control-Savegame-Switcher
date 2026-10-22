@@ -39,8 +39,8 @@ I bug noti sono in [BUG_NOTI.md](BUG_NOTI.md).
   0 = tutti), impostabile dalla finestra Backup.
 - [x] **Ripristinare un backup dall'app.** Elenco dei backup con data e motivo,
   pulsante "Ripristina".
-- [ ] **Rinominare ed eliminare i profili** dalla finestra.
-- [ ] **Più account Steam.** Chiedere quale usare se ce n'è più di uno (bug 13).
+- [x] **Rinominare ed eliminare i profili** dalla finestra.
+- [x] **Più account Steam.** Chiedere quale usare se ce n'è più di uno (bug 13).
 - [ ] **Test nel repository.** Progetto xUnit con i test su cartelle finte
   (oggi sono fuori dal repo) e GitHub Actions che compila e li esegue.
 - [ ] **Pubblicazione.** Exe singolo, versione, nome prodotto e copyright nel

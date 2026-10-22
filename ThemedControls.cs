@@ -243,6 +243,36 @@ internal sealed class HeaderPanel : Control
     }
 }
 
+/// <summary>
+/// Menu contestuali con i colori del tema scuro.
+/// </summary>
+internal sealed class ThemedMenuRenderer : ToolStripProfessionalRenderer
+{
+    public ThemedMenuRenderer() : base(new Colors())
+    {
+        RoundedEdges = false;
+    }
+
+    protected override void OnRenderItemText(ToolStripItemTextRenderEventArgs e)
+    {
+        e.TextColor = e.Item.Enabled ? Theme.Text : Theme.TextDisabled;
+        base.OnRenderItemText(e);
+    }
+
+    private sealed class Colors : ProfessionalColorTable
+    {
+        public override Color ToolStripDropDownBackground => Theme.Surface;
+        public override Color ImageMarginGradientBegin => Theme.Surface;
+        public override Color ImageMarginGradientMiddle => Theme.Surface;
+        public override Color ImageMarginGradientEnd => Theme.Surface;
+        public override Color MenuBorder => Theme.Border;
+        public override Color MenuItemBorder => Theme.SurfaceSelected;
+        public override Color MenuItemSelected => Theme.SurfaceSelected;
+        public override Color SeparatorDark => Theme.Border;
+        public override Color SeparatorLight => Theme.Border;
+    }
+}
+
 internal enum StatusKind
 {
     Info,

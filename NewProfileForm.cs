@@ -1,13 +1,16 @@
 namespace ControlSaveManager;
 
 /// <summary>
-/// Finestra per creare un nuovo profilo.
+/// Finestra per creare un nuovo profilo o rinominarne uno.
 /// </summary>
 internal sealed class NewProfileForm : Form
 {
     private const string Hint = "Lettere, cifre, _ e - (massimo 50 caratteri).";
 
     private readonly Func<string, bool> profileExists;
+
+    // Nome attuale del profilo da rinominare, null per un profilo nuovo.
+    private readonly string? currentName;
 
     private readonly TextBox nameBox = new()
     {
@@ -73,11 +76,15 @@ internal sealed class NewProfileForm : Form
     public bool ActivateNow => activateCheck.Checked;
 
     /// <param name="profileExists">Dice se esiste già un profilo con quel nome.</param>
-    public NewProfileForm(Func<string, bool> profileExists)
+    /// <param name="currentName">
+    /// Nome da mostrare all'utente del profilo da rinominare; null per crearne uno nuovo.
+    /// </param>
+    public NewProfileForm(Func<string, bool> profileExists, string? currentName = null)
     {
         this.profileExists = profileExists;
+        this.currentName = currentName;
 
-        Text = "Nuovo profilo";
+        Text = currentName == null ? "Nuovo profilo" : "Rinomina profilo";
         Icon = Theme.AppIcon;
         ShowIcon = false;
         FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -119,17 +126,26 @@ internal sealed class NewProfileForm : Form
             WrapContents = false,
             Padding = new Padding(22, 20, 22, 20)
         };
-        layout.Controls.AddRange(new Control[]
+        layout.Controls.AddRange(new Control[] { MakeCaption("NOME DEL PROFILO"), nameCard, hintLabel });
+
+        if (currentName == null)
         {
-            MakeCaption("NOME DEL PROFILO"),
-            nameCard,
-            hintLabel,
-            MakeCaption("CONTENUTO"),
-            copyRadio,
-            emptyRadio,
-            activateCheck,
-            buttons
-        });
+            layout.Controls.AddRange(new Control[]
+            {
+                MakeCaption("CONTENUTO"),
+                copyRadio,
+                emptyRadio,
+                activateCheck
+            });
+        }
+        else
+        {
+            createButton.Text = "Rinomina";
+            nameBox.Text = currentName;
+            buttons.Margin = new Padding(0, 6, 0, 0);
+        }
+
+        layout.Controls.Add(buttons);
 
         Controls.Add(layout);
 
@@ -159,12 +175,21 @@ internal sealed class NewProfileForm : Form
 
         if (name != "" && !SaveManager.IsValidName(name))
             error = "Nome non valido. " + Hint;
-        else if (name != "" && profileExists(name))
+        else if (name != "" && profileExists(name) && !IsCurrentName(name))
             error = "Esiste già un profilo con questo nome.";
 
         hintLabel.Text = error == "" ? Hint : error;
         hintLabel.ForeColor = error == "" ? Theme.TextMuted : Theme.Error;
 
-        createButton.Enabled = name != "" && error == "";
+        createButton.Enabled = name != "" && error == "" && name != currentName;
+    }
+
+    /// <summary>
+    /// true se il nome è quello del profilo da rinominare, anche con maiuscole diverse.
+    /// </summary>
+    private bool IsCurrentName(string name)
+    {
+        return currentName != null &&
+               string.Equals(name, currentName, StringComparison.OrdinalIgnoreCase);
     }
 }
