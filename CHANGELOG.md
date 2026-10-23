@@ -3,7 +3,7 @@
 Tutte le modifiche rilevanti, dalla più recente. Le versioni seguono
 [Semantic Versioning](https://semver.org/lang/it/).
 
-## 0.9.0 — non ancora rilasciata
+## 0.9.0 — 2026-10-23
 
 Prima versione distribuita.
 

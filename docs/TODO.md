@@ -13,9 +13,9 @@ Quello che manca, in ordine di priorità. I bug sono in
   certificato autofirmato non basta. Strada scelta: firma gratuita di SignPath
   Foundation con la build su GitHub Actions, già pronta (vedi
   [SVILUPPO.md](SVILUPPO.md#firma-del-codice)). Mancano:
-  - [ ] controllare che la prima build su GitHub vada a buon fine;
-  - [ ] pubblicare la prima versione (anche non firmata) e fare domanda su
-    [signpath.org](https://signpath.org/);
+  - [x] controllare che la prima build su GitHub vada a buon fine;
+  - [x] pubblicare la prima versione (0.9.0, non firmata);
+  - [ ] fare domanda su [signpath.org](https://signpath.org/);
   - [ ] configurare progetto e token su SignPath e i secret/variabili su
     GitHub;
   - [ ] fare un rilascio con tag e verificare che l'exe firmato parta con
