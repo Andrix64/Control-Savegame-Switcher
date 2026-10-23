@@ -215,7 +215,9 @@ build (`StronglyTypedLanguage` nel `.csproj`), senza bisogno di Visual Studio.
 | `app.ico` | Icona dell'exe e delle finestre. |
 | `Program.cs` | Avvio dell'applicazione e versione. |
 | `Properties\PublishProfiles\win-x64.pubxml` | Profilo di pubblicazione dell'exe singolo. |
-| `scripts\release.ps1` | Crea lo zip di rilascio. |
+| `scripts\release.ps1` | Crea lo zip di rilascio (in locale e su GitHub Actions). |
+| `.github\workflows\build.yml` | Build, test, firma con SignPath e bozza di rilascio su GitHub. |
+| `CODE_SIGNING.md` | Politica di firma richiesta da SignPath. |
 | `tests\ControlSaveManager.Tests\` | Test xUnit. |
 
 La vecchia versione da console è nella cronologia git (commit `17cd279`).
@@ -253,25 +255,64 @@ I test girano in italiano qualunque sia la lingua di Windows.
 dotnet test tests/ControlSaveManager.Tests
 ```
 
-Le finestre non sono coperte dai test. Non c'è CI (il repository è su Forgejo
-senza runner): i test si eseguono a mano e comunque da `scripts\release.ps1`
-prima di ogni rilascio.
+Le finestre non sono coperte dai test. Su GitHub i test girano a ogni push e
+pull request (vedi sotto); in locale li esegue anche `scripts\release.ps1`.
+
+## Build su GitHub
+
+Il repository è su [GitHub](https://github.com/Andrix64/Control-Savegame-Switcher)
+(serve per la firma gratuita, vedi sotto). Il workflow
+`.github/workflows/build.yml` gira su Windows a ogni push su `main`, a ogni pull
+request e a mano (*Run workflow*):
+
+1. sui tag `v*` controlla che il tag corrisponda a `<Version>`;
+2. esegue i test;
+3. pubblica l'exe singolo e lo carica come artifact `exe-non-firmato`;
+4. **solo sui tag**, se SignPath è configurato, manda l'exe a SignPath, aspetta
+   la firma (da approvare a mano su SignPath) e controlla che sia valida;
+5. crea lo zip con `scripts/release.ps1 -Exe <exe>` e lo carica come artifact
+   `control-save-manager`, con i risultati dei test;
+6. sui tag prepara una **bozza** di rilascio con zip e `.sha256`, e scrive se
+   l'exe è firmato oppure no.
+
+Senza SignPath la build funziona lo stesso: lo zip semplicemente non è firmato.
+
+## Firma del codice
+
+Smart App Control e SmartScreen (vedi sotto) richiedono una firma da
+un'autorità riconosciuta da Microsoft: un certificato autofirmato non basta. La
+firma è gratuita tramite [SignPath Foundation](https://signpath.org/), che firma
+i progetti open source con licenza OSI (qui MIT) compilati da una build
+automatica in un repository pubblico. La politica di firma del progetto è in
+[CODE_SIGNING.md](../CODE_SIGNING.md).
+
+Configurazione, una volta sola:
+
+1. Pubblica almeno una versione (anche non firmata) e fai domanda su
+   [signpath.org](https://signpath.org/), indicando il repository e la pagina
+   [CODE_SIGNING.md](../CODE_SIGNING.md).
+2. Su SignPath: crea il progetto collegato al repository GitHub, con una
+   *artifact configuration* che firma il file `ControlSaveManager.exe`
+   (Authenticode) e la *signing policy* `release-signing`; crea un utente CI e
+   il suo token.
+3. Su GitHub, in *Settings → Secrets and variables → Actions*:
+   - secret `SIGNPATH_API_TOKEN`: il token dell'utente CI;
+   - variable `SIGNPATH_ORGANIZATION_ID`: l'ID dell'organizzazione;
+   - variable `SIGNPATH_PROJECT_SLUG`: lo slug del progetto;
+   - variable `SIGNPATH_SIGNING_POLICY_SLUG`: facoltativa, di base
+     `release-signing`.
+
+I nomi esatti (slug, policy) li dà SignPath quando approva il progetto:
+controllali e adatta le variabili. Anche il nome e la versione dell'azione
+`signpath/github-action-submit-signing-request` vanno verificati sulla loro
+documentazione al momento della configurazione.
 
 ## Rilascio
 
 1. Aggiorna `<Version>` in `ControlSaveManager.csproj` e il
    [CHANGELOG](../CHANGELOG.md), poi fai il commit. La versione compare
    nell'intestazione della finestra, nelle proprietà dell'exe e nel registro.
-2. Crea lo zip:
-
-   ```bash
-   powershell -ExecutionPolicy Bypass -File scripts/release.ps1
-   ```
-
-   Lo script rifiuta di partire con modifiche non committate, esegue i test,
-   pubblica l'exe e crea in `dist\` lo zip `ControlSaveManager-<versione>-win-x64.zip`
-   (exe, README, CHANGELOG e LICENSE) con il file `.sha256`.
-3. Crea il tag della versione e mandalo su Forgejo:
+2. Crea il tag della versione e mandalo su GitHub:
 
    ```bash
    git tag v0.9.0
@@ -281,8 +322,20 @@ prima di ogni rilascio.
    git push origin main v0.9.0
    ```
 
-4. Su Forgejo, in **Release → Nuova release**, scegli il tag, allega lo zip
-   e il file `.sha256` da `dist\` e pubblica.
+3. Su SignPath approva la richiesta di firma (arriva da GitHub Actions).
+4. Su GitHub, in **Releases**, controlla la bozza (deve dire "Exe firmato da
+   SignPath Foundation") e pubblicala.
+
+Per Forgejo, o senza GitHub, lo zip si crea anche in locale (non firmato):
+
+```bash
+powershell -ExecutionPolicy Bypass -File scripts/release.ps1
+```
+
+Lo script rifiuta di partire con modifiche non committate, esegue i test,
+pubblica l'exe e crea in `dist\` lo zip `ControlSaveManager-<versione>-win-x64.zip`
+(exe, README, CHANGELOG e LICENSE) con il file `.sha256`. Con
+`-Exe <percorso>` usa un exe già pronto invece di pubblicarlo.
 
 ## Smart App Control
 

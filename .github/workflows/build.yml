@@ -1,0 +1,114 @@
+# Build, test, firma con SignPath (solo sui tag di versione) e rilascio.
+#
+# Configurazione per la firma (Settings → Secrets and variables → Actions):
+#   secret   SIGNPATH_API_TOKEN            token dell'utente CI di SignPath
+#   variable SIGNPATH_ORGANIZATION_ID      ID dell'organizzazione su SignPath
+#   variable SIGNPATH_PROJECT_SLUG         slug del progetto (es. control-savegame-switcher)
+#   variable SIGNPATH_SIGNING_POLICY_SLUG  facoltativa, di base "release-signing"
+# Senza SIGNPATH_API_TOKEN la build funziona lo stesso e lo zip non è firmato.
+# Vedi docs/SVILUPPO.md, sezione "Firma del codice".
+
+name: Build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write   # rilascio sui tag
+  actions: read     # SignPath scarica l'exe da firmare dagli artifact
+
+jobs:
+  build:
+    # WinForms e il registro di Windows: serve un runner Windows.
+    runs-on: windows-latest
+
+    env:
+      SIGNPATH_API_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
+      IS_RELEASE: ${{ startsWith(github.ref, 'refs/tags/v') }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Il tag corrisponde alla versione
+        if: env.IS_RELEASE == 'true'
+        shell: pwsh
+        run: |
+          $version = (dotnet msbuild ControlSaveManager.csproj -getProperty:Version).Trim()
+          if ("v$version" -ne "${{ github.ref_name }}") {
+            throw "Il tag ${{ github.ref_name }} non corrisponde a <Version>$version</Version> nel .csproj."
+          }
+
+      - name: Test
+        run: dotnet test tests/ControlSaveManager.Tests -c Release --logger "trx;LogFileName=risultati.trx"
+
+      - name: Exe singolo
+        run: dotnet publish ControlSaveManager.csproj -p:PublishProfile=win-x64 --nologo
+
+      - name: Exe da firmare
+        id: unsigned
+        uses: actions/upload-artifact@v4
+        with:
+          name: exe-non-firmato
+          path: bin/publish/win-x64/ControlSaveManager.exe
+          if-no-files-found: error
+
+      # Solo per i rilasci: ogni richiesta di firma va approvata su SignPath.
+      - name: Firma con SignPath
+        if: env.IS_RELEASE == 'true' && env.SIGNPATH_API_TOKEN != ''
+        uses: signpath/github-action-submit-signing-request@v1
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: ${{ vars.SIGNPATH_SIGNING_POLICY_SLUG || 'release-signing' }}
+          github-artifact-id: ${{ steps.unsigned.outputs.artifact-id }}
+          wait-for-completion: true
+          output-artifact-directory: bin/signed
+
+      - name: Controllo della firma
+        if: env.IS_RELEASE == 'true' && env.SIGNPATH_API_TOKEN != ''
+        shell: pwsh
+        run: |
+          $signature = Get-AuthenticodeSignature bin/signed/ControlSaveManager.exe
+          "Firma: $($signature.Status) - $($signature.SignerCertificate.Subject)"
+          if ($signature.Status -ne 'Valid') { throw "L'exe firmato non ha una firma valida." }
+
+      - name: Zip
+        id: zip
+        shell: pwsh
+        run: |
+          $exe = if (Test-Path bin/signed/ControlSaveManager.exe) { 'bin/signed/ControlSaveManager.exe' } else { 'bin/publish/win-x64/ControlSaveManager.exe' }
+          ./scripts/release.ps1 -SkipTests -Exe $exe
+          $signed = if ($exe -like 'bin/signed/*') { 'true' } else { 'false' }
+          "signed=$signed" >> $env:GITHUB_OUTPUT
+
+      - name: Zip e risultati dei test
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: control-save-manager
+          path: |
+            dist/*.zip
+            dist/*.zip.sha256
+            tests/ControlSaveManager.Tests/TestResults/*.trx
+
+      - name: Bozza di rilascio
+        if: env.IS_RELEASE == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          files: |
+            dist/*.zip
+            dist/*.zip.sha256
+          body: |
+            ${{ steps.zip.outputs.signed == 'true' && 'Exe firmato da SignPath Foundation.' || 'Attenzione: exe NON firmato (SignPath non configurato o firma non riuscita).' }}
+
+            Le novità sono nel [CHANGELOG](https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/CHANGELOG.md).

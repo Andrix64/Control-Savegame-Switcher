@@ -9,9 +9,17 @@ Quello che manca, in ordine di priorità. I bug sono in
 - [ ] **Firma del codice. Urgente.** Il 23/10/2026, sul PC di sviluppo con
   Smart App Control attivo, ogni nuova build dell'app veniva bloccata: l'exe,
   la dll e tre exe singoli rigenerati (il 22/10 l'exe singolo partiva). Chi ha
-  Smart App Control attivo potrebbe non riuscire ad avviare la 0.9.0. Senza
-  firma anche SmartScreen avvisa chi scarica l'exe. Opzione più economica:
-  Azure Trusted Signing. Un certificato autofirmato non basta.
+  Smart App Control attivo potrebbe non riuscire ad avviare la 0.9.0. Un
+  certificato autofirmato non basta. Strada scelta: firma gratuita di SignPath
+  Foundation con la build su GitHub Actions, già pronta (vedi
+  [SVILUPPO.md](SVILUPPO.md#firma-del-codice)). Mancano:
+  - [ ] controllare che la prima build su GitHub vada a buon fine;
+  - [ ] pubblicare la prima versione (anche non firmata) e fare domanda su
+    [signpath.org](https://signpath.org/);
+  - [ ] configurare progetto e token su SignPath e i secret/variabili su
+    GitHub;
+  - [ ] fare un rilascio con tag e verificare che l'exe firmato parta con
+    Smart App Control attivo.
 
 ## Prove con il gioco vero
 

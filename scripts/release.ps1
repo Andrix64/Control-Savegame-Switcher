@@ -12,12 +12,20 @@
 .PARAMETER AllowDirty
     Crea lo zip anche con modifiche non committate.
 
+.PARAMETER Exe
+    Usa questo exe invece di pubblicarne uno nuovo: per esempio quello firmato
+    da SignPath nella build di GitHub Actions.
+
 .EXAMPLE
     powershell -ExecutionPolicy Bypass -File scripts\release.ps1
+
+.EXAMPLE
+    pwsh scripts/release.ps1 -SkipTests -Exe signed/ControlSaveManager.exe
 #>
 param(
     [switch]$SkipTests,
-    [switch]$AllowDirty
+    [switch]$AllowDirty,
+    [string]$Exe = ''
 )
 
 $ErrorActionPreference = 'Stop'
@@ -50,10 +58,16 @@ if (-not $SkipTests) {
     Invoke-Checked 'Test' { dotnet test $tests -c Release --nologo }
 }
 
-if (Test-Path $publishDir) { Remove-Item $publishDir -Recurse -Force }
-Invoke-Checked 'Pubblicazione' { dotnet publish $project -p:PublishProfile=win-x64 --nologo }
+if ($Exe) {
+    $exe = (Resolve-Path $Exe).Path
+    Write-Host "== Exe già pronto: $exe" -ForegroundColor Cyan
+}
+else {
+    if (Test-Path $publishDir) { Remove-Item $publishDir -Recurse -Force }
+    Invoke-Checked 'Pubblicazione' { dotnet publish $project -p:PublishProfile=win-x64 --nologo }
+    $exe = Join-Path $publishDir 'ControlSaveManager.exe'
+}
 
-$exe = Join-Path $publishDir 'ControlSaveManager.exe'
 if (-not (Test-Path $exe)) { throw "Exe non trovato: $exe" }
 
 # Contenuto dello zip: l'exe, il README per l'utente, le novità e la licenza.

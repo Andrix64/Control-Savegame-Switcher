@@ -11,17 +11,21 @@ operazione.
 
 ## Installazione
 
-1. Scarica `ControlSaveManager-<versione>-win-x64.zip` dalla pagina dei
-   rilasci ed estrai `ControlSaveManager.exe` dove vuoi.
+1. Scarica `ControlSaveManager-<versione>-win-x64.zip` dalla
+   [pagina dei rilasci](https://github.com/Andrix64/Control-Savegame-Switcher/releases)
+   ed estrai `ControlSaveManager.exe` dove vuoi.
 2. Avvialo. Non serve installare nulla: il programma contiene già tutto quello
    che gli serve (per questo pesa circa 50 MB).
 
 Requisiti: Windows 10 o 11 a 64 bit, Control su Steam avviato almeno una volta.
 
-> **Windows potrebbe avvisarti o bloccarlo.** Il programma non è firmato
-> digitalmente, quindi SmartScreen può mostrare "Windows ha protetto il PC"
-> (scegli *Ulteriori informazioni → Esegui comunque*) e Smart App Control, se
-> attivo, può impedirne l'avvio.
+> **Firma digitale.** I rilasci pubblicati su GitHub sono firmati da SignPath
+> Foundation (vedi [CODE_SIGNING.md](CODE_SIGNING.md)) appena la firma è
+> attiva: la pagina del rilascio dice se l'exe è firmato. Un exe non firmato
+> può far comparire "Windows ha protetto il PC" (scegli *Ulteriori informazioni
+> → Esegui comunque*) e Smart App Control, se attivo, può impedirne l'avvio.
+> Anche con la firma, SmartScreen può avvisare nei primi tempi, finché il
+> programma non è conosciuto.
 
 Al primo avvio il programma ti chiede come chiamare la partita che è già nel
 gioco e la salva come prima partita.
@@ -134,10 +138,13 @@ English or Italian, following the Windows language.
 
 ![Main window](docs/img/main_en.png)
 
-- Download the zip from the releases page, extract `ControlSaveManager.exe`
-  and run it. No installation needed (Windows 10/11, 64-bit). It is not
-  digitally signed, so SmartScreen may warn you and Smart App Control may
-  block it. On first start it saves the playthrough already in the game.
+- Download the zip from the
+  [releases page](https://github.com/Andrix64/Control-Savegame-Switcher/releases),
+  extract `ControlSaveManager.exe` and run it. No installation needed
+  (Windows 10/11, 64-bit). Releases are signed by SignPath Foundation once
+  signing is active (see [CODE_SIGNING.md](CODE_SIGNING.md)); an unsigned exe
+  may trigger SmartScreen or be blocked by Smart App Control. On first start
+  it saves the playthrough already in the game.
 - **Turn off Steam Cloud for Control** (Library → right-click Control →
   Properties → General), otherwise Steam may mix up playthroughs. A yellow bar
   shows while it is on.
