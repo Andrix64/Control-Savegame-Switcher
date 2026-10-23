@@ -9,9 +9,10 @@ Note tecniche per chi lavora sul codice. La guida per chi usa l'app è nel
 |---|---|
 | Salvataggi del gioco | `<Steam>\userdata\<IDAccount>\870780\` |
 | Dati dell'app | `%LOCALAPPDATA%\ControlSaveManager\` (`AppData.Root`) |
-| Profili | `<dati>\<IDAccount>\Profili\Profilo_<nome>\` |
-| Backup | `<dati>\<IDAccount>\Backup\<motivo>_<data>\` |
-| Savestate | `<dati>\<IDAccount>\Savestate\Profilo_<nome>\<data>_<nome savestate>\` |
+| Partite | `<dati>\<IDAccount>\Profili\Profilo_<nome>\` |
+| Nota e tempo di gioco | `<dati>\<IDAccount>\Info\Profilo_<nome>.ini` |
+| Copie automatiche | `<dati>\<IDAccount>\Backup\<motivo>_<data>\` più `<motivo>_<data>.ini` accanto |
+| Punti salvati | `<dati>\<IDAccount>\Savestate\Profilo_<nome>\<data>_<nome punto>\` |
 | Stato | `<dati>\<IDAccount>\stato.ini` |
 | Registro | `<dati>\log.txt` (oltre 1 MB diventa `log.old.txt`) |
 | Ultimo account usato | `<dati>\account.txt` |
@@ -36,8 +37,11 @@ con ripiego sui percorsi standard in `Program Files`.
 
 Se più account Steam hanno i salvataggi di Control, all'avvio l'app chiede
 quale usare (nome letto da `userdata\<IDAccount>\config\localconfig.vdf`) e
-preseleziona l'ultimo scelto. Ogni account ha profili, backup e savestate
-separati.
+preseleziona l'ultimo scelto. Ogni account ha le sue partite, copie e punti
+salvati.
+
+Nel codice e sul disco restano i nomi storici: *profilo* è una partita,
+*savestate* un punto salvato, *backup* una copia automatica.
 
 Il file `remotecache.vdf` di Steam, al primo livello della cartella del gioco,
 non viene mai copiato né cancellato. Tutto il resto viene copiato e verificato,
@@ -66,13 +70,41 @@ nome più in basso è un salvataggio come gli altri).
 - Una sola istanza dell'app alla volta (`Mutex`).
 - Tutte le operazioni che toccano i salvataggi del gioco sono bloccate mentre
   Control è in esecuzione, sia nella logica (`IsGameRunning` in ogni operazione)
-  sia nell'interfaccia: la finestra principale e le finestre Savestate e Backup
-  lo controllano ogni 2 secondi e disattivano i pulsanti. Il launcher si chiama
+  sia nell'interfaccia: la finestra principale e la Cronologia lo controllano
+  ogni 2 secondi e disattivano i pulsanti. Il launcher si chiama
   `Control.exe` come il Pannello di controllo: si scarta quello nella cartella
   di Windows, e se il percorso non è leggibile (processo avviato come
   amministratore) nel dubbio conta come gioco aperto.
-- All'avvio la finestra principale segnala nella barra di stato (e nel
-  registro) le cartelle in `Profili` ignorate perché il nome non è valido.
+- All'avvio la finestra principale segnala (e scrive nel registro) le cartelle
+  in `Profili` ignorate perché il nome non è valido.
+
+## Partite e sessioni di gioco
+
+- **Gioca questa** (`MainForm.PlayAsync`): se il gioco ha progressi non salvati
+  li salva nella partita di adesso, poi attiva quella scelta e avvia Control
+  con `steam://rungameid/870780` (`SaveManager.LaunchGame`). Con
+  `AvviaGioco=0` o "Carica senza avviare" non avvia e offre **Annulla**, che
+  rifà lo stesso percorso verso la partita di prima.
+- **Sessioni**: la finestra principale controlla il gioco ogni 2 secondi.
+  All'avvio del gioco segna l'ora (quella del processo, se leggibile) e la
+  partita; alla chiusura aggiunge il tempo con `AddPlayTime` e, con
+  `SalvaAllaChiusura=1`, salva i progressi (`SaveProgress(onGameExit: true)`).
+  Funziona solo con l'app aperta.
+- **Opzioni condivise** (`OpzioniCondivise=1`): attivando una partita, il file
+  `remote\preferences_data` del gioco viene copiato prima nella partita;
+  tornando a un punto o a una copia viene rimesso dopo.
+- **Proprietario delle copie**: ogni copia ha accanto un `.ini` con la partita
+  a cui appartiene il contenuto, l'operazione (`BackupKind`) e un dettaglio. La
+  Cronologia di una partita mostra solo le sue copie; quelle senza proprietario
+  (versioni precedenti, o fatte senza partita nel gioco) stanno in una sezione a
+  parte e chiedono conferma.
+- **Partite eliminate**: la cartella diventa una copia `Eliminato_<partita>`
+  con nota e tempo di gioco nel suo `.ini`; «Recupera» la rimette tra le
+  partite (con un nome libero se quello è stato riusato). I punti salvati
+  vengono eliminati.
+- **Primo avvio**: se non ci sono partite ma il gioco ha salvataggi,
+  `AdoptGameSaves` li salva come prima partita e la segna come nel gioco, senza
+  toccare la cartella del gioco.
 
 ## Formati
 
@@ -83,9 +115,12 @@ ProfiloAttivo=Profilo_Mario
 AttivatoIl=22/10/2026 18:30:00
 SalvatoIl=-
 BackupDaConservare=20
+AvviaGioco=1
+SalvaAllaChiusura=1
+OpzioniCondivise=0
 ```
 
-`-` indica un valore vuoto. `BackupDaConservare=0` conserva tutti i backup.
+`-` indica un valore vuoto. `BackupDaConservare=0` conserva tutte le copie.
 Le date sono sempre scritte come `gg/MM/aaaa HH:mm:ss` (cultura invariante) e
 mostrate nel formato della lingua di Windows.
 
@@ -94,13 +129,38 @@ mostrate nel formato della lingua di Windows.
 I nomi delle cartelle sono dati su disco e restano in italiano qualunque sia la
 lingua dell'app.
 
-- Profili: `Profilo_<nome>`, con lettere ASCII, cifre, `_` e `-`, massimo 50
-  caratteri. Le cartelle in `Profili` che non rispettano la regola vengono
-  ignorate.
-- Backup: `Prima_salvataggio_<profilo>` contiene il profilo prima del
-  salvataggio, `Eliminato_<profilo>` un profilo eliminato; gli altri
-  (`Prima_di_<profilo>`, `Prima_creazione`, `Prima_ripristino`) i salvataggi del
-  gioco. Il testo mostrato viene da `SaveManager.BackupReasonText`.
+- Partite: `Profilo_<nome>`, con lettere (anche accentate), cifre, spazi, `_`
+  e `-`, senza spazi all'inizio o alla fine, massimo 50 caratteri. Le cartelle
+  in `Profili` che non rispettano la regola vengono ignorate e segnalate.
+- Copie: `Prima_salvataggio_<partita>` contiene la partita prima del
+  salvataggio, `Eliminato_<partita>` una partita eliminata; gli altri
+  (`Prima_di_<partita>`, `Prima_creazione`, `Prima_ripristino`) i salvataggi del
+  gioco. Il testo mostrato viene da `SaveManager.BackupDescription`, che usa il
+  `.ini` accanto alla copia o, per le copie delle versioni precedenti, il nome.
+
+### File `.ini` di una partita e di una copia
+
+```ini
+; Info\Profilo_Mario.ini
+Nota=Missione Polaris, prima di Ahti
+TempoDiGioco=45000
+UltimaSessione=2026-10-22 22:11:00
+
+; Backup\Prima_di_Profilo_Luigi_2026-10-22_22-11-03-120.ini
+Partita=Profilo_Mario
+Motivo=attivazione
+Dettaglio=Profilo_Luigi
+```
+
+`TempoDiGioco` è in secondi. `Motivo` è uno di `attivazione`, `salvataggio`,
+`chiusura`, `ripristino`, `creazione`, `eliminazione`.
+
+### Partita esportata
+
+Uno zip con `partita.ini` (`Formato=1`, `Nome`, `Nota`, `TempoDiGioco`,
+`UltimaSessione`), `salvataggi\` (la cartella della partita) e, se ci sono,
+`punti\` (i punti salvati). L'importazione rifiuta gli zip senza `salvataggi\`
+e i percorsi che escono dalla cartella.
 
 ### Steam Cloud
 
@@ -132,7 +192,9 @@ build (`StronglyTypedLanguage` nel `.csproj`), senza bisogno di Visual Studio.
 
 | File | Contenuto |
 |---|---|
-| `SaveManager.cs` | Tutta la logica: ricerca di Steam e degli account, profili, attivazione, salvataggio, savestate, backup, Steam Cloud. |
+| `SaveManager.cs` | Logica principale: ricerca di Steam e degli account, partite, attivazione, salvataggio, punti salvati, copie automatiche, Steam Cloud. |
+| `SaveManager.Playthroughs.cs` | Nota e tempo di gioco, proprietario delle copie, partite eliminate, primo avvio, impostazioni, opzioni condivise, esportazione, importazione, avvio del gioco. |
+| `IniFile.cs` | Lettura e scrittura sicura dei file `.ini`. |
 | `FileOps.cs` | Copia, verifica e sostituzione di cartelle. |
 | `AppState.cs` | Lettura e scrittura di `stato.ini`. |
 | `AppData.cs` | Cartella dei dati dell'app e spostamento da Documenti. |
@@ -140,13 +202,16 @@ build (`StronglyTypedLanguage` nel `.csproj`), senza bisogno di Visual Studio.
 | `Log.cs` | Registro delle operazioni e degli errori imprevisti. |
 | `Result.cs` | Esito delle operazioni (messaggio, backup creato, errore grave). |
 | `Loc.cs`, `Strings.resx`, `Strings.it.resx` | Testi in inglese e italiano. |
-| `MainForm.cs` | Finestra principale (WinForms). |
-| `NewProfileForm.cs` | Finestra "Nuovo profilo", usata anche per rinominare. |
+| `MainForm.cs` | Finestra principale: schede delle partite, barre, avvisi, sessioni di gioco. |
+| `PlaythroughControls.cs` | Barra informativa (`InfoBar`), pillola e scheda di una partita. |
+| `HistoryForm.cs` | Cronologia della partita: punti salvati e copie automatiche. |
+| `PromptForms.cs` | Finestre Nota, Impostazioni e Primo avvio. |
+| `NewProfileForm.cs` | Finestra "Nuova partita", usata anche per rinominare. |
 | `AccountForm.cs` | Scelta dell'account Steam all'avvio. |
-| `SnapshotForms.cs` | Finestre "Savestate" e "Backup" e la loro lista. |
-| `MessageDialog.cs` | Finestre di messaggio a tema, al posto di `MessageBox`. |
+| `SnapshotForms.cs` | Lista a tema, base delle finestre a elenco e finestra delle partite eliminate. |
+| `MessageDialog.cs` | Finestre di messaggio a tema; `Confirm` usa verbi sui pulsanti. |
 | `Theme.cs` | Colori, caratteri e icona del tema scuro. |
-| `ThemedControls.cs` | Controlli disegnati a mano: pulsanti, schede, intestazione, barra di stato, menu. |
+| `ThemedControls.cs` | Controlli disegnati a mano: pulsanti, schede, intestazione, menu. |
 | `app.ico` | Icona dell'exe e delle finestre. |
 | `Program.cs` | Avvio dell'applicazione e versione. |
 | `Properties\PublishProfiles\win-x64.pubxml` | Profilo di pubblicazione dell'exe singolo. |
@@ -176,11 +241,12 @@ Per il debug in VS Code ci sono `.vscode\launch.json` e `.vscode\tasks.json`.
 
 Test xUnit in `tests/ControlSaveManager.Tests`: lavorano su cartelle finte in
 `%TEMP%` (non toccano Steam né i dati veri dell'app) e coprono copie e
-scambio delle cartelle, profili, savestate, backup, `stato.ini`, Steam Cloud,
+scambio delle cartelle, partite, punti salvati, copie automatiche e il loro
+proprietario, nota e tempo di gioco, partite eliminate, esportazione e
+importazione, opzioni condivise, primo avvio, `stato.ini`, Steam Cloud,
 account, recupero delle operazioni interrotte, rilevamento del launcher,
-spostamento dei dati da
-Documenti e testi tradotti. Il registro dei
-test va in `%TEMP%\csm_test_log.txt`.
+spostamento dei dati da Documenti, testi tradotti e righe delle schede. Il
+registro dei test va in `%TEMP%\csm_test_log.txt`.
 I test girano in italiano qualunque sia la lingua di Windows.
 
 ```bash

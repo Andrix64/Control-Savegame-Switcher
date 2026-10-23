@@ -11,7 +11,11 @@ namespace ControlSaveManager;
 /// <param name="Path">Cartella della copia.</param>
 /// <param name="Date">Data di creazione, letta dal nome della cartella.</param>
 /// <param name="Name">Nome del savestate (anche vuoto) o motivo del backup.</param>
-public sealed record Snapshot(string Path, DateTime Date, string Name);
+/// <param name="Owner">Solo backup: partita a cui appartiene il contenuto, o "" se non si sa.</param>
+/// <param name="Kind">Solo backup: operazione che l'ha creato (vedi BackupKind), o "".</param>
+/// <param name="Detail">Solo backup: dettaglio dell'operazione (partita o punto di arrivo).</param>
+public sealed record Snapshot(string Path, DateTime Date, string Name,
+    string Owner = "", string Kind = "", string Detail = "");
 
 /// <summary>
 /// Stato di Steam Cloud per Control.
@@ -43,7 +47,7 @@ public sealed record SteamAccount(string Id, string Name, string Folder, DateTim
 /// <summary>
 /// Logica dei profili di salvataggio, senza input/output di console.
 /// </summary>
-public sealed class SaveManager
+public sealed partial class SaveManager
 {
     private const string AppId = "870780";
     private const string ProfilePrefix = "Profilo_";
@@ -80,6 +84,7 @@ public sealed class SaveManager
         ProfilesPath = Path.Combine(basePath, "Profili");
         BackupPath = Path.Combine(basePath, "Backup");
         SavestatePath = Path.Combine(basePath, "Savestate");
+        InfoPath = Path.Combine(basePath, "Info");
         State = new AppState(Path.Combine(basePath, "stato.ini"));
 
         Directory.CreateDirectory(ProfilesPath);
@@ -538,6 +543,8 @@ public sealed class SaveManager
         try
         {
             FileOps.CopyFolderVerified(SavePath, backup);
+            // Senza partita nel gioco, i salvataggi copiati diventano proprio questa partita.
+            WriteBackupInfo(backup, HasActiveProfile ? State.ActiveProfile : profileName, BackupKind.Create, profileName);
         }
         catch (Exception ex)
         {
@@ -614,6 +621,8 @@ public sealed class SaveManager
             }
         }
 
+        MoveInfo(profileName, newProfileName, caseOnly);
+
         if (State.ActiveProfile == profileName)
         {
             State.ActiveProfile = newProfileName;
@@ -677,6 +686,9 @@ public sealed class SaveManager
         {
             return Result.Fail(Loc.F(Strings.ProfileNotDeleted, ex.Message));
         }
+
+        // Nota e tempo di gioco seguono la partita nel backup, per il recupero.
+        RecordDeletedInfo(profileName, backup);
 
         string savestates = Path.Combine(SavestatePath, profileName);
 
@@ -744,7 +756,12 @@ public sealed class SaveManager
         if (!Directory.Exists(profile))
             return Result.Fail(Strings.ProfileNotFound);
 
-        Result replaced = ReplaceGameSaves(profile, ActivateBackupPrefix + profileName);
+        // Opzioni condivise: la partita prende le opzioni che il gioco ha adesso.
+        if (State.SharePreferences)
+            CopyPreferencesTo(profile);
+
+        Result replaced = ReplaceGameSaves(profile, ActivateBackupPrefix + profileName,
+            State.ActiveProfile, BackupKind.Activate, profileName);
 
         if (!replaced.Success)
             return replaced;
@@ -778,13 +795,14 @@ public sealed class SaveManager
     /// Se false, l'operazione viene rifiutata quando la cartella del gioco non
     /// contiene salvataggi, per non svuotare il profilo per errore.
     /// </param>
-    public Result SaveProgress(bool allowEmptySaves = false)
+    /// <param name="onGameExit">true se è il salvataggio automatico alla chiusura del gioco.</param>
+    public Result SaveProgress(bool allowEmptySaves = false, bool onGameExit = false)
     {
-        return Finish("Salva progressi in " + State.ActiveProfile,
-            SaveProgressCore(allowEmptySaves));
+        return Finish((onGameExit ? "Salva alla chiusura in " : "Salva progressi in ") + State.ActiveProfile,
+            SaveProgressCore(allowEmptySaves, onGameExit));
     }
 
-    private Result SaveProgressCore(bool allowEmptySaves)
+    private Result SaveProgressCore(bool allowEmptySaves, bool onGameExit)
     {
         if (!HasActiveProfile)
             return Result.Fail(Strings.NoValidActiveProfile);
@@ -804,6 +822,8 @@ public sealed class SaveManager
         try
         {
             FileOps.CopyFolderVerified(profile, backup);
+            WriteBackupInfo(backup, State.ActiveProfile,
+                onGameExit ? BackupKind.SaveOnExit : BackupKind.Save, "");
         }
         catch (Exception ex)
         {
@@ -852,13 +872,17 @@ public sealed class SaveManager
     /// Fa il backup dei salvataggi del gioco e li sostituisce con source.
     /// Se la sostituzione fallisce, ripristina il backup.
     /// </summary>
-    private Result ReplaceGameSaves(string source, string backupName)
+    /// <param name="owner">Partita a cui appartengono i salvataggi del gioco di adesso.</param>
+    /// <param name="kind">Operazione, per la descrizione del backup (BackupKind).</param>
+    /// <param name="detail">Dettaglio dell'operazione, per la descrizione.</param>
+    private Result ReplaceGameSaves(string source, string backupName, string owner, string kind, string detail)
     {
         string backup = NewBackupPath(backupName);
 
         try
         {
             FileOps.CopyFolderVerified(SavePath, backup);
+            WriteBackupInfo(backup, owner, kind, detail);
         }
         catch (Exception ex)
         {
@@ -1053,7 +1077,7 @@ public sealed class SaveManager
                     CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime date))
                 continue;
 
-            list.Add(new Snapshot(dir, date, name[..(dateStart - 1)]));
+            list.Add(WithBackupInfo(new Snapshot(dir, date, name[..(dateStart - 1)])));
         }
 
         return list.OrderByDescending(b => b.Date).ToList();
@@ -1102,7 +1126,17 @@ public sealed class SaveManager
 
         // La pulizia dei backup avviene solo in Finish, a ripristino concluso:
         // il backup da ripristinare non può sparire durante la copia.
-        Result replaced = ReplaceGameSaves(snapshot.Path, RestoreBackupName);
+        // Opzioni condivise: restano quelle che il gioco ha adesso.
+        byte[]? preferences = State.SharePreferences ? ReadPreferences() : null;
+
+        // Per un savestate il dettaglio è il suo nome, per un backup la sua descrizione.
+        string detail = root == SavestatePath ? snapshot.Name : BackupDescription(snapshot);
+
+        Result replaced = ReplaceGameSaves(snapshot.Path, RestoreBackupName,
+            State.ActiveProfile, BackupKind.Restore, detail);
+
+        if (replaced.Success && preferences != null)
+            WritePreferences(preferences);
 
         return replaced.Success ? Result.Ok(message, replaced.BackupPath) : replaced;
     }
@@ -1148,6 +1182,7 @@ public sealed class SaveManager
                 try
                 {
                     Directory.Delete(backup.Path, true);
+                    DeleteBackupInfo(backup.Path);
                     deleted++;
                 }
                 catch (Exception ex)
@@ -1263,11 +1298,15 @@ public sealed class SaveManager
         return processes.Length > 0;
     }
 
+    /// <summary>
+    /// Nome di una partita: lettere (anche accentate), cifre, spazi, _ e -,
+    /// senza spazi all'inizio o alla fine, al massimo 50 caratteri.
+    /// </summary>
     public static bool IsValidName(string name)
     {
-        if (string.IsNullOrWhiteSpace(name) || name.Length > 50)
+        if (string.IsNullOrWhiteSpace(name) || name.Length > 50 || name != name.Trim())
             return false;
 
-        return name.All(c => char.IsAsciiLetterOrDigit(c) || c == '_' || c == '-');
+        return name.All(c => char.IsLetterOrDigit(c) || c == ' ' || c == '_' || c == '-');
     }
 }

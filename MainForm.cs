@@ -1,148 +1,99 @@
 using System.Diagnostics;
-using System.Drawing.Drawing2D;
 
 namespace ControlSaveManager;
 
 /// <summary>
-/// Finestra principale: lista dei profili e azioni.
+/// Finestra principale: una scheda per partita, con le sue azioni visibili,
+/// barre per gli stati di tutta l'app (Control aperto, Steam Cloud attivo) e
+/// un avviso in basso per l'esito delle operazioni, con "Annulla" dopo un cambio.
 /// </summary>
 internal sealed class MainForm : Form
 {
-    private const int ItemHeight = 58;
-    private static readonly string ReadyMessage = Strings.ReadyHint;
-
     private readonly SaveManager manager;
 
-    private readonly Label activeLabel = MakeLabel(Theme.Large, Theme.Text);
-    private readonly Label sinceLabel = MakeLabel(Theme.Base, Theme.Text);
-    private readonly Label savedLabel = MakeLabel(Theme.Base, Theme.Text);
-    private readonly Label cloudLabel = MakeLabel(Theme.Base, Theme.Text);
-    private readonly Label profilesCaption = MakeLabel(Theme.Caption, Theme.TextMuted);
+    private readonly InfoBar cloudBar = new() { Visible = false };
+    private readonly InfoBar gameBar = new() { Visible = false };
+    private readonly InfoBar toast = new() { Visible = false };
 
-    private readonly ListBox profileList = new()
+    private readonly FlowLayoutPanel cardsHost = new()
     {
         Dock = DockStyle.Fill,
-        IntegralHeight = false,
-        BorderStyle = BorderStyle.None,
-        DrawMode = DrawMode.OwnerDrawFixed,
-        BackColor = Theme.Surface,
-        ForeColor = Theme.Text
+        FlowDirection = FlowDirection.TopDown,
+        WrapContents = false,
+        AutoScroll = true,
+        Margin = new Padding(0)
     };
 
     private readonly Label emptyLabel = new()
     {
-        Dock = DockStyle.Fill,
-        Text = Strings.NoProfiles,
-        TextAlign = ContentAlignment.MiddleCenter,
+        AutoSize = true,
         ForeColor = Theme.TextMuted,
+        Text = Strings.NoPlaythroughs,
+        Margin = new Padding(2, 8, 0, 0)
+    };
+
+    private readonly LinkLabel deletedLink = new()
+    {
+        AutoSize = true,
+        Font = Theme.Small,
+        LinkColor = Theme.TextSecondary,
+        ActiveLinkColor = Color.White,
+        LinkBehavior = LinkBehavior.HoverUnderline,
+        Margin = new Padding(2, 4, 0, 6),
         Visible = false
     };
 
-    private readonly FlatButton activateButton = new(Strings.ActivateProfile, ButtonKind.Primary);
-    private readonly FlatButton saveButton = new(Strings.SaveProgress);
-    private readonly FlatButton savestateButton = new(Strings.SavestatesButton);
-    private readonly FlatButton newButton = new(Strings.NewProfileButton);
-    private readonly FlatButton backupButton = new(Strings.BackupsButton, ButtonKind.Ghost);
-    private readonly FlatButton folderButton = new(Strings.OpenProfilesFolder, ButtonKind.Ghost);
-
-    private readonly ContextMenuStrip profileMenu = new()
-    {
-        Renderer = new ThemedMenuRenderer(),
-        ShowImageMargin = false,
-        Font = Theme.Base
-    };
-
-    private readonly ToolStripMenuItem renameItem = new(Strings.RenameMenu) { ShortcutKeyDisplayString = "F2" };
-    private readonly ToolStripMenuItem deleteItem = new(Strings.DeleteMenu) { ShortcutKeyDisplayString = Strings.DeleteKey };
-
-    private readonly StatusBar statusBar = new();
+    private readonly FlatButton newButton = new FlatButton(Strings.NewPlaythroughButton).FitText();
+    private readonly FlatButton importButton = new FlatButton(Strings.ImportButton, ButtonKind.Ghost).FitText();
+    private readonly FlatButton settingsButton = new FlatButton(Strings.SettingsButton, ButtonKind.Ghost).FitText(34);
 
     private readonly System.Windows.Forms.Timer gameTimer = new() { Interval = 2000 };
+    private readonly System.Windows.Forms.Timer toastTimer = new() { Interval = 12000 };
+
+    private readonly List<PlaythroughCard> cards = new();
 
     // true mentre un'operazione sui file è in corso.
     private bool busy;
     private bool gameRunning;
     private bool checkingGame;
-    private bool steamWarningAccepted;
+    private bool cloudWarningAccepted;
     private CloudState cloudState = CloudState.Unknown;
-    private string lastMessage = ReadyMessage;
-    private StatusKind lastKind = StatusKind.Info;
+
+    // Sessione di gioco in corso: quando è partita e con quale partita.
+    private DateTime? sessionStart;
+    private string sessionProfile = "";
 
     public MainForm(SaveManager manager)
     {
         this.manager = manager;
 
         Text = manager.AccountName == ""
-            ? "Control Save Manager"
-            : "Control Save Manager  ·  " + manager.AccountName;
+            ? Strings.AppTitle
+            : Strings.AppTitle + "  ·  " + manager.AccountName;
         Icon = Theme.AppIcon;
         StartPosition = FormStartPosition.CenterScreen;
         AutoScaleMode = AutoScaleMode.Font;
         Font = Theme.Base;
         BackColor = Theme.Background;
         ForeColor = Theme.Text;
-        ClientSize = new Size(620, 600);
-        MinimumSize = new Size(540, 560);
+        ClientSize = new Size(760, 720);
+        MinimumSize = new Size(640, 560);
 
         BuildLayout();
 
-        profileList.DrawItem += DrawProfileItem;
-        profileList.DpiChangedAfterParent += (_, _) =>
-            profileList.ItemHeight = profileList.LogicalToDeviceUnits(ItemHeight);
-        profileList.SelectedIndexChanged += (_, _) => UpdateControls();
-        profileList.DoubleClick += (_, _) =>
-        {
-            if (activateButton.Enabled)
-                activateButton.PerformClick();
-        };
-
-        // Menu del tasto destro: prima seleziona il profilo sotto il mouse.
-        profileMenu.Items.AddRange(new ToolStripItem[] { renameItem, deleteItem });
-        profileList.ContextMenuStrip = profileMenu;
-        profileList.MouseDown += (_, e) =>
-        {
-            if (e.Button != MouseButtons.Right)
-                return;
-
-            int index = profileList.IndexFromPoint(e.Location);
-
-            if (index >= 0)
-                profileList.SelectedIndex = index;
-        };
-        profileMenu.Opening += (_, e) =>
-        {
-            if (busy || profileList.SelectedItem is not ProfileItem item)
-            {
-                e.Cancel = true;
-                return;
-            }
-
-            deleteItem.Enabled = !item.Active;
-            deleteItem.ToolTipText = item.Active ? Strings.ActiveCannotBeDeleted : "";
-        };
-        profileList.KeyDown += (_, e) =>
-        {
-            if (e.KeyCode == Keys.F2)
-                RenameClicked(null, EventArgs.Empty);
-            else if (e.KeyCode == Keys.Delete)
-                DeleteClicked(null, EventArgs.Empty);
-        };
-        renameItem.Click += RenameClicked;
-        deleteItem.Click += DeleteClicked;
-
-        activateButton.Click += ActivateClicked;
-        saveButton.Click += SaveClicked;
         newButton.Click += NewClicked;
-        savestateButton.Click += (_, _) => ShowListDialog(new SavestateForm(manager, ConfirmSteamClosed));
-        backupButton.Click += (_, _) => ShowListDialog(new BackupForm(manager, ConfirmSteamClosed));
-        folderButton.Click += (_, _) => OpenFolder(manager.ProfilesPath);
+        importButton.Click += ImportClicked;
+        settingsButton.Click += (_, _) => ShowSettings();
+        deletedLink.LinkClicked += (_, _) => ShowDeleted();
+        cardsHost.Resize += (_, _) => FitCards();
 
         gameTimer.Tick += async (_, _) => await CheckGameAsync();
+        toastTimer.Tick += (_, _) => HideToast();
 
         Load += async (_, _) =>
         {
-            profileList.ItemHeight = profileList.LogicalToDeviceUnits(ItemHeight);
             RefreshAll();
+            await OfferFirstRunAsync();
             ReportIgnoredProfileFolders();
             await CheckGameAsync();
             gameTimer.Start();
@@ -154,218 +105,99 @@ internal sealed class MainForm : Form
             if (busy)
             {
                 e.Cancel = true;
-                MessageDialog.Show(this,
-                    Strings.WaitForOperation,
-                    Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageDialog.Inform(this, Strings.WaitForOperation, "", MessageBoxIcon.Information);
             }
         };
+
+        // Sessione in corso alla chiusura dell'app: il tempo fin qui conta.
+        FormClosed += (_, _) => EndSession();
     }
 
     // LAYOUT
 
     private void BuildLayout()
     {
-        // Scheda del profilo attivo.
-        var info = new TableLayoutPanel
+        var header = new HeaderPanel("CONTROL", "SAVE MANAGER  ·  v" + Program.Version);
+        // Il pulsante sta a destra e lascia libera la riga in fondo all'intestazione.
+        settingsButton.BackColor = Theme.Header;
+        header.Controls.Add(settingsButton);
+        header.Resize += (_, _) => settingsButton.Location = new Point(
+            header.ClientSize.Width - settingsButton.Width - 16,
+            (header.ClientSize.Height - settingsButton.Height) / 2);
+
+        var titleRow = new TableLayoutPanel
         {
-            Dock = DockStyle.Top,
+            Dock = DockStyle.Fill,
             AutoSize = true,
             ColumnCount = 3,
-            RowCount = 4
+            Margin = new Padding(0, 4, 0, 10)
         };
-        info.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 38));
-        info.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 38));
-        info.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 24));
-
-        Label activeCaption = MakeCaption(Strings.CaptionActiveProfile);
-        info.Controls.Add(activeCaption, 0, 0);
-        info.SetColumnSpan(activeCaption, 3);
-
-        activeLabel.Margin = new Padding(0, 0, 0, 10);
-        info.Controls.Add(activeLabel, 0, 1);
-        info.SetColumnSpan(activeLabel, 3);
-
-        info.Controls.Add(MakeCaption(Strings.CaptionActivatedOn), 0, 2);
-        info.Controls.Add(MakeCaption(Strings.CaptionLastSaved), 1, 2);
-        info.Controls.Add(MakeCaption(Strings.CaptionSteamCloud), 2, 2);
-        info.Controls.Add(sinceLabel, 0, 3);
-        info.Controls.Add(savedLabel, 1, 3);
-        info.Controls.Add(cloudLabel, 2, 3);
-
-        var infoCard = new CardPanel
+        titleRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        titleRow.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+        titleRow.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+        titleRow.Controls.Add(new Label
         {
-            Dock = DockStyle.Fill,
+            Text = Strings.YourPlaythroughs,
             AutoSize = true,
-            AutoSizeMode = AutoSizeMode.GrowAndShrink,
-            Padding = new Padding(18, 14, 18, 16),
-            Margin = new Padding(0, 0, 0, 18)
-        };
-        infoCard.Controls.Add(info);
-
-        // Lista dei profili.
-        profilesCaption.Margin = new Padding(2, 0, 0, 8);
-
-        var listCard = new CardPanel
-        {
-            Dock = DockStyle.Fill,
-            Padding = new Padding(6),
+            Font = Theme.Heading,
+            Anchor = AnchorStyles.Left,
             Margin = new Padding(0)
-        };
-        listCard.Controls.Add(profileList);
-        listCard.Controls.Add(emptyLabel);
-
-        // Pulsanti.
-        var buttons = new FlowLayoutPanel
-        {
-            FlowDirection = FlowDirection.TopDown,
-            AutoSize = true,
-            WrapContents = false,
-            Margin = new Padding(16, 0, 0, 0)
-        };
-
-        foreach (FlatButton button in new[]
-                 {
-                     activateButton, saveButton, savestateButton, newButton, backupButton, folderButton
-                 })
-        {
-            button.Size = new Size(190, 40);
-            button.Margin = new Padding(0, 0, 0, 10);
-            buttons.Controls.Add(button);
-        }
-
-        backupButton.Margin = new Padding(0, 14, 0, 4);
-        folderButton.Margin = new Padding(0);
+        }, 0, 0);
+        importButton.Margin = new Padding(0, 0, 8, 0);
+        newButton.Margin = new Padding(0);
+        titleRow.Controls.Add(importButton, 1, 0);
+        titleRow.Controls.Add(newButton, 2, 0);
 
         var root = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
-            Padding = new Padding(20, 18, 20, 18),
-            ColumnCount = 2,
-            RowCount = 3
+            Padding = new Padding(24, 16, 24, 12),
+            ColumnCount = 1,
+            RowCount = 6
         };
         root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-        root.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+        root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         root.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
-        root.Controls.Add(infoCard, 0, 0);
-        root.SetColumnSpan(infoCard, 2);
-        root.Controls.Add(profilesCaption, 0, 1);
-        root.Controls.Add(listCard, 0, 2);
-        root.Controls.Add(buttons, 1, 2);
+        toast.Margin = new Padding(0, 6, 0, 0);
+
+        root.Controls.Add(cloudBar, 0, 0);
+        root.Controls.Add(gameBar, 0, 1);
+        root.Controls.Add(titleRow, 0, 2);
+        root.Controls.Add(cardsHost, 0, 3);
+        root.Controls.Add(deletedLink, 0, 4);
+        root.Controls.Add(toast, 0, 5);
 
         // L'ultimo aggiunto viene ancorato per primo.
         Controls.Add(root);
-        Controls.Add(statusBar);
-        Controls.Add(new HeaderPanel("CONTROL", "SAVE MANAGER  ·  v" + Program.Version));
+        Controls.Add(header);
     }
 
-    private static Label MakeLabel(Font font, Color color)
+    /// <summary>
+    /// Le schede occupano tutta la larghezza disponibile.
+    /// </summary>
+    private void FitCards()
     {
-        return new Label
-        {
-            AutoSize = true,
-            Font = font,
-            ForeColor = color,
-            Margin = new Padding(0)
-        };
-    }
+        int width = cardsHost.ClientSize.Width - 2;
 
-    private static Label MakeCaption(string text)
-    {
-        Label label = MakeLabel(Theme.Caption, Theme.TextMuted);
-        label.Text = text;
-        label.Margin = new Padding(0, 0, 0, 3);
-        return label;
-    }
-
-    // LISTA DEI PROFILI
-
-    private sealed record ProfileItem(string FolderName, bool Active, DateTime? Modified)
-    {
-        public string Details => Modified == null
-            ? Strings.NoSaves
-            : Loc.F(Strings.LastModified, Modified.Value.ToString("g"));
-
-        // Usato dagli screen reader.
-        public override string ToString() =>
-            SaveManager.ProfileDisplayName(FolderName) + (Active ? Strings.ActiveSuffix : "");
-    }
-
-    private void DrawProfileItem(object? sender, DrawItemEventArgs e)
-    {
-        if (e.Index < 0 || e.Index >= profileList.Items.Count)
+        if (width < 200)
             return;
 
-        var item = (ProfileItem)profileList.Items[e.Index];
-        bool selected = (e.State & DrawItemState.Selected) != 0;
-
-        Graphics g = e.Graphics;
-        g.SmoothingMode = SmoothingMode.AntiAlias;
-
-        using (var back = new SolidBrush(Theme.Surface))
-            g.FillRectangle(back, e.Bounds);
-
-        int Px(int value) => profileList.LogicalToDeviceUnits(value);
-
-        Rectangle inner = Rectangle.Inflate(e.Bounds, -Px(2), -Px(2));
-
-        if (selected)
+        foreach (PlaythroughCard card in cards)
         {
-            using GraphicsPath path = Theme.RoundedRect(inner, Px(6));
-            using var brush = new SolidBrush(Theme.SurfaceSelected);
-            g.FillPath(brush, path);
+            card.MinimumSize = new Size(width, 0);
+            card.MaximumSize = new Size(width, 0);
         }
-
-        // Barra rossa a sinistra del profilo attivo.
-        if (item.Active)
-        {
-            using var accent = new SolidBrush(Theme.Accent);
-            g.FillRectangle(accent,
-                inner.X, inner.Y + Px(10), Px(3), inner.Height - Px(20));
-        }
-
-        int pad = Px(16);
-        int right = inner.Right - pad;
-
-        if (item.Active)
-        {
-            string badge = Strings.ActiveBadge;
-            Size textSize = TextRenderer.MeasureText(g, badge, Theme.Caption, Size.Empty, TextFormatFlags.NoPadding);
-            var badgeRect = new Rectangle(0, 0, textSize.Width + Px(16), textSize.Height + Px(8));
-            badgeRect.Location = new Point(right - badgeRect.Width, inner.Y + (inner.Height - badgeRect.Height) / 2);
-
-            using (GraphicsPath path = Theme.RoundedRect(badgeRect, badgeRect.Height / 2f))
-            using (var brush = new SolidBrush(Theme.AccentSoft))
-                g.FillPath(brush, path);
-
-            TextRenderer.DrawText(g, badge, Theme.Caption, badgeRect, Theme.AccentSoftText,
-                TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
-
-            right = badgeRect.Left - Px(10);
-        }
-
-        const TextFormatFlags flags =
-            TextFormatFlags.Left |
-            TextFormatFlags.VerticalCenter |
-            TextFormatFlags.SingleLine |
-            TextFormatFlags.EndEllipsis |
-            TextFormatFlags.NoPrefix;
-
-        int x = inner.X + pad;
-        int middle = inner.Y + inner.Height / 2;
-
-        TextRenderer.DrawText(g, SaveManager.ProfileDisplayName(item.FolderName), Theme.ItemName,
-            new Rectangle(x, middle - Px(22), right - x, Px(24)), Theme.Text, flags);
-        TextRenderer.DrawText(g, item.Details, Theme.Small,
-            new Rectangle(x, middle + Px(1), right - x, Px(20)), Theme.TextMuted, flags);
     }
 
     // AGGIORNAMENTO
 
     /// <summary>
-    /// Rilegge stato e profili dal disco e aggiorna tutta la finestra.
+    /// Rilegge stato e partite dal disco e ricostruisce le schede.
     /// </summary>
     private void RefreshAll()
     {
@@ -375,95 +207,554 @@ internal sealed class MainForm : Form
         }
         catch (Exception ex)
         {
-            SetStatus(Loc.F(Strings.CannotReadState, ex.Message), StatusKind.Error);
+            ShowToast(InfoKind.Error, Loc.F(Strings.CannotReadState, ex.Message));
         }
 
-        AppState state = manager.State;
+        cloudState = manager.GetCloudState();
 
-        string? selected = (profileList.SelectedItem as ProfileItem)?.FolderName;
+        cardsHost.SuspendLayout();
 
-        profileList.BeginUpdate();
-        profileList.Items.Clear();
+        foreach (PlaythroughCard card in cards)
+            card.Dispose();
+
+        cards.Clear();
+        cardsHost.Controls.Clear();
 
         try
         {
-            foreach (string profile in manager.GetProfiles())
+            string active = manager.State.ActiveProfile;
+
+            // La partita nel gioco per prima, poi le altre in ordine di nome.
+            foreach (string profile in manager.GetProfiles().OrderBy(p => p != active).ThenBy(p => p))
             {
-                var item = new ProfileItem(
+                var card = new PlaythroughCard(new CardData(
                     profile,
-                    profile == state.ActiveProfile,
-                    manager.GetProfileLastModified(profile));
+                    profile == active,
+                    manager.GetInfo(profile),
+                    manager.GetProfileLastModified(profile),
+                    manager.CountSavestates(profile)));
 
-                profileList.Items.Add(item);
-
-                if (profile == selected)
-                    profileList.SelectedItem = item;
+                card.ActionRequested += async (c, action) => await OnCardActionAsync(c, action);
+                cards.Add(card);
+                cardsHost.Controls.Add(card);
             }
         }
         catch (Exception ex)
         {
-            SetStatus(Loc.F(Strings.CannotReadProfiles, ex.Message), StatusKind.Error);
+            ShowToast(InfoKind.Error, Loc.F(Strings.CannotReadProfiles, ex.Message));
         }
 
-        profileList.EndUpdate();
+        if (cards.Count == 0)
+            cardsHost.Controls.Add(emptyLabel);
 
-        int count = profileList.Items.Count;
-        profilesCaption.Text = count == 0 ? Strings.CaptionProfiles : $"{Strings.CaptionProfiles}  ·  {count}";
-        emptyLabel.Visible = count == 0;
-        profileList.Visible = count > 0;
+        cardsHost.ResumeLayout();
+        FitCards();
 
-        bool hasActive = state.ActiveProfile != "";
+        int deleted = 0;
 
-        activeLabel.Text = hasActive
-            ? SaveManager.ProfileDisplayName(state.ActiveProfile)
-            : Strings.NoneValue;
-        activeLabel.ForeColor = hasActive ? Theme.Text : Theme.TextMuted;
-
-        sinceLabel.Text = state.ActiveSince == "" ? "—" : SaveManager.FormatStoredDate(state.ActiveSince);
-
-        savedLabel.Text = state.LastSaved == "" ? Strings.Never : SaveManager.FormatStoredDate(state.LastSaved);
-        savedLabel.ForeColor = state.LastSaved == "" ? Theme.TextMuted : Theme.Text;
-
-        cloudState = manager.GetCloudState();
-
-        (cloudLabel.Text, cloudLabel.ForeColor) = cloudState switch
+        try
         {
-            CloudState.Disabled => (Strings.CloudOff, Theme.Success),
-            CloudState.Enabled => (Strings.CloudOn, Theme.Warning),
-            _ => (Strings.CloudUnknown, Theme.TextMuted)
-        };
+            deleted = manager.GetDeletedProfiles().Count;
+        }
+        catch
+        {
+            // Senza l'elenco il collegamento resta nascosto.
+        }
+
+        deletedLink.Text = Loc.F(Strings.DeletedLink, deleted);
+        deletedLink.Visible = deleted > 0;
 
         UpdateControls();
     }
 
     private void UpdateControls()
     {
-        bool canAct = !busy && !gameRunning;
-        var selected = profileList.SelectedItem as ProfileItem;
+        newButton.Enabled = !busy;
+        importButton.Enabled = !busy;
+        settingsButton.Enabled = !busy;
 
-        activateButton.Enabled = canAct && selected != null && !selected.Active;
-        saveButton.Enabled = canAct && manager.HasActiveProfile;
-        savestateButton.Enabled = canAct && manager.HasActiveProfile;
-        newButton.Enabled = canAct;
-        backupButton.Enabled = canAct;
+        foreach (PlaythroughCard card in cards)
+        {
+            card.Enabled = !busy;
+            card.SetGameRunning(gameRunning, manager.State.LaunchGame);
+        }
 
-        if (gameRunning && !busy)
-            statusBar.SetStatus(Strings.GameRunning, StatusKind.Warning);
+        if (cloudState == CloudState.Enabled)
+        {
+            cloudBar.Show(InfoKind.Warning, Strings.CloudBarTitle, Strings.CloudBarText,
+                Strings.CloudBarAction, ShowCloudHelp);
+        }
         else
-            statusBar.SetStatus(lastMessage, lastKind);
+        {
+            cloudBar.Visible = false;
+        }
+
+        if (gameRunning)
+        {
+            string active = manager.HasActiveProfile
+                ? SaveManager.ProfileDisplayName(manager.State.ActiveProfile)
+                : "";
+
+            string text = manager.State.SaveOnGameExit && active != ""
+                ? Strings.GameBarSaveOnExit + " " + Strings.GameBarExit
+                : Strings.GameBarExit;
+
+            if (sessionStart is DateTime start && DateTime.Now - start >= TimeSpan.FromMinutes(1))
+                text += "\n" + Loc.F(Strings.GameBarSession, PlaythroughCard.FormatPlayTime(DateTime.Now - start));
+
+            gameBar.Show(InfoKind.Info,
+                active == "" ? Strings.GameBarOpen : Loc.F(Strings.GameBarPlaying, active), text);
+        }
+        else
+        {
+            gameBar.Visible = false;
+        }
 
         UseWaitCursor = busy;
     }
 
-    private void SetStatus(string message, StatusKind kind)
+    private void ShowToast(InfoKind kind, string text, string? actionText = null, Action? action = null,
+        bool autoHide = true)
     {
-        lastMessage = message;
-        lastKind = kind;
-        UpdateControls();
+        toastTimer.Stop();
+        toast.Show(kind, "", text, actionText, action == null ? null : () =>
+        {
+            HideToast();
+            action();
+        });
+
+        if (autoHide)
+            toastTimer.Start();
+    }
+
+    private void HideToast()
+    {
+        toastTimer.Stop();
+        toast.Visible = false;
+    }
+
+    // GIOCO APERTO E SESSIONI
+
+    private async Task CheckGameAsync()
+    {
+        if (checkingGame)
+            return;
+
+        checkingGame = true;
+
+        try
+        {
+            bool running = await Task.Run(SaveManager.IsGameRunning);
+
+            if (running == gameRunning)
+            {
+                // Aggiorna i minuti della sessione nella barra.
+                if (running && !busy)
+                    UpdateControls();
+
+                return;
+            }
+
+            gameRunning = running;
+
+            if (running)
+            {
+                sessionStart = await Task.Run(SaveManager.GameStartTime) ?? DateTime.Now;
+                sessionProfile = manager.State.ActiveProfile;
+                HideToast();
+                UpdateControls();
+            }
+            else
+            {
+                await OnGameClosedAsync();
+            }
+        }
+        finally
+        {
+            checkingGame = false;
+        }
     }
 
     /// <summary>
-    /// Dice all'avvio quali cartelle in Profili non compaiono nell'elenco e perché.
+    /// Registra il tempo della sessione appena finita.
+    /// </summary>
+    private void EndSession()
+    {
+        if (sessionStart is DateTime start && sessionProfile != "")
+            manager.AddPlayTime(sessionProfile, start, DateTime.Now);
+
+        sessionStart = null;
+    }
+
+    /// <summary>
+    /// Il gioco si è chiuso: tempo di gioco e, se attivo, salvataggio dei progressi.
+    /// </summary>
+    private async Task OnGameClosedAsync()
+    {
+        string profile = sessionProfile;
+        EndSession();
+
+        if (busy || !manager.State.SaveOnGameExit || profile == "" ||
+            manager.State.ActiveProfile != profile || !manager.HasActiveProfile)
+        {
+            RefreshAll();
+            return;
+        }
+
+        string name = SaveManager.ProfileDisplayName(profile);
+
+        Result result = await RunBusyAsync(Loc.F(Strings.BusySavingOnExit, name), () =>
+            manager.HasUnsavedProgress()
+                ? manager.SaveProgress(onGameExit: true)
+                : Result.Ok(""));
+
+        if (!result.Success)
+            ShowError(result);
+        else if (result.Message != "")
+            ShowToast(InfoKind.Success, Loc.F(Strings.SavedOnExit, name));
+    }
+
+    // AZIONI DELLE SCHEDE
+
+    private async Task OnCardActionAsync(PlaythroughCard card, CardAction action)
+    {
+        if (busy)
+            return;
+
+        string profile = card.Data.ProfileName;
+
+        switch (action)
+        {
+            case CardAction.Play:
+                if (card.Data.Active)
+                    LaunchOnly();
+                else
+                    await PlayAsync(profile, manager.State.LaunchGame);
+                break;
+
+            case CardAction.LoadOnly:
+                await PlayAsync(profile, launch: false);
+                break;
+
+            case CardAction.SavePoint:
+                ShowHistory(focusSave: true);
+                break;
+
+            case CardAction.History:
+                ShowHistory(focusSave: false);
+                break;
+
+            case CardAction.Rename:
+                await RenameAsync(profile);
+                break;
+
+            case CardAction.EditNote:
+                EditNote(card.Data);
+                break;
+
+            case CardAction.Export:
+                await ExportAsync(profile);
+                break;
+
+            case CardAction.Delete:
+                await DeleteAsync(profile);
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Carica una partita senza chiedere conferme: i progressi non salvati di
+    /// quella nel gioco vengono salvati prima, ed entrambe le operazioni fanno
+    /// una copia. Poi avvia il gioco, oppure offre "Annulla".
+    /// </summary>
+    /// <param name="offerUndo">false per il cambio fatto da "Annulla", che non si annulla.</param>
+    private async Task PlayAsync(string profileName, bool launch, bool offerUndo = true)
+    {
+        if (busy || gameRunning || !ConfirmCloud(launch))
+            return;
+
+        string name = SaveManager.ProfileDisplayName(profileName);
+        string previous = manager.State.ActiveProfile;
+        bool hadPrevious = manager.HasActiveProfile && previous != profileName;
+        string previousName = SaveManager.ProfileDisplayName(previous);
+
+        Result result = await RunBusyAsync(Loc.F(Strings.BusyLoading, name), () =>
+        {
+            bool saved = false;
+
+            if (manager.HasUnsavedProgress())
+            {
+                Result save = manager.SaveProgress();
+
+                if (!save.Success)
+                    return save with { Message = Loc.F(Strings.SwitchSaveFailed, previousName, save.Message) };
+
+                saved = true;
+            }
+
+            Result activation = manager.ActivateProfile(profileName);
+
+            if (!activation.Success)
+                return activation;
+
+            return activation with
+            {
+                Message = saved
+                    ? Loc.F(Strings.LoadedAndSaved, name, previousName)
+                    : Loc.F(Strings.Loaded, name)
+            };
+        });
+
+        if (!result.Success)
+        {
+            ShowError(result);
+            return;
+        }
+
+        if (launch)
+        {
+            Result launched = SaveManager.LaunchGame();
+
+            if (launched.Success)
+                ShowToast(InfoKind.Info, Loc.F(Strings.StartingWith, name));
+            else
+                ShowError(launched);
+
+            return;
+        }
+
+        if (offerUndo && hadPrevious)
+        {
+            ShowToast(InfoKind.Success, result.Message, Strings.Undo,
+                () => _ = PlayAsync(previous, launch: false, offerUndo: false));
+        }
+        else
+        {
+            ShowToast(InfoKind.Success, result.Message);
+        }
+    }
+
+    /// <summary>
+    /// "Gioca" sulla partita già nel gioco: avvia solo Control.
+    /// </summary>
+    private void LaunchOnly()
+    {
+        if (busy || gameRunning || !ConfirmCloud(launching: true))
+            return;
+
+        Result launched = SaveManager.LaunchGame();
+
+        if (launched.Success)
+            ShowToast(InfoKind.Info, Loc.F(Strings.StartingWith,
+                SaveManager.ProfileDisplayName(manager.State.ActiveProfile)));
+        else
+            ShowError(launched);
+    }
+
+    private async Task RenameAsync(string profile)
+    {
+        using var dialog = new NewProfileForm(
+            name => manager.ProfileExists(SaveManager.ProfileFolderName(name)),
+            SaveManager.ProfileDisplayName(profile));
+
+        if (dialog.ShowDialog(this) != DialogResult.OK)
+            return;
+
+        string newName = dialog.ProfileName;
+
+        Result result = await RunBusyAsync(Strings.BusyRenaming,
+            () => manager.RenameProfile(profile, newName));
+
+        ShowResult(result);
+    }
+
+    private void EditNote(CardData data)
+    {
+        using var dialog = new TextPromptForm(Strings.NoteTitle,
+            Loc.F(Strings.NoteCaption, SaveManager.ProfileDisplayName(data.ProfileName)).ToUpperInvariant(),
+            data.Info.Note, Strings.NoteHint, SaveManager.MaxNoteLength, Strings.SaveButton);
+
+        if (dialog.ShowDialog(this) != DialogResult.OK)
+            return;
+
+        Result result = manager.SetNote(data.ProfileName, dialog.Value);
+
+        if (!result.Success)
+            ShowError(result);
+
+        RefreshAll();
+    }
+
+    private async Task ExportAsync(string profile)
+    {
+        string name = SaveManager.ProfileDisplayName(profile);
+
+        using var dialog = new SaveFileDialog
+        {
+            Title = Strings.ExportTitle,
+            Filter = Strings.ZipFilter,
+            FileName = name + ".zip",
+            OverwritePrompt = true
+        };
+
+        if (dialog.ShowDialog(this) != DialogResult.OK)
+            return;
+
+        string path = dialog.FileName;
+
+        Result result = await RunBusyAsync(Loc.F(Strings.BusyExporting, name),
+            () => manager.ExportProfile(profile, path));
+
+        ShowResult(result);
+    }
+
+    private async void ImportClicked(object? sender, EventArgs e)
+    {
+        if (busy)
+            return;
+
+        using var dialog = new OpenFileDialog
+        {
+            Title = Strings.ImportTitle,
+            Filter = Strings.ZipFilter
+        };
+
+        if (dialog.ShowDialog(this) != DialogResult.OK)
+            return;
+
+        string path = dialog.FileName;
+        string imported = "";
+
+        Result result = await RunBusyAsync(Strings.BusyImporting, () =>
+        {
+            Result<string> import = manager.ImportProfile(path);
+
+            if (!import.Success)
+                return Result.Fail(import.Message);
+
+            imported = import.Value!;
+            return Result.Ok(Loc.F(Strings.Imported, SaveManager.ProfileDisplayName(imported)));
+        });
+
+        ShowResult(result);
+    }
+
+    /// <summary>
+    /// Elimina una partita: finisce tra le copie automatiche, da cui si può recuperare.
+    /// </summary>
+    private async Task DeleteAsync(string profile)
+    {
+        string name = SaveManager.ProfileDisplayName(profile);
+        string text = Loc.F(Strings.ConfirmDeleteText, manager.State.BackupsToKeep == 0
+            ? Strings.ConfirmDeleteKeepAll
+            : Loc.F(Strings.ConfirmDeleteKeepN, manager.State.BackupsToKeep));
+
+        int points = manager.CountSavestates(profile);
+
+        if (points > 0)
+            text += "\n\n" + Loc.F(Strings.ConfirmDeletePoints, points);
+
+        if (!MessageDialog.Confirm(this, Loc.F(Strings.ConfirmDeleteHeading, name), text,
+                Strings.DeletePlaythrough, destructive: true, MessageBoxIcon.Warning))
+            return;
+
+        Result result = await RunBusyAsync(Strings.BusyDeleting, () => manager.DeleteProfile(profile));
+
+        ShowResult(result);
+    }
+
+    private async void NewClicked(object? sender, EventArgs e)
+    {
+        if (busy)
+            return;
+
+        using var dialog = new NewProfileForm(name =>
+            manager.ProfileExists(SaveManager.ProfileFolderName(name)));
+
+        if (dialog.ShowDialog(this) != DialogResult.OK)
+            return;
+
+        string name = dialog.ProfileName;
+        bool copy = dialog.CopyCurrentSaves;
+        bool playNow = dialog.ActivateNow;
+
+        Result result = await RunBusyAsync(Strings.BusyCreating,
+            () => manager.CreateProfile(name, copy));
+
+        ShowResult(result);
+
+        if (result.Success && playNow)
+            await PlayAsync(SaveManager.ProfileFolderName(name), manager.State.LaunchGame);
+    }
+
+    // ALTRE FINESTRE
+
+    private void ShowHistory(bool focusSave)
+    {
+        if (!manager.HasActiveProfile)
+            return;
+
+        using var dialog = new HistoryForm(manager, focusSave, () => ConfirmCloud(launching: false));
+        dialog.ShowDialog(this);
+
+        if (dialog.Changed)
+            RefreshAll();
+    }
+
+    private void ShowSettings()
+    {
+        using var dialog = new SettingsForm(manager);
+
+        if (dialog.ShowDialog(this) == DialogResult.OK)
+        {
+            RefreshAll();
+            ShowToast(InfoKind.Success, Strings.SettingSaved);
+        }
+    }
+
+    private void ShowDeleted()
+    {
+        using var dialog = new DeletedForm(manager);
+        dialog.ShowDialog(this);
+
+        if (dialog.Changed)
+            RefreshAll();
+    }
+
+    private void ShowCloudHelp()
+    {
+        MessageDialog.Inform(this, Strings.CloudHelpHeading, Strings.CloudHelpText, MessageBoxIcon.Information);
+        RefreshAll();
+    }
+
+    /// <summary>
+    /// Primo avvio: nessuna partita, ma il gioco ha dei salvataggi.
+    /// </summary>
+    private async Task OfferFirstRunAsync()
+    {
+        try
+        {
+            if (manager.GetProfiles().Count > 0 || manager.GameSavesAreEmpty())
+                return;
+        }
+        catch
+        {
+            return;
+        }
+
+        using var dialog = new FirstRunForm(manager, cloudState);
+
+        if (dialog.ShowDialog(this) != DialogResult.OK)
+            return;
+
+        string name = dialog.PlaythroughName;
+        Result result = await RunBusyAsync(Strings.BusyCreating, () => manager.AdoptGameSaves(name));
+
+        ShowResult(result);
+    }
+
+    /// <summary>
+    /// Dice all'avvio quali cartelle in Profili non compaiono come partite e perché.
     /// </summary>
     private void ReportIgnoredProfileFolders()
     {
@@ -483,212 +774,10 @@ internal sealed class MainForm : Form
 
         string names = string.Join(", ", ignored);
         Log.Write("Cartelle ignorate in Profili (nome non valido): " + names);
-        SetStatus(Loc.F(Strings.IgnoredProfileFolders, names), StatusKind.Warning);
+        ShowToast(InfoKind.Warning, Loc.F(Strings.IgnoredProfileFolders, names), autoHide: false);
     }
 
-    private async Task CheckGameAsync()
-    {
-        if (checkingGame)
-            return;
-
-        checkingGame = true;
-
-        try
-        {
-            bool running = await Task.Run(SaveManager.IsGameRunning);
-
-            if (running != gameRunning)
-            {
-                gameRunning = running;
-                UpdateControls();
-            }
-        }
-        finally
-        {
-            checkingGame = false;
-        }
-    }
-
-    // AZIONI
-
-    private async void ActivateClicked(object? sender, EventArgs e)
-    {
-        if (profileList.SelectedItem is not ProfileItem item)
-            return;
-
-        await ActivateAsync(item.FolderName);
-    }
-
-    /// <summary>
-    /// Attiva un profilo senza chiedere conferme: se i salvataggi del gioco
-    /// contengono progressi non salvati, li salva prima nel profilo attivo.
-    /// Entrambe le operazioni fanno un backup.
-    /// </summary>
-    private async Task ActivateAsync(string profileName)
-    {
-        if (!ConfirmSteamClosed())
-            return;
-
-        string name = SaveManager.ProfileDisplayName(profileName);
-        string active = SaveManager.ProfileDisplayName(manager.State.ActiveProfile);
-
-        Result result = await RunBusyAsync(Loc.F(Strings.BusyActivating, name), () =>
-        {
-            bool saved = false;
-
-            if (manager.HasUnsavedProgress())
-            {
-                Result save = manager.SaveProgress();
-
-                if (!save.Success)
-                {
-                    return save with
-                    {
-                        Message = Loc.F(Strings.SwitchSaveFailed, active, save.Message)
-                    };
-                }
-
-                saved = true;
-            }
-
-            Result activation = manager.ActivateProfile(profileName);
-
-            if (!activation.Success)
-                return activation;
-
-            return activation with
-            {
-                Message = saved
-                    ? Loc.F(Strings.SavedAndActivated, active, name)
-                    : Loc.F(Strings.ActivatedNamed, name)
-            };
-        });
-
-        ShowResult(result);
-    }
-
-    private async void SaveClicked(object? sender, EventArgs e)
-    {
-        if (!manager.HasActiveProfile)
-            return;
-
-        string name = SaveManager.ProfileDisplayName(manager.State.ActiveProfile);
-        bool allowEmpty = false;
-
-        if (manager.GameSavesAreEmpty())
-        {
-            if (!Ask(Loc.F(Strings.ConfirmSaveEmpty, name), MessageBoxIcon.Warning))
-                return;
-
-            allowEmpty = true;
-        }
-
-        if (!ConfirmSteamClosed())
-            return;
-
-        Result result = await RunBusyAsync(Strings.BusySavingProgress,
-            () => manager.SaveProgress(allowEmpty));
-
-        ShowResult(result);
-    }
-
-    private async void NewClicked(object? sender, EventArgs e)
-    {
-        using var dialog = new NewProfileForm(name =>
-            manager.ProfileExists(SaveManager.ProfileFolderName(name)));
-
-        if (dialog.ShowDialog(this) != DialogResult.OK)
-            return;
-
-        string name = dialog.ProfileName;
-        bool copy = dialog.CopyCurrentSaves;
-        bool activate = dialog.ActivateNow;
-
-        Result result = await RunBusyAsync(Strings.BusyCreatingProfile,
-            () => manager.CreateProfile(name, copy));
-
-        ShowResult(result);
-
-        if (!result.Success)
-            return;
-
-        string profileName = SaveManager.ProfileFolderName(name);
-        SelectProfile(profileName);
-
-        if (activate)
-            await ActivateAsync(profileName);
-    }
-
-    private async void RenameClicked(object? sender, EventArgs e)
-    {
-        if (busy || profileList.SelectedItem is not ProfileItem item)
-            return;
-
-        using var dialog = new NewProfileForm(
-            name => manager.ProfileExists(SaveManager.ProfileFolderName(name)),
-            SaveManager.ProfileDisplayName(item.FolderName));
-
-        if (dialog.ShowDialog(this) != DialogResult.OK)
-            return;
-
-        string newName = dialog.ProfileName;
-
-        Result result = await RunBusyAsync(Strings.BusyRenamingProfile,
-            () => manager.RenameProfile(item.FolderName, newName));
-
-        ShowResult(result);
-
-        if (result.Success)
-            SelectProfile(SaveManager.ProfileFolderName(newName));
-    }
-
-    /// <summary>
-    /// Elimina il profilo selezionato, che finisce nei backup.
-    /// </summary>
-    private async void DeleteClicked(object? sender, EventArgs e)
-    {
-        if (busy || profileList.SelectedItem is not ProfileItem item)
-            return;
-
-        string name = SaveManager.ProfileDisplayName(item.FolderName);
-
-        if (item.Active)
-        {
-            SetStatus(Loc.F(Strings.ActiveCannotDeleteStatus, name),
-                StatusKind.Warning);
-            return;
-        }
-
-        string question = Loc.F(Strings.ConfirmDeleteProfile, name);
-
-        int savestates = manager.CountSavestates(item.FolderName);
-
-        if (savestates > 0)
-            question += Loc.F(Strings.ConfirmDeleteProfileSavestates, savestates);
-
-        if (!Ask(question, MessageBoxIcon.Warning))
-            return;
-
-        Result result = await RunBusyAsync(Strings.BusyDeletingProfile,
-            () => manager.DeleteProfile(item.FolderName));
-
-        ShowResult(result);
-    }
-
-    /// <summary>
-    /// Apre la finestra dei savestate o dei backup e poi aggiorna la finestra.
-    /// </summary>
-    private void ShowListDialog(ListDialog dialog)
-    {
-        using (dialog)
-            dialog.ShowDialog(this);
-
-        if (dialog.Changed)
-        {
-            SetStatus(ReadyMessage, StatusKind.Info);
-            RefreshAll();
-        }
-    }
+    // OPERAZIONI E MESSAGGI
 
     /// <summary>
     /// Esegue un'operazione sui file in background, con la finestra bloccata.
@@ -696,7 +785,8 @@ internal sealed class MainForm : Form
     private async Task<Result> RunBusyAsync(string message, Func<Result> action)
     {
         busy = true;
-        SetStatus(message, StatusKind.Busy);
+        ShowToast(InfoKind.Info, message, autoHide: false);
+        UpdateControls();
 
         try
         {
@@ -710,103 +800,68 @@ internal sealed class MainForm : Form
         finally
         {
             busy = false;
+            HideToast();
             RefreshAll();
         }
     }
 
-    // MESSAGGI
-
     private void ShowResult(Result result)
     {
-        SetStatus(result.Message.Split('\n')[0],
-            result.Success ? StatusKind.Success : StatusKind.Error);
-
         if (result.Success)
-            return;
-
-        string title = result.Critical ? Strings.TitleSeriousError : Strings.TitleOperationFailed;
-        MessageBoxIcon icon = result.Critical ? MessageBoxIcon.Error : MessageBoxIcon.Warning;
-
-        if (result.BackupPath == null || !Directory.Exists(result.BackupPath))
-        {
-            MessageDialog.Show(this, result.Message, title, MessageBoxButtons.OK, icon);
-            return;
-        }
-
-        string text = result.Message;
-
-        if (!result.Critical)
-            text += Loc.F(Strings.BackupLine, result.BackupPath);
-
-        text += Strings.AskOpenBackupFolder;
-
-        if (MessageDialog.Show(this, text, title, MessageBoxButtons.YesNo, icon) == DialogResult.Yes)
-            OpenFolder(result.BackupPath);
+            ShowToast(InfoKind.Success, result.Message);
+        else
+            ShowError(result);
     }
 
     /// <summary>
-    /// Avvisa che Steam è aperto, una sola volta per sessione. Con Steam Cloud
-    /// disattivato per Control l'avviso non serve: Steam non tocca i salvataggi.
+    /// Errore in una finestra: cosa è successo e, se c'è, il backup da aprire.
     /// </summary>
-    private bool ConfirmSteamClosed()
+    private void ShowError(Result result)
     {
-        if (steamWarningAccepted || cloudState == CloudState.Disabled || !SaveManager.IsSteamRunning())
+        bool hasBackup = result.BackupPath != null && Directory.Exists(result.BackupPath);
+
+        bool openBackup = MessageDialog.Inform(this,
+            result.Critical ? Strings.TitleSeriousError : Strings.TitleOperationFailed,
+            result.Message,
+            result.Critical ? MessageBoxIcon.Error : MessageBoxIcon.Warning,
+            hasBackup ? Strings.OpenBackup : null);
+
+        if (openBackup)
+            OpenFolder(result.BackupPath!);
+    }
+
+    /// <summary>
+    /// Avviso su Steam Cloud, una sola volta per sessione: prima di avviare il
+    /// gioco, o prima di toccare i salvataggi con Steam aperto. Con il cloud
+    /// disattivato per Control non serve.
+    /// </summary>
+    private bool ConfirmCloud(bool launching)
+    {
+        if (cloudWarningAccepted || cloudState == CloudState.Disabled)
             return true;
 
-        string cloud = cloudState == CloudState.Enabled
-            ? Strings.CloudOnWarning
-            : Strings.CloudMaybeWarning;
+        if (!launching && !SaveManager.IsSteamRunning())
+            return true;
 
-        steamWarningAccepted = Ask(Loc.F(Strings.SteamRunningWarning, cloud), MessageBoxIcon.Warning);
+        cloudWarningAccepted = MessageDialog.Confirm(this, Strings.CloudConfirmHeading,
+            cloudState == CloudState.Enabled ? Strings.CloudConfirmOn : Strings.CloudConfirmMaybe,
+            launching ? Strings.StartAnyway : Strings.ContinueAnyway,
+            icon: MessageBoxIcon.Warning);
 
-        return steamWarningAccepted;
-    }
-
-    private bool Ask(string question, MessageBoxIcon icon = MessageBoxIcon.Question)
-    {
-        // Con un avviso il pulsante predefinito è "No".
-        MessageBoxDefaultButton defaultButton = icon == MessageBoxIcon.Warning
-            ? MessageBoxDefaultButton.Button2
-            : MessageBoxDefaultButton.Button1;
-
-        return MessageDialog.Show(this, question, Text,
-            MessageBoxButtons.YesNo, icon, defaultButton) == DialogResult.Yes;
-    }
-
-    private void SelectProfile(string profileName)
-    {
-        foreach (ProfileItem item in profileList.Items)
-        {
-            if (item.FolderName == profileName)
-            {
-                profileList.SelectedItem = item;
-                return;
-            }
-        }
+        return cloudWarningAccepted;
     }
 
     private void OpenFolder(string path)
     {
         try
         {
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = path,
-                UseShellExecute = true
-            });
+            Directory.CreateDirectory(path);
+            Process.Start(new ProcessStartInfo { FileName = path, UseShellExecute = true });
         }
         catch (Exception ex)
         {
-            MessageDialog.Show(this, Loc.F(Strings.CannotOpenFolder, ex.Message),
-                Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            MessageDialog.Inform(this, Strings.TitleOperationFailed, Loc.F(Strings.CannotOpenFolder, ex.Message),
+                MessageBoxIcon.Warning);
         }
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing)
-            gameTimer.Dispose();
-
-        base.Dispose(disposing);
     }
 }

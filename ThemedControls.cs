@@ -6,7 +6,10 @@ internal enum ButtonKind
 {
     Primary,
     Secondary,
-    Ghost
+    Ghost,
+
+    /// <summary>Azioni che eliminano qualcosa.</summary>
+    Danger
 }
 
 /// <summary>
@@ -27,12 +30,23 @@ internal sealed class FlatButton : Button
         FlatStyle = FlatStyle.Flat;
         FlatAppearance.BorderSize = 0;
         Cursor = Cursors.Hand;
+        UseMnemonic = false;
 
         SetStyle(
             ControlStyles.UserPaint |
             ControlStyles.AllPaintingInWmPaint |
             ControlStyles.OptimizedDoubleBuffer,
             true);
+    }
+
+    /// <summary>
+    /// Dà al pulsante la larghezza del testo più i margini, con un minimo.
+    /// </summary>
+    public FlatButton FitText(int height = 36, int minWidth = 0)
+    {
+        int width = TextRenderer.MeasureText(Text, Font).Width + 32;
+        Size = new Size(Math.Max(width, minWidth), height);
+        return this;
     }
 
     protected override void OnMouseEnter(EventArgs e)
@@ -134,6 +148,11 @@ internal sealed class FlatButton : Button
                 pressed ? Theme.SurfaceSelected : hover ? Theme.SurfaceHover : Theme.Surface,
                 Theme.Border,
                 Theme.Text),
+
+            ButtonKind.Danger => (
+                pressed ? Theme.AccentPressed : hover ? Color.FromArgb(82, 30, 27) : Theme.AccentSoft,
+                Theme.DangerBorder,
+                hover ? Color.White : Theme.DangerText),
 
             _ => (
                 pressed ? Theme.SurfaceSelected : hover ? Theme.SurfaceHover : Color.Empty,
@@ -270,78 +289,5 @@ internal sealed class ThemedMenuRenderer : ToolStripProfessionalRenderer
         public override Color MenuItemSelected => Theme.SurfaceSelected;
         public override Color SeparatorDark => Theme.Border;
         public override Color SeparatorLight => Theme.Border;
-    }
-}
-
-internal enum StatusKind
-{
-    Info,
-    Busy,
-    Success,
-    Warning,
-    Error
-}
-
-/// <summary>
-/// Barra di stato in basso: pallino colorato più messaggio.
-/// </summary>
-internal sealed class StatusBar : Control
-{
-    private StatusKind kind;
-
-    public StatusBar()
-    {
-        Dock = DockStyle.Bottom;
-        Height = 34;
-        BackColor = Theme.Header;
-        Font = Theme.Small;
-        DoubleBuffered = true;
-        SetStyle(ControlStyles.ResizeRedraw, true);
-    }
-
-    public void SetStatus(string message, StatusKind kind)
-    {
-        if (Text == message && this.kind == kind)
-            return;
-
-        // Text è anche il nome letto dagli screen reader.
-        Text = message;
-        this.kind = kind;
-        Invalidate();
-    }
-
-    protected override void OnPaint(PaintEventArgs e)
-    {
-        Graphics g = e.Graphics;
-
-        using (var line = new Pen(Theme.Border))
-            g.DrawLine(line, 0, 0, Width, 0);
-
-        int pad = LogicalToDeviceUnits(20);
-        int dot = LogicalToDeviceUnits(8);
-
-        Color dotColor = kind switch
-        {
-            StatusKind.Busy => Theme.Accent,
-            StatusKind.Success => Theme.Success,
-            StatusKind.Warning => Theme.Warning,
-            StatusKind.Error => Theme.Error,
-            _ => Theme.TextDisabled
-        };
-
-        g.SmoothingMode = SmoothingMode.AntiAlias;
-
-        using (var brush = new SolidBrush(dotColor))
-            g.FillEllipse(brush, pad, (Height - dot) / 2f, dot, dot);
-
-        int x = pad + dot + LogicalToDeviceUnits(10);
-        var textRect = new Rectangle(x, 0, Width - x - pad, Height);
-
-        TextRenderer.DrawText(g, Text, Font, textRect,
-            kind == StatusKind.Info ? Theme.TextMuted : Theme.Text,
-            TextFormatFlags.VerticalCenter |
-            TextFormatFlags.SingleLine |
-            TextFormatFlags.EndEllipsis |
-            TextFormatFlags.NoPrefix);
     }
 }

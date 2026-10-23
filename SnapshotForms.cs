@@ -456,337 +456,50 @@ internal abstract class ListDialog : Form
 }
 
 /// <summary>
-/// Savestate del profilo attivo: crea, ripristina, elimina.
+/// Partite eliminate che si possono ancora recuperare (finché la pulizia
+/// delle copie automatiche non le elimina).
 /// </summary>
-internal sealed class SavestateForm : ListDialog
+internal sealed class DeletedForm : ListDialog
 {
-    private static readonly string Hint = Strings.SavestateHint;
+    private readonly FlatButton recoverButton;
 
-    private readonly TextBox nameBox;
-    private readonly CardPanel nameCard;
-    private readonly Label hintLabel;
-    private readonly FlatButton createButton;
-
-    private readonly FlatButton restoreButton;
-    private readonly FlatButton deleteButton;
-
-    public SavestateForm(SaveManager manager, Func<bool> confirmSteamClosed)
-        : this(manager, confirmSteamClosed, BuildTop(out TextBox box, out CardPanel card,
-            out Label hint, out FlatButton create), box, card, hint, create)
+    public DeletedForm(SaveManager manager)
+        : base(manager, Strings.DeletedTitle, Strings.NoDeleted, null, () => true)
     {
-    }
-
-    private SavestateForm(SaveManager manager, Func<bool> confirmSteamClosed, Control top,
-        TextBox nameBox, CardPanel nameCard, Label hintLabel, FlatButton createButton)
-        : base(manager, Strings.SavestatesTitle,
-            Strings.NoSavestates,
-            top, confirmSteamClosed)
-    {
-        this.nameBox = nameBox;
-        this.nameCard = nameCard;
-        this.hintLabel = hintLabel;
-        this.createButton = createButton;
-
-        restoreButton = AddButton(Strings.Restore, ButtonKind.Primary, RestoreAsync);
-        deleteButton = AddButton(Strings.Delete, ButtonKind.Secondary, DeleteAsync);
-        FlatButton folderButton = AddButton(Strings.OpenFolder, ButtonKind.Ghost, () =>
-        {
-            OpenFolder(Manager.ActiveSavestatePath, createIfMissing: true);
-            return Task.CompletedTask;
-        });
-        folderButton.Margin = new Padding(0, 14, 0, 0);
-
-        AcceptButton = createButton;
-
-        createButton.Click += async (_, _) =>
-        {
-            if (!Busy)
-                await CreateAsync();
-        };
-
+        recoverButton = AddButton(Strings.Recover, ButtonKind.Primary, RecoverAsync);
         List.DoubleClick += async (_, _) =>
         {
-            if (restoreButton.Enabled)
-                await RestoreAsync();
+            if (recoverButton.Enabled)
+                await RecoverAsync();
         };
-
-        nameBox.Enter += (_, _) => nameCard.BorderColor = Theme.Accent;
-        nameBox.Leave += (_, _) => nameCard.BorderColor = Theme.Border;
-        nameBox.TextChanged += (_, _) => UpdateButtons();
-    }
-
-    private static Control BuildTop(out TextBox nameBox, out CardPanel nameCard,
-        out Label hintLabel, out FlatButton createButton)
-    {
-        nameBox = new TextBox
-        {
-            Dock = DockStyle.Fill,
-            BorderStyle = BorderStyle.None,
-            BackColor = Theme.Surface,
-            ForeColor = Theme.Text,
-            Font = new Font("Segoe UI", 11f),
-            MaxLength = 50
-        };
-
-        nameCard = new CardPanel
-        {
-            Dock = DockStyle.Fill,
-            Height = 38,
-            Padding = new Padding(12, 8, 12, 4),
-            Margin = new Padding(0),
-            BorderColor = Theme.Border
-        };
-        nameCard.Controls.Add(nameBox);
-
-        createButton = new FlatButton(Strings.CreateSavestate, ButtonKind.Primary)
-        {
-            Size = new Size(170, 38),
-            Margin = new Padding(16, 0, 0, 0)
-        };
-
-        hintLabel = new Label
-        {
-            AutoSize = true,
-            Text = Hint,
-            Font = Theme.Small,
-            ForeColor = Theme.TextMuted,
-            Margin = new Padding(2, 6, 0, 18)
-        };
-
-        var top = new TableLayoutPanel
-        {
-            Dock = DockStyle.Fill,
-            AutoSize = true,
-            ColumnCount = 2,
-            RowCount = 3,
-            Margin = new Padding(0)
-        };
-        top.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-        top.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-
-        Label caption = MakeCaption(Strings.CaptionNewSavestate);
-        top.Controls.Add(caption, 0, 0);
-        top.SetColumnSpan(caption, 2);
-        top.Controls.Add(nameCard, 0, 1);
-        top.Controls.Add(createButton, 1, 1);
-        top.Controls.Add(hintLabel, 0, 2);
-        top.SetColumnSpan(hintLabel, 2);
-
-        return top;
     }
 
     protected override IEnumerable<ItemList.Row> LoadRows()
     {
-        return Manager.GetSavestates()
-            .Select(s => ItemList.Row.For(s, s.Name == "" ? Strings.Unnamed : s.Name));
+        return Manager.GetDeletedProfiles()
+            .Select(d => new ItemList.Row(d, SaveManager.ProfileDisplayName(d.Owner),
+                Loc.F(Strings.DeletedOn, d.Date.ToString("g"))));
     }
 
     protected override string CaptionText(int count)
     {
-        string profile = SaveManager.ProfileDisplayName(Manager.State.ActiveProfile).ToUpperInvariant();
-        string caption = Loc.F(Strings.CaptionSavestatesOf, profile);
-        return count == 0 ? caption : $"{caption}  ·  {count}";
+        return count == 0 ? Strings.CaptionDeleted : $"{Strings.CaptionDeleted}  ·  {count}";
     }
 
     protected override void UpdateButtons()
     {
         // Chiamato anche dal costruttore della base, prima che i campi esistano.
-        if (createButton == null)
+        if (recoverButton == null)
             return;
 
-        string name = nameBox.Text.Trim();
-        bool valid = SaveManager.IsValidSavestateName(name);
-
-        hintLabel.Text = valid ? Hint : Strings.InvalidSavestateName;
-        hintLabel.ForeColor = valid ? Theme.TextMuted : Theme.Error;
-
-        bool selected = List.SelectedSnapshot != null;
-
-        // Creare e ripristinare toccano i salvataggi del gioco, eliminare no.
-        createButton.Enabled = CanTouchGame && valid && Manager.HasActiveProfile;
-        restoreButton.Enabled = CanTouchGame && selected;
-        deleteButton.Enabled = !Busy && selected;
+        recoverButton.Enabled = !Busy && List.SelectedSnapshot != null;
     }
 
-    private async Task CreateAsync()
+    private async Task RecoverAsync()
     {
-        string name = nameBox.Text.Trim();
-
-        Result result = await RunAsync(Strings.BusyCreatingSavestate, () => Manager.CreateSavestate(name));
-
-        if (result.Success)
-        {
-            nameBox.Clear();
-            List.SelectedIndex = List.Items.Count > 0 ? 0 : -1;
-        }
-    }
-
-    /// <summary>
-    /// Nessuna conferma: i salvataggi attuali vanno comunque in un backup.
-    /// </summary>
-    private async Task RestoreAsync()
-    {
-        if (List.SelectedSnapshot is not Snapshot savestate || !ConfirmSteamClosed())
+        if (List.SelectedSnapshot is not Snapshot deleted)
             return;
 
-        await RunAsync(Strings.BusyRestoringSavestate, () => Manager.RestoreSavestate(savestate));
-    }
-
-    private async Task DeleteAsync()
-    {
-        if (List.SelectedSnapshot is not Snapshot savestate)
-            return;
-
-        string name = savestate.Name == "" ? Strings.UnnamedLower : $"\"{savestate.Name}\"";
-
-        if (!Ask(Loc.F(Strings.ConfirmDeleteSavestate, name, savestate.Date.ToString("g")),
-                 MessageBoxIcon.Warning))
-            return;
-
-        await RunAsync(Strings.BusyDeletingSavestate, () => Manager.DeleteSavestate(savestate));
-    }
-}
-
-/// <summary>
-/// Backup automatici: ripristino e numero da conservare.
-/// </summary>
-internal sealed class BackupForm : ListDialog
-{
-    private readonly NumericUpDown keepBox;
-    private readonly FlatButton applyButton;
-    private readonly FlatButton restoreButton;
-
-    public BackupForm(SaveManager manager, Func<bool> confirmSteamClosed)
-        : this(manager, confirmSteamClosed,
-            BuildTop(out NumericUpDown keep, out FlatButton apply), keep, apply)
-    {
-    }
-
-    private BackupForm(SaveManager manager, Func<bool> confirmSteamClosed, Control top,
-        NumericUpDown keepBox, FlatButton applyButton)
-        : base(manager, Strings.BackupsTitle, Strings.NoBackups, top, confirmSteamClosed)
-    {
-        this.keepBox = keepBox;
-        this.applyButton = applyButton;
-
-        restoreButton = AddButton(Strings.Restore, ButtonKind.Primary, RestoreAsync);
-        FlatButton folderButton = AddButton(Strings.OpenFolder, ButtonKind.Ghost, () =>
-        {
-            if (List.SelectedSnapshot is Snapshot backup)
-                OpenFolder(backup.Path, createIfMissing: false);
-            else
-                OpenFolder(Manager.BackupPath, createIfMissing: true);
-            return Task.CompletedTask;
-        });
-        folderButton.Margin = new Padding(0, 14, 0, 0);
-
-        keepBox.Value = Math.Min(keepBox.Maximum, Manager.State.BackupsToKeep);
-        keepBox.ValueChanged += (_, _) => UpdateButtons();
-
-        applyButton.Click += async (_, _) =>
-        {
-            if (!Busy)
-                await ApplyKeepAsync();
-        };
-    }
-
-    private static Control BuildTop(out NumericUpDown keepBox, out FlatButton applyButton)
-    {
-        applyButton = new FlatButton(Strings.Apply)
-        {
-            Size = new Size(90, 30),
-            Margin = new Padding(8, 0, 0, 0)
-        };
-
-        keepBox = new NumericUpDown
-        {
-            Minimum = 0,
-            Maximum = 999,
-            Width = 70,
-            BackColor = Theme.Surface,
-            ForeColor = Theme.Text,
-            BorderStyle = BorderStyle.FixedSingle,
-            TextAlign = HorizontalAlignment.Center,
-            Margin = new Padding(8, 0, 8, 0)
-        };
-
-        var top = new FlowLayoutPanel
-        {
-            AutoSize = true,
-            WrapContents = false,
-            Dock = DockStyle.Fill,
-            Margin = new Padding(0, 0, 0, 16)
-        };
-
-        Label MakeText(string text) => new()
-        {
-            Text = text,
-            AutoSize = true,
-            ForeColor = Theme.Text,
-            Margin = new Padding(0, 3, 0, 0)
-        };
-
-        top.Controls.Add(MakeText(Strings.KeepLast));
-        top.Controls.Add(keepBox);
-        top.Controls.Add(MakeText(Strings.KeepLastSuffix));
-        top.Controls.Add(applyButton);
-
-        return top;
-    }
-
-    protected override IEnumerable<ItemList.Row> LoadRows()
-    {
-        return Manager.GetBackups()
-            .Select(b => ItemList.Row.For(b, SaveManager.BackupReasonText(b.Name)));
-    }
-
-    protected override string CaptionText(int count)
-    {
-        return count == 0 ? Strings.CaptionBackups : $"{Strings.CaptionBackups}  ·  {count}";
-    }
-
-    protected override void UpdateButtons()
-    {
-        // Chiamato anche dal costruttore della base, prima che i campi esistano.
-        if (restoreButton == null)
-            return;
-
-        restoreButton.Enabled = CanTouchGame && List.SelectedSnapshot != null;
-        keepBox.Enabled = !Busy;
-        applyButton.Enabled = !Busy && (int)keepBox.Value != Manager.State.BackupsToKeep;
-    }
-
-    private async Task ApplyKeepAsync()
-    {
-        int keep = (int)keepBox.Value;
-        int excess = keep == 0 ? 0 : Math.Max(0, List.Items.Count - keep);
-
-        // Conferma solo se si perde qualcosa: l'eliminazione è definitiva.
-        if (excess > 0 &&
-            !Ask(Loc.F(Strings.ConfirmPrune, excess),
-                 MessageBoxIcon.Warning))
-            return;
-
-        await RunAsync(Strings.BusySavingSetting, () => Manager.SetBackupsToKeep(keep));
-    }
-
-    private async Task RestoreAsync()
-    {
-        if (List.SelectedSnapshot is not Snapshot backup)
-            return;
-
-        string active = Manager.HasActiveProfile
-            ? Loc.F(Strings.RestoreGoesToActive, SaveManager.ProfileDisplayName(Manager.State.ActiveProfile))
-            : Strings.NoActiveProfile;
-
-        // Qui la conferma serve: il backup può essere di un altro profilo.
-        if (!Ask(Loc.F(Strings.ConfirmRestoreBackup,
-                     SaveManager.BackupReasonText(backup.Name), backup.Date.ToString("g"), active)))
-            return;
-
-        if (!ConfirmSteamClosed())
-            return;
-
-        await RunAsync(Strings.BusyRestoringBackup, () => Manager.RestoreBackup(backup));
+        await RunAsync(Strings.BusyRecovering, () => Manager.RecoverDeletedProfile(deleted));
     }
 }

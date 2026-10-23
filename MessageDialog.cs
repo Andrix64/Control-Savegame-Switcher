@@ -5,13 +5,17 @@ namespace ControlSaveManager;
 
 /// <summary>
 /// Finestra di messaggio a tema scuro, al posto di MessageBox.
-/// Stessi parametri di MessageBox.Show per i casi usati nell'app.
+/// Le conferme usano verbi sui pulsanti ("Elimina partita" / "Annulla"), come
+/// chiedono le linee guida di Windows; Show resta per i messaggi semplici.
 /// </summary>
 internal sealed class MessageDialog : Form
 {
-    private const int TextWidth = 400;
+    private const int TextWidth = 420;
 
     private readonly MessageBoxIcon icon;
+
+    /// <summary>Un pulsante: testo, risultato e stile.</summary>
+    private sealed record Choice(string Label, DialogResult Result, ButtonKind Kind);
 
     /// <summary>
     /// Messaggio senza finestra proprietaria (all'avvio).
@@ -31,7 +35,71 @@ internal sealed class MessageDialog : Form
         MessageBoxIcon icon = MessageBoxIcon.None,
         MessageBoxDefaultButton defaultButton = MessageBoxDefaultButton.Button1)
     {
-        using var dialog = new MessageDialog(text, title, buttons, icon, defaultButton);
+        List<Choice> choices = buttons switch
+        {
+            MessageBoxButtons.YesNo =>
+                [new(Strings.Yes, DialogResult.Yes, ButtonKind.Secondary), new(Strings.No, DialogResult.No, ButtonKind.Secondary)],
+            MessageBoxButtons.YesNoCancel =>
+                [new(Strings.Yes, DialogResult.Yes, ButtonKind.Secondary), new(Strings.No, DialogResult.No, ButtonKind.Secondary),
+                 new(Strings.Cancel, DialogResult.Cancel, ButtonKind.Secondary)],
+            MessageBoxButtons.OKCancel =>
+                [new(Strings.OK, DialogResult.OK, ButtonKind.Secondary), new(Strings.Cancel, DialogResult.Cancel, ButtonKind.Secondary)],
+            _ => [new(Strings.OK, DialogResult.OK, ButtonKind.Secondary)]
+        };
+
+        int defaultIndex = Math.Min(choices.Count - 1, defaultButton switch
+        {
+            MessageBoxDefaultButton.Button2 => 1,
+            MessageBoxDefaultButton.Button3 => 2,
+            _ => 0
+        });
+
+        // Il predefinito ha l'aspetto principale.
+        choices[defaultIndex] = choices[defaultIndex] with { Kind = ButtonKind.Primary };
+
+        return Run(owner, "", text, title, choices, defaultIndex, icon);
+    }
+
+    /// <summary>
+    /// Conferma con un verbo: "do it" a sinistra, "Annulla" a destra e come
+    /// scelta predefinita (Invio ed Esc annullano). true se l'utente conferma.
+    /// </summary>
+    /// <param name="heading">Domanda in grassetto ("Eliminare «Speedrun»?").</param>
+    /// <param name="destructive">true se l'azione elimina qualcosa.</param>
+    public static bool Confirm(IWin32Window? owner, string heading, string text,
+        string confirmText, bool destructive = false, MessageBoxIcon icon = MessageBoxIcon.None)
+    {
+        var choices = new List<Choice>
+        {
+            new(confirmText, DialogResult.OK, destructive ? ButtonKind.Danger : ButtonKind.Secondary),
+            new(Strings.Cancel, DialogResult.Cancel, ButtonKind.Primary)
+        };
+
+        return Run(owner, heading, text, Strings.AppTitle, choices, 1, icon) == DialogResult.OK;
+    }
+
+    /// <summary>
+    /// Messaggio con titolo in grassetto e un solo pulsante.
+    /// </summary>
+    /// <param name="extraText">Secondo pulsante facoltativo (es. "Apri backup").</param>
+    /// <returns>true se l'utente ha scelto il secondo pulsante.</returns>
+    public static bool Inform(IWin32Window? owner, string heading, string text,
+        MessageBoxIcon icon = MessageBoxIcon.None, string? extraText = null)
+    {
+        var choices = new List<Choice>();
+
+        if (extraText != null)
+            choices.Add(new Choice(extraText, DialogResult.Yes, ButtonKind.Secondary));
+
+        choices.Add(new Choice(Strings.Close, DialogResult.OK, ButtonKind.Primary));
+
+        return Run(owner, heading, text, Strings.AppTitle, choices, choices.Count - 1, icon) == DialogResult.Yes;
+    }
+
+    private static DialogResult Run(IWin32Window? owner, string heading, string text, string title,
+        List<Choice> choices, int defaultIndex, MessageBoxIcon icon)
+    {
+        using var dialog = new MessageDialog(heading, text, title, choices, defaultIndex, icon);
 
         // Senza proprietario (all'avvio) la finestra va al centro dello schermo
         // e nella barra delle applicazioni, altrimenti si perde.
@@ -46,8 +114,8 @@ internal sealed class MessageDialog : Form
         return owner == null ? dialog.ShowDialog() : dialog.ShowDialog(owner);
     }
 
-    private MessageDialog(string text, string title, MessageBoxButtons buttons,
-        MessageBoxIcon icon, MessageBoxDefaultButton defaultButton)
+    private MessageDialog(string heading, string text, string title, List<Choice> choices,
+        int defaultIndex, MessageBoxIcon icon)
     {
         this.icon = icon;
 
@@ -63,7 +131,6 @@ internal sealed class MessageDialog : Form
         AutoSize = true;
         AutoSizeMode = AutoSizeMode.GrowAndShrink;
         KeyPreview = true;
-
         StartPosition = FormStartPosition.CenterParent;
         ShowInTaskbar = false;
 
@@ -74,15 +141,37 @@ internal sealed class MessageDialog : Form
             Visible = icon != MessageBoxIcon.None
         };
 
-        var message = new Label
+        var texts = new FlowLayoutPanel
+        {
+            FlowDirection = FlowDirection.TopDown,
+            WrapContents = false,
+            AutoSize = true,
+            Margin = new Padding(0)
+        };
+
+        if (heading != "")
+        {
+            texts.Controls.Add(new Label
+            {
+                Text = heading,
+                AutoSize = true,
+                MaximumSize = new Size(TextWidth, 0),
+                Font = Theme.Heading,
+                ForeColor = Theme.Text,
+                UseMnemonic = false,
+                Margin = new Padding(0, 0, 0, 10)
+            });
+        }
+
+        texts.Controls.Add(new Label
         {
             Text = text,
             AutoSize = true,
             MaximumSize = new Size(TextWidth, 0),
-            ForeColor = Theme.Text,
+            ForeColor = heading != "" ? Color.FromArgb(216, 216, 220) : Theme.Text,
             UseMnemonic = false,
-            Margin = new Padding(0, 0, 0, 0)
-        };
+            Margin = new Padding(0)
+        });
 
         var body = new FlowLayoutPanel
         {
@@ -92,7 +181,7 @@ internal sealed class MessageDialog : Form
             Margin = new Padding(0)
         };
         body.Controls.Add(badge);
-        body.Controls.Add(message);
+        body.Controls.Add(texts);
 
         var buttonRow = new FlowLayoutPanel
         {
@@ -102,33 +191,16 @@ internal sealed class MessageDialog : Form
             Margin = new Padding(0, 22, 0, 0)
         };
 
-        List<(string Label, DialogResult Result)> choices = buttons switch
-        {
-            MessageBoxButtons.YesNo => [(Strings.Yes, DialogResult.Yes), (Strings.No, DialogResult.No)],
-            MessageBoxButtons.YesNoCancel =>
-                [(Strings.Yes, DialogResult.Yes), (Strings.No, DialogResult.No), (Strings.Cancel, DialogResult.Cancel)],
-            MessageBoxButtons.OKCancel => [(Strings.OK, DialogResult.OK), (Strings.Cancel, DialogResult.Cancel)],
-            _ => [(Strings.OK, DialogResult.OK)]
-        };
-
-        int defaultIndex = defaultButton switch
-        {
-            MessageBoxDefaultButton.Button2 => 1,
-            MessageBoxDefaultButton.Button3 => 2,
-            _ => 0
-        };
-        defaultIndex = Math.Min(defaultIndex, choices.Count - 1);
-
         var created = new List<FlatButton>();
 
-        for (int i = 0; i < choices.Count; i++)
+        foreach (Choice choice in choices)
         {
-            var button = new FlatButton(choices[i].Label, i == defaultIndex ? ButtonKind.Primary : ButtonKind.Secondary)
+            var button = new FlatButton(choice.Label, choice.Kind)
             {
-                DialogResult = choices[i].Result,
-                Size = new Size(100, 34),
+                DialogResult = choice.Result,
                 Margin = new Padding(10, 0, 0, 0)
             };
+            button.FitText(36, 100);
             created.Add(button);
         }
 
@@ -138,11 +210,11 @@ internal sealed class MessageDialog : Form
 
         AcceptButton = created[defaultIndex];
 
-        // Esc: Annulla se c'è, altrimenti No, altrimenti OK, come MessageBox.
+        // Esc: Annulla se c'è, altrimenti No, altrimenti l'ultimo pulsante.
         CancelButton =
             created.FirstOrDefault(b => b.DialogResult == DialogResult.Cancel) ??
             created.FirstOrDefault(b => b.DialogResult == DialogResult.No) ??
-            created[0];
+            created[^1];
 
         var layout = new TableLayoutPanel
         {
@@ -165,7 +237,7 @@ internal sealed class MessageDialog : Form
             {
                 try
                 {
-                    Clipboard.SetText(title + Environment.NewLine + Environment.NewLine + text);
+                    Clipboard.SetText((heading != "" ? heading + Environment.NewLine + Environment.NewLine : "") + text);
                 }
                 catch
                 {

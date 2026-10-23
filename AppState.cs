@@ -20,6 +20,22 @@ public sealed class AppState
 
     public const int DefaultBackupsToKeep = 20;
 
+    /// <summary>
+    /// "Gioca questa" avvia anche Control dopo il cambio di partita.
+    /// </summary>
+    public bool LaunchGame { get; set; } = true;
+
+    /// <summary>
+    /// Alla chiusura del gioco i progressi vengono salvati nella partita in uso.
+    /// </summary>
+    public bool SaveOnGameExit { get; set; } = true;
+
+    /// <summary>
+    /// Le opzioni del gioco (remote\preferences_data) restano le stesse
+    /// cambiando partita.
+    /// </summary>
+    public bool SharePreferences { get; set; }
+
     public AppState(string path)
     {
         this.path = path;
@@ -31,6 +47,9 @@ public sealed class AppState
         ActiveSince = "";
         LastSaved = "";
         BackupsToKeep = DefaultBackupsToKeep;
+        LaunchGame = true;
+        SaveOnGameExit = true;
+        SharePreferences = false;
 
         if (!File.Exists(path))
             return;
@@ -62,6 +81,18 @@ public sealed class AppState
                     if (int.TryParse(value, out int keep) && keep >= 0)
                         BackupsToKeep = keep;
                     break;
+
+                case "AvviaGioco":
+                    LaunchGame = value != "0";
+                    break;
+
+                case "SalvaAllaChiusura":
+                    SaveOnGameExit = value != "0";
+                    break;
+
+                case "OpzioniCondivise":
+                    SharePreferences = value == "1";
+                    break;
             }
         }
     }
@@ -82,6 +113,9 @@ public sealed class AppState
             writer.WriteLine("AttivatoIl=" + Format(ActiveSince));
             writer.WriteLine("SalvatoIl=" + Format(LastSaved));
             writer.WriteLine("BackupDaConservare=" + BackupsToKeep);
+            writer.WriteLine("AvviaGioco=" + (LaunchGame ? "1" : "0"));
+            writer.WriteLine("SalvaAllaChiusura=" + (SaveOnGameExit ? "1" : "0"));
+            writer.WriteLine("OpzioniCondivise=" + (SharePreferences ? "1" : "0"));
 
             writer.Flush();
             stream.Flush(flushToDisk: true);

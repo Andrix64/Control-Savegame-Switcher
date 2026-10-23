@@ -67,8 +67,11 @@ public sealed class StateAndAccountTests : IDisposable
     [Theory]
     [InlineData("Mario", true)]
     [InlineData("Mario_2-b", true)]
-    [InlineData("Mário", false)]
-    [InlineData("con spazio", false)]
+    [InlineData("Mário", true)]
+    [InlineData("Partita principale", true)]
+    [InlineData(" spazio iniziale", false)]
+    [InlineData("a/b", false)]
+    [InlineData("punto.finale", false)]
     [InlineData("", false)]
     public void IsValidName(string name, bool expected)
     {

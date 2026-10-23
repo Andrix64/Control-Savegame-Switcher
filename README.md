@@ -1,8 +1,9 @@
 # Control Save Manager
 
-Più partite di **Control** (Steam) sullo stesso account, e passare dall'una
-all'altra in un clic. Con savestate da usare prima dei punti difficili e un
-backup automatico prima di ogni operazione.
+Più partite di **Control** (Steam) sullo stesso account: scegli quale giocare
+e il programma carica i suoi salvataggi e avvia il gioco. Con i punti salvati
+da usare prima dei passaggi difficili e una copia automatica prima di ogni
+operazione.
 
 ![Finestra principale](docs/img/main.png)
 
@@ -22,88 +23,103 @@ Requisiti: Windows 10 o 11 a 64 bit, Control su Steam avviato almeno una volta.
 > (scegli *Ulteriori informazioni → Esegui comunque*) e Smart App Control, se
 > attivo, può impedirne l'avvio.
 
+Al primo avvio il programma ti chiede come chiamare la partita che è già nel
+gioco e la salva come prima partita.
+
 ### Prima di cominciare: disattiva Steam Cloud per Control
 
-Con Steam Cloud attivo, Steam può rimettere nella cartella del gioco i
-salvataggi che ha nel cloud e mescolare le partite. Disattivalo per Control:
-in Steam, **Libreria → tasto destro su Control → Proprietà → Generale** e
-spegni *Mantieni i salvataggi su Steam Cloud*.
-
-Il programma mostra lo stato del cloud nella finestra principale (*Steam
-Cloud: Disattivato* in verde va bene).
+Con Steam Cloud attivo, all'avvio del gioco Steam può rimettere salvataggi di
+un'altra partita. Disattivalo per Control: in Steam, **Libreria → tasto destro
+su Control → Proprietà → Generale** e spegni *Mantieni i salvataggi su Steam
+Cloud*. Finché è attivo, il programma lo segnala con una barra gialla in alto.
 
 ## Come si usa
 
-**Chiudi Control prima di usare il programma**: finché il gioco è aperto i
-pulsanti restano disattivati.
+### Le partite
 
-### Profili
+Ogni partita ha i suoi salvataggi. Quella con il bordo rosso e la scritta
+*NEL GIOCO ADESSO* è quella caricata nel gioco.
 
-Un profilo è una partita. Il profilo con la barra rossa e la scritta
-*ATTIVO* è quello i cui salvataggi sono ora nel gioco.
+- **Gioca questa**: salva i progressi della partita di adesso, carica quella
+  scelta e avvia Control tramite Steam. Non ci sono domande: prima di ogni
+  cambio si fa una copia.
+- **Gioca**, sulla partita già nel gioco: avvia solo Control.
+- **⋯** su ogni partita: *Carica senza avviare*, *Rinomina*, *Modifica nota*,
+  *Esporta in un file...* ed *Elimina partita...*. Se carichi senza avviare,
+  in basso compare **Annulla** per tornare subito alla partita di prima.
+- **Nuova partita**: con i salvataggi attuali del gioco oppure vuota, per
+  ricominciare dall'inizio.
 
-- **Nuovo profilo...**: crea un profilo con i salvataggi attuali del gioco
-  oppure vuoto, per iniziare una nuova partita.
+  ![Nuova partita](docs/img/newprofile.png)
 
-  ![Nuovo profilo](docs/img/newprofile.png)
+- **Importa...**: aggiunge una partita esportata da un altro PC.
 
-- **Attiva profilo** (o doppio clic): passa a un altro profilo. I progressi
-  del profilo attivo vengono salvati da soli prima del cambio, quindi non si
-  perde nulla e non ci sono domande.
-- **Salva progressi**: copia subito i salvataggi del gioco nel profilo attivo.
-  Non è obbligatorio, il cambio di profilo lo fa già.
-- **Tasto destro su un profilo**: *Rinomina* (F2) ed *Elimina* (Canc). Un
-  profilo eliminato finisce tra i backup e si può ancora recuperare. Il
-  profilo attivo non si può eliminare.
+Ogni scheda mostra la nota, il tempo di gioco, quando è stata salvata e i
+punti salvati.
 
-### Savestate
+### Mentre giochi
 
-Un savestate è un'istantanea dei salvataggi attuali, per esempio prima di un
-boss: se va male, la rimetti e riparti da lì. Appartiene al profilo attivo e
-non lo modifica.
+Finché Control è aperto il programma non tocca i salvataggi e lo dice in alto.
+Quando chiudi il gioco, i progressi vengono salvati da soli nella partita che
+stavi giocando e il tempo di gioco viene aggiornato (serve che il programma
+sia aperto).
 
-![Savestate](docs/img/savestate.png)
+![Gioco aperto](docs/img/playing.png)
 
-Esci dal gioco, apri **Savestate...**, scrivi un nome (facoltativo) e premi
-*Crea savestate*. Per tornarci: selezionalo e premi *Ripristina*.
+### Cronologia e punti salvati
 
-### Backup
+**Salva un punto** (dalla partita nel gioco) salva i salvataggi di adesso con
+un nome, per esempio prima di un boss: se va male, torni lì. La
+**Cronologia** mostra i tuoi punti salvati e le copie automatiche fatte prima
+di ogni operazione; ogni riga ha **Torna qui**. Prima di tornare indietro la
+situazione attuale viene copiata, quindi puoi sempre cambiare idea.
 
-Prima di ogni operazione il programma copia i salvataggi in un backup. Dalla
-finestra **Backup...** puoi rimetterne uno nel gioco e scegliere quanti
-conservarne (20 di base, 0 = tutti).
+![Cronologia](docs/img/history.png)
 
-![Backup](docs/img/backup.png)
+### Impostazioni
+
+- *«Gioca questa» avvia anche Control*: se lo spegni, la partita viene solo
+  caricata.
+- *Salva i progressi quando chiudi Control*.
+- *Stesse opzioni del gioco per tutte le partite*: comandi, audio e
+  sottotitoli restano uguali cambiando partita.
+- Quante copie automatiche tenere (20 di base, 0 = tutte).
+
+![Impostazioni](docs/img/settings.png)
 
 ## Dove sono i file
 
-Profili, savestate, backup e registro delle operazioni (`log.txt`) sono in
-`%LOCALAPPDATA%\ControlSaveManager` (di solito
+Partite, punti salvati, copie automatiche e registro delle operazioni
+(`log.txt`) sono in `%LOCALAPPDATA%\ControlSaveManager` (di solito
 `C:\Users\<nome>\AppData\Local\ControlSaveManager`). È una cartella che OneDrive
 non sincronizza: così i salvataggi non vengono bloccati, scaricati a metà o
-duplicati come "copie in conflitto".
+duplicati come "copie in conflitto". Le Impostazioni hanno un pulsante per
+aprirla; altrimenti premi Win+R e scrivi `%LOCALAPPDATA%\ControlSaveManager`.
 
-Il pulsante **Apri cartella profili** la apre in Esplora file. Altrimenti
-premi Win+R e scrivi `%LOCALAPPDATA%\ControlSaveManager`. Se più account Steam
-sul PC hanno Control, all'avvio il programma chiede quale usare; ogni account
-ha i suoi profili.
+Se più account Steam sul PC hanno Control, all'avvio il programma chiede quale
+usare; ogni account ha le sue partite.
 
 Se avevi usato una versione di prova che salvava in `Documenti\ControlSaves`,
 al primo avvio i dati vengono spostati da soli nella nuova cartella e il
 programma te lo dice.
 
 Per disinstallare basta cancellare l'exe. Se vuoi, cancella anche
-`%LOCALAPPDATA%\ControlSaveManager` (ma lì ci sono i tuoi profili).
+`%LOCALAPPDATA%\ControlSaveManager` (ma lì ci sono le tue partite).
 
 ## Domande
 
-**Ho attivato un profilo per sbaglio.** Riattiva quello di prima: i suoi
+**Ho caricato la partita sbagliata.** Se il gioco non è partito, premi
+**Annulla** nell'avviso in basso; altrimenti gioca quella di prima: i suoi
 progressi erano stati salvati prima del cambio.
 
-**Ho perso dei progressi.** Apri **Backup...**: c'è una copia dei salvataggi
-prima di ogni operazione, con data e motivo.
+**Ho perso dei progressi.** Apri la **Cronologia**: c'è una copia prima di
+ogni operazione, con data e descrizione.
 
-**I salvataggi si mescolano tra i profili.** Quasi sempre è Steam Cloud:
+**Ho eliminato una partita per sbaglio.** In fondo alla finestra principale
+compare *Partite eliminate*: da lì la recuperi, finché la pulizia delle copie
+automatiche non la toglie.
+
+**I salvataggi si mescolano tra le partite.** Quasi sempre è Steam Cloud:
 controlla che sia disattivato (vedi sopra).
 
 **Lingua.** Il programma è in italiano o in inglese, in base alla lingua di
@@ -111,26 +127,30 @@ Windows.
 
 ## English
 
-Several **Control** (Steam) playthroughs on the same account, switched with
-one click, plus savestates and an automatic backup before every operation.
-The app is in English or Italian, following the Windows language.
+Several **Control** (Steam) playthroughs on the same account: pick the one to
+play and the app loads its saves and starts the game. With saved points for
+the hard parts and an automatic copy before every operation. The app is in
+English or Italian, following the Windows language.
 
 ![Main window](docs/img/main_en.png)
 
 - Download the zip from the releases page, extract `ControlSaveManager.exe`
   and run it. No installation needed (Windows 10/11, 64-bit). It is not
   digitally signed, so SmartScreen may warn you and Smart App Control may
-  block it.
+  block it. On first start it saves the playthrough already in the game.
 - **Turn off Steam Cloud for Control** (Library → right-click Control →
-  Properties → General), otherwise Steam may mix the saves of different
-  profiles. The main window shows the current Steam Cloud state.
-- **Close Control** before using the app.
-- **Activate profile** switches playthrough; the active profile's progress is
-  saved first. **Savestates...** keeps snapshots (e.g. before a boss);
-  **Backups...** lists the automatic backups and restores them. Right-click a
-  profile to rename or delete it.
-- Profiles, savestates, backups and the log are in
-  `%LOCALAPPDATA%\ControlSaveManager`, a folder OneDrive doesn't sync.
+  Properties → General), otherwise Steam may mix up playthroughs. A yellow bar
+  shows while it is on.
+- **Play this** saves the current playthrough, loads the chosen one and starts
+  Control through Steam. The **⋯** menu has *Load without starting* (with
+  *Undo*), *Rename*, *Edit note*, *Export* and *Delete*. **Import...** adds an
+  exported playthrough.
+- When you close the game, progress is saved automatically and the play time
+  is updated (while the app is open).
+- **Save a point** and **History**: saved points and automatic copies, each
+  with *Go back here*.
+- Everything is in `%LOCALAPPDATA%\ControlSaveManager`, a folder OneDrive
+  doesn't sync.
 
 ## Licenza
 

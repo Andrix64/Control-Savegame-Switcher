@@ -18,202 +18,116 @@ I dettagli sono nel registro:
 Avvia il gioco almeno una volta.</value></data>
   <data name="InitError" xml:space="preserve"><value>Errore di inizializzazione: {0}</value></data>
   <data name="InvalidName" xml:space="preserve"><value>Nome non valido.</value></data>
-  <data name="ProfileExists" xml:space="preserve"><value>Esiste già un profilo con questo nome.</value></data>
-  <data name="EmptyProfileCreated" xml:space="preserve"><value>Profilo vuoto creato.</value></data>
+  <data name="ProfileExists" xml:space="preserve"><value>Esiste già una partita con questo nome.</value></data>
+  <data name="EmptyProfileCreated" xml:space="preserve"><value>Partita vuota creata.</value></data>
   <data name="ErrorWithMessage" xml:space="preserve"><value>Errore: {0}</value></data>
   <data name="BackupNotDone" xml:space="preserve"><value>Backup non riuscito: {0}</value></data>
   <data name="CopyFailed" xml:space="preserve"><value>Copia non riuscita: {0}</value></data>
-  <data name="ProfileCreated" xml:space="preserve"><value>Profilo creato.</value></data>
+  <data name="ProfileCreated" xml:space="preserve"><value>Partita creata.</value></data>
   <data name="NameUnchanged" xml:space="preserve"><value>Nome invariato.</value></data>
-  <data name="ProfileNotFound" xml:space="preserve"><value>Profilo non trovato.</value></data>
-  <data name="ProfileNotRenamed" xml:space="preserve"><value>Profilo non rinominato: {0}</value></data>
+  <data name="ProfileNotFound" xml:space="preserve"><value>Partita non trovata.</value></data>
+  <data name="ProfileNotRenamed" xml:space="preserve"><value>Non siamo riusciti a rinominare la partita: {0}</value></data>
   <data name="SavestatesNotMoved" xml:space="preserve"><value>
-I savestate non sono stati spostati: {0}
+I suoi punti salvati non sono stati spostati: {0}
 Sono ancora in:
 {1}</value></data>
-  <data name="RenamedStateNotSaved" xml:space="preserve"><value>Profilo rinominato, ma lo stato non è stato salvato: {0}</value></data>
-  <data name="ProfileRenamed" xml:space="preserve"><value>Profilo rinominato.</value></data>
-  <data name="CannotDeleteActive" xml:space="preserve"><value>Non si può eliminare il profilo attivo.
-Attiva prima un altro profilo.</value></data>
-  <data name="ProfileNotDeleted" xml:space="preserve"><value>Profilo non eliminato: {0}</value></data>
-  <data name="ProfileDeletedSavestatesNot" xml:space="preserve"><value>Profilo eliminato, ma i savestate no: {0}
+  <data name="RenamedStateNotSaved" xml:space="preserve"><value>Partita rinominata, ma lo stato non è stato salvato: {0}</value></data>
+  <data name="ProfileRenamed" xml:space="preserve"><value>Partita rinominata.</value></data>
+  <data name="CannotDeleteActive" xml:space="preserve"><value>Non si può eliminare la partita che è nel gioco.
+Carica prima un&apos;altra partita.</value></data>
+  <data name="ProfileNotDeleted" xml:space="preserve"><value>Non siamo riusciti a eliminare la partita: {0}</value></data>
+  <data name="ProfileDeletedSavestatesNot" xml:space="preserve"><value>Partita eliminata, ma i suoi punti salvati no: {0}
 Sono in:
 {1}</value></data>
-  <data name="ProfileDeleted" xml:space="preserve"><value>Profilo eliminato. Una copia resta tra i backup.</value></data>
+  <data name="ProfileDeleted" xml:space="preserve"><value>Partita eliminata. Puoi recuperarla da «Partite eliminate».</value></data>
   <data name="CloseControlFirst" xml:space="preserve"><value>Chiudi Control prima di continuare.</value></data>
-  <data name="ActivatedStateNotSaved" xml:space="preserve"><value>Profilo attivato, ma lo stato non è stato salvato: {0}</value></data>
-  <data name="ProfileActivated" xml:space="preserve"><value>Profilo attivato.</value></data>
-  <data name="NoValidActiveProfile" xml:space="preserve"><value>Non c&apos;è un profilo attivo valido.</value></data>
+  <data name="ActivatedStateNotSaved" xml:space="preserve"><value>Partita caricata, ma lo stato non è stato salvato: {0}</value></data>
+  <data name="ProfileActivated" xml:space="preserve"><value>Partita caricata.</value></data>
+  <data name="NoValidActiveProfile" xml:space="preserve"><value>Nessuna partita è caricata nel gioco.</value></data>
   <data name="GameSavesEmptyWouldClear" xml:space="preserve"><value>La cartella dei salvataggi del gioco è vuota.
-Salvando, il profilo verrebbe svuotato.</value></data>
+Salvando, la partita verrebbe svuotata.</value></data>
   <data name="BackupFailedCancelled" xml:space="preserve"><value>Backup fallito. Operazione annullata.
 {0}</value></data>
-  <data name="SaveFailedProfileRestored" xml:space="preserve"><value>Salvataggio fallito: {0}
-Il profilo è stato ripristinato.</value></data>
-  <data name="SaveFailedRestoreFailed" xml:space="preserve"><value>Salvataggio fallito: {0}
-Ripristino del profilo fallito: {1}
-Il profilo precedente è nel backup.</value></data>
+  <data name="SaveFailedProfileRestored" xml:space="preserve"><value>Salvataggio non riuscito: {0}
+La partita è com&apos;era: non si è perso nulla.</value></data>
+  <data name="SaveFailedRestoreFailed" xml:space="preserve"><value>Salvataggio non riuscito: {0}
+Ripristino della partita non riuscito: {1}
+La partita precedente è nelle copie automatiche.</value></data>
   <data name="ProgressSavedStateNotSaved" xml:space="preserve"><value>Progressi salvati, ma lo stato non è stato salvato: {0}</value></data>
-  <data name="ProgressSaved" xml:space="preserve"><value>Progressi salvati nel profilo.</value></data>
-  <data name="ReplaceFailedRestored" xml:space="preserve"><value>Errore durante la sostituzione dei salvataggi: {0}
-I salvataggi precedenti sono stati ripristinati.</value></data>
+  <data name="ProgressSaved" xml:space="preserve"><value>Progressi salvati.</value></data>
+  <data name="ReplaceFailedRestored" xml:space="preserve"><value>Non siamo riusciti a sostituire i salvataggi del gioco: {0}
+Il gioco è com&apos;era: non è cambiato nulla.</value></data>
   <data name="ReplaceFailedFatal" xml:space="preserve"><value>Errore durante la sostituzione dei salvataggi: {0}
 Ripristino fallito: {1}
 NON avviare il gioco. Il backup è in:
 {2}</value></data>
   <data name="GameSavesEmpty" xml:space="preserve"><value>La cartella dei salvataggi del gioco è vuota.</value></data>
-  <data name="SavestateExists" xml:space="preserve"><value>Esiste già un savestate con questo nome e questa data.</value></data>
-  <data name="SavestateNotCreated" xml:space="preserve"><value>Savestate non creato: {0}</value></data>
-  <data name="SavestateCreated" xml:space="preserve"><value>Savestate creato.</value></data>
-  <data name="SavestateCreatedNamed" xml:space="preserve"><value>Savestate &quot;{0}&quot; creato.</value></data>
-  <data name="SavestateRestored" xml:space="preserve"><value>Savestate ripristinato.</value></data>
-  <data name="SavestateInvalid" xml:space="preserve"><value>Savestate non valido.</value></data>
-  <data name="SavestateNotDeleted" xml:space="preserve"><value>Savestate non eliminato: {0}</value></data>
-  <data name="SavestateDeleted" xml:space="preserve"><value>Savestate eliminato.</value></data>
+  <data name="SavestateExists" xml:space="preserve"><value>Esiste già un punto salvato con questo nome e quest&apos;ora.</value></data>
+  <data name="SavestateNotCreated" xml:space="preserve"><value>Non siamo riusciti a salvare il punto: {0}</value></data>
+  <data name="SavestateCreated" xml:space="preserve"><value>Punto salvato.</value></data>
+  <data name="SavestateCreatedNamed" xml:space="preserve"><value>Punto «{0}» salvato.</value></data>
+  <data name="SavestateRestored" xml:space="preserve"><value>Sei tornato al punto salvato. La situazione di prima è nelle copie automatiche.</value></data>
+  <data name="SavestateInvalid" xml:space="preserve"><value>Punto salvato non valido.</value></data>
+  <data name="SavestateNotDeleted" xml:space="preserve"><value>Non siamo riusciti a eliminare il punto: {0}</value></data>
+  <data name="SavestateDeleted" xml:space="preserve"><value>Punto eliminato.</value></data>
   <data name="ReasonBeforeActivating" xml:space="preserve"><value>Prima di attivare {0}</value></data>
   <data name="ReasonProfileDeleted" xml:space="preserve"><value>Profilo {0} eliminato</value></data>
   <data name="ReasonBeforeSaving" xml:space="preserve"><value>Profilo {0} prima del salvataggio</value></data>
   <data name="ReasonBeforeSavingOld" xml:space="preserve"><value>Profilo prima del salvataggio</value></data>
   <data name="ReasonBeforeCreating" xml:space="preserve"><value>Prima di creare un profilo</value></data>
   <data name="ReasonBeforeRestoring" xml:space="preserve"><value>Prima di un ripristino</value></data>
-  <data name="BackupRestored" xml:space="preserve"><value>Backup ripristinato.</value></data>
+  <data name="BackupRestored" xml:space="preserve"><value>Sei tornato alla copia automatica. La situazione di prima è in una nuova copia.</value></data>
   <data name="FolderNotFound" xml:space="preserve"><value>Cartella non trovata:
 {0}</value></data>
   <data name="SettingNotSaved" xml:space="preserve"><value>Impostazione non salvata: {0}</value></data>
-  <data name="SettingSaved" xml:space="preserve"><value>Impostazione salvata.</value></data>
-  <data name="SettingSavedPruned" xml:space="preserve"><value>Impostazione salvata. Backup eliminati: {0}.</value></data>
+  <data name="SettingSaved" xml:space="preserve"><value>Impostazioni salvate.</value></data>
+  <data name="SettingSavedPruned" xml:space="preserve"><value>Impostazioni salvate. Copie automatiche eliminate: {0}.</value></data>
   <data name="AccountFallbackName" xml:space="preserve"><value>Account {0}</value></data>
-  <data name="ReadyHint" xml:space="preserve"><value>Pronto. Tasto destro su un profilo per rinominarlo o eliminarlo.</value></data>
-  <data name="NoProfiles" xml:space="preserve"><value>Nessun profilo.
-Creane uno con «Nuovo profilo».</value></data>
-  <data name="ActivateProfile" xml:space="preserve"><value>Attiva profilo</value></data>
-  <data name="SaveProgress" xml:space="preserve"><value>Salva progressi</value></data>
-  <data name="SavestatesButton" xml:space="preserve"><value>Savestate...</value></data>
-  <data name="NewProfileButton" xml:space="preserve"><value>Nuovo profilo...</value></data>
-  <data name="BackupsButton" xml:space="preserve"><value>Backup...</value></data>
-  <data name="OpenProfilesFolder" xml:space="preserve"><value>Apri cartella profili</value></data>
   <data name="RenameMenu" xml:space="preserve"><value>Rinomina...</value></data>
-  <data name="DeleteMenu" xml:space="preserve"><value>Elimina...</value></data>
-  <data name="DeleteKey" xml:space="preserve"><value>Canc</value></data>
-  <data name="ActiveCannotBeDeleted" xml:space="preserve"><value>Il profilo attivo non si può eliminare.</value></data>
+  <data name="ActiveCannotBeDeleted" xml:space="preserve"><value>La partita nel gioco non si può eliminare.</value></data>
   <data name="WaitForOperation" xml:space="preserve"><value>Attendi la fine dell&apos;operazione in corso.</value></data>
-  <data name="CaptionActiveProfile" xml:space="preserve"><value>PROFILO ATTIVO</value></data>
-  <data name="CaptionActivatedOn" xml:space="preserve"><value>ATTIVATO IL</value></data>
-  <data name="CaptionLastSaved" xml:space="preserve"><value>ULTIMO SALVATAGGIO</value></data>
-  <data name="CaptionSteamCloud" xml:space="preserve"><value>STEAM CLOUD</value></data>
-  <data name="CaptionProfiles" xml:space="preserve"><value>PROFILI</value></data>
-  <data name="NoSaves" xml:space="preserve"><value>Nessun salvataggio</value></data>
-  <data name="LastModified" xml:space="preserve"><value>Ultima modifica: {0}</value></data>
   <data name="ActiveSuffix" xml:space="preserve"><value>, attivo</value></data>
-  <data name="ActiveBadge" xml:space="preserve"><value>ATTIVO</value></data>
   <data name="CannotReadState" xml:space="preserve"><value>Impossibile leggere lo stato: {0}</value></data>
   <data name="CannotReadProfiles" xml:space="preserve"><value>Impossibile leggere i profili: {0}</value></data>
-  <data name="NoneValue" xml:space="preserve"><value>Nessuno</value></data>
-  <data name="Never" xml:space="preserve"><value>Mai</value></data>
-  <data name="CloudOff" xml:space="preserve"><value>Disattivato</value></data>
-  <data name="CloudOn" xml:space="preserve"><value>Attivo</value></data>
-  <data name="CloudUnknown" xml:space="preserve"><value>Sconosciuto</value></data>
   <data name="GameRunning" xml:space="preserve"><value>Control è in esecuzione: chiudilo per cambiare o salvare.</value></data>
-  <data name="BusyActivating" xml:space="preserve"><value>Attivo &quot;{0}&quot;...</value></data>
-  <data name="SwitchSaveFailed" xml:space="preserve"><value>Profilo non cambiato: salvataggio di &quot;{0}&quot; non riuscito.
+  <data name="SwitchSaveFailed" xml:space="preserve"><value>Non è cambiato nulla: non siamo riusciti a salvare i progressi di «{0}».
 {1}</value></data>
-  <data name="SavedAndActivated" xml:space="preserve"><value>Progressi salvati in &quot;{0}&quot;. Profilo &quot;{1}&quot; attivato.</value></data>
-  <data name="ActivatedNamed" xml:space="preserve"><value>Profilo &quot;{0}&quot; attivato.</value></data>
-  <data name="ConfirmSaveEmpty" xml:space="preserve"><value>La cartella dei salvataggi del gioco è vuota.
-Salvando, il profilo &quot;{0}&quot; verrà svuotato.
-
-Continuare comunque?</value></data>
-  <data name="BusySavingProgress" xml:space="preserve"><value>Salvo i progressi...</value></data>
-  <data name="BusyCreatingProfile" xml:space="preserve"><value>Creo il profilo...</value></data>
-  <data name="BusyRenamingProfile" xml:space="preserve"><value>Rinomino il profilo...</value></data>
-  <data name="ActiveCannotDeleteStatus" xml:space="preserve"><value>&quot;{0}&quot; è il profilo attivo: attivane un altro prima di eliminarlo.</value></data>
-  <data name="ConfirmDeleteProfile" xml:space="preserve"><value>Eliminare il profilo &quot;{0}&quot;?
-
-Una copia resta nella finestra Backup, da cui si può ripristinare finché la pulizia automatica non la elimina.</value></data>
-  <data name="ConfirmDeleteProfileSavestates" xml:space="preserve"><value>
-
-I suoi savestate ({0}) vengono eliminati definitivamente.</value></data>
-  <data name="BusyDeletingProfile" xml:space="preserve"><value>Elimino il profilo...</value></data>
   <data name="TitleSeriousError" xml:space="preserve"><value>Errore grave</value></data>
   <data name="TitleOperationFailed" xml:space="preserve"><value>Operazione non riuscita</value></data>
-  <data name="BackupLine" xml:space="preserve"><value>
-
-Backup:
-{0}</value></data>
-  <data name="AskOpenBackupFolder" xml:space="preserve"><value>
-
-Aprire la cartella del backup?</value></data>
-  <data name="CloudOnWarning" xml:space="preserve"><value>Steam Cloud è attivo per Control: Steam potrebbe sovrascrivere i salvataggi dopo l&apos;operazione.</value></data>
-  <data name="CloudMaybeWarning" xml:space="preserve"><value>Se Steam Cloud è attivo per Control, Steam potrebbe sovrascrivere i salvataggi dopo l&apos;operazione.</value></data>
-  <data name="SteamRunningWarning" xml:space="preserve"><value>Steam è aperto.
-
-{0}
-
-Consiglio: disattiva Steam Cloud nelle proprietà di Control.
-
-Continuare comunque? L&apos;avviso non verrà ripetuto fino alla chiusura dell&apos;app.</value></data>
   <data name="CannotOpenFolder" xml:space="preserve"><value>Impossibile aprire la cartella: {0}</value></data>
-  <data name="ProfileNameHint" xml:space="preserve"><value>Lettere, cifre, _ e - (massimo 50 caratteri).</value></data>
-  <data name="CopyCurrentSaves" xml:space="preserve"><value>Copia i salvataggi attuali del gioco</value></data>
-  <data name="EmptyProfileOption" xml:space="preserve"><value>Profilo vuoto (nuova partita)</value></data>
-  <data name="ActivateNow" xml:space="preserve"><value>Attiva subito il profilo</value></data>
+  <data name="ProfileNameHint" xml:space="preserve"><value>Lettere, cifre, spazi, _ e - (massimo 50 caratteri).</value></data>
+  <data name="CopyCurrentSaves" xml:space="preserve"><value>Copia dei salvataggi attuali del gioco</value></data>
+  <data name="EmptyProfileOption" xml:space="preserve"><value>Vuota: un nuovo gioco dall&apos;inizio</value></data>
+  <data name="ActivateNow" xml:space="preserve"><value>Giocala subito</value></data>
   <data name="Create" xml:space="preserve"><value>Crea</value></data>
   <data name="Cancel" xml:space="preserve"><value>Annulla</value></data>
-  <data name="NewProfileTitle" xml:space="preserve"><value>Nuovo profilo</value></data>
-  <data name="RenameProfileTitle" xml:space="preserve"><value>Rinomina profilo</value></data>
-  <data name="CaptionProfileName" xml:space="preserve"><value>NOME DEL PROFILO</value></data>
+  <data name="NewProfileTitle" xml:space="preserve"><value>Nuova partita</value></data>
+  <data name="RenameProfileTitle" xml:space="preserve"><value>Rinomina partita</value></data>
+  <data name="CaptionProfileName" xml:space="preserve"><value>NOME DELLA PARTITA</value></data>
   <data name="CaptionContent" xml:space="preserve"><value>CONTENUTO</value></data>
   <data name="Rename" xml:space="preserve"><value>Rinomina</value></data>
   <data name="InvalidNameHint" xml:space="preserve"><value>Nome non valido. {0}</value></data>
   <data name="UseThisAccount" xml:space="preserve"><value>Usa questo account</value></data>
   <data name="Exit" xml:space="preserve"><value>Esci</value></data>
-  <data name="AccountIntro" xml:space="preserve"><value>Su questo PC ci sono più account Steam con i salvataggi di Control.
-Quale vuoi usare? Ogni account ha profili e backup separati.</value></data>
+  <data name="AccountIntro" xml:space="preserve"><value>Su questo PC ci sono più account Steam con Control.
+Quale vuoi usare? Ogni account ha le sue partite.</value></data>
   <data name="CaptionSteamAccount" xml:space="preserve"><value>ACCOUNT STEAM</value></data>
   <data name="AccountNoSaves" xml:space="preserve"><value>nessun salvataggio</value></data>
   <data name="AccountLastSaved" xml:space="preserve"><value>ultimo salvataggio {0}</value></data>
   <data name="Close" xml:space="preserve"><value>Chiudi</value></data>
   <data name="CannotReadList" xml:space="preserve"><value>Impossibile leggere l&apos;elenco: {0}</value></data>
-  <data name="SavestateHint" xml:space="preserve"><value>Facoltativo, es. &quot;Prima di Ahti&quot;. Lettere, cifre, spazi, _ e -.</value></data>
-  <data name="SavestatesTitle" xml:space="preserve"><value>Savestate</value></data>
-  <data name="NoSavestates" xml:space="preserve"><value>Nessun savestate.
-Creane uno prima di un punto difficile.</value></data>
-  <data name="Restore" xml:space="preserve"><value>Ripristina</value></data>
   <data name="Delete" xml:space="preserve"><value>Elimina</value></data>
   <data name="OpenFolder" xml:space="preserve"><value>Apri cartella</value></data>
-  <data name="CreateSavestate" xml:space="preserve"><value>Crea savestate</value></data>
-  <data name="CaptionNewSavestate" xml:space="preserve"><value>NUOVO SAVESTATE DAI SALVATAGGI ATTUALI</value></data>
   <data name="Unnamed" xml:space="preserve"><value>Senza nome</value></data>
   <data name="UnnamedLower" xml:space="preserve"><value>senza nome</value></data>
-  <data name="CaptionSavestatesOf" xml:space="preserve"><value>SAVESTATE DI {0}</value></data>
-  <data name="InvalidSavestateName" xml:space="preserve"><value>Nome non valido. Lettere, cifre, spazi, _ e - (massimo 50).</value></data>
-  <data name="BusyCreatingSavestate" xml:space="preserve"><value>Creo il savestate...</value></data>
-  <data name="BusyRestoringSavestate" xml:space="preserve"><value>Ripristino il savestate...</value></data>
-  <data name="ConfirmDeleteSavestate" xml:space="preserve"><value>Eliminare il savestate {0} del {1}?
-
-L&apos;eliminazione è definitiva.</value></data>
-  <data name="BusyDeletingSavestate" xml:space="preserve"><value>Elimino il savestate...</value></data>
-  <data name="BackupsTitle" xml:space="preserve"><value>Backup</value></data>
-  <data name="NoBackups" xml:space="preserve"><value>Nessun backup.</value></data>
-  <data name="Apply" xml:space="preserve"><value>Applica</value></data>
-  <data name="KeepLast" xml:space="preserve"><value>Conserva gli ultimi</value></data>
-  <data name="KeepLastSuffix" xml:space="preserve"><value>backup  (0 = tutti)</value></data>
-  <data name="CaptionBackups" xml:space="preserve"><value>BACKUP</value></data>
+  <data name="InvalidSavestateName" xml:space="preserve"><value>Nome non valido: lettere, cifre, spazi, _ e - (massimo 50).</value></data>
   <data name="ConfirmPrune" xml:space="preserve"><value>Verranno eliminati subito i {0} backup più vecchi.
 
 Continuare?</value></data>
-  <data name="BusySavingSetting" xml:space="preserve"><value>Salvo l&apos;impostazione...</value></data>
-  <data name="RestoreGoesToActive" xml:space="preserve"><value>Al prossimo salvataggio o cambio profilo finiranno nel profilo attivo &quot;{0}&quot;.</value></data>
-  <data name="NoActiveProfile" xml:space="preserve"><value>Non c&apos;è un profilo attivo.</value></data>
-  <data name="ConfirmRestoreBackup" xml:space="preserve"><value>Rimettere nel gioco il backup &quot;{0}&quot; del {1}?
-
-I salvataggi attuali vanno prima in un nuovo backup.
-{2}</value></data>
-  <data name="BusyRestoringBackup" xml:space="preserve"><value>Ripristino il backup...</value></data>
   <data name="Yes" xml:space="preserve"><value>Sì</value></data>
   <data name="No" xml:space="preserve"><value>No</value></data>
   <data name="OK" xml:space="preserve"><value>OK</value></data>
-  <data name="DataMoved" xml:space="preserve"><value>Profili, savestate e backup sono stati spostati nella cartella dei dati dell&apos;app, che OneDrive non sincronizza:
+  <data name="DataMoved" xml:space="preserve"><value>Le tue partite sono state spostate nella cartella dei dati dell&apos;app, che OneDrive non sincronizza:
 {1}
 
 Prima erano in:
@@ -234,5 +148,160 @@ a:
 {2}
 
 L&apos;app continua a usare la vecchia cartella. Non è andato perso nulla.</value></data>
-  <data name="IgnoredProfileFolders" xml:space="preserve"><value>Cartelle ignorate in Profili (nome non valido, usa lettere, cifre, _ e -): {0}</value></data>
+  <data name="IgnoredProfileFolders" xml:space="preserve"><value>Cartelle ignorate in Profili (nome non valido: usa lettere, cifre, spazi, _ e -): {0}</value></data>
+  <data name="NoteTooLong" xml:space="preserve"><value>La nota può essere lunga al massimo {0} caratteri.</value></data>
+  <data name="NoteSaved" xml:space="preserve"><value>Nota salvata.</value></data>
+  <data name="DescActivate" xml:space="preserve"><value>Prima di passare a «{0}»</value></data>
+  <data name="DescSave" xml:space="preserve"><value>Prima di salvare i progressi</value></data>
+  <data name="DescSaveOnExit" xml:space="preserve"><value>Prima del salvataggio alla chiusura del gioco</value></data>
+  <data name="DescRestore" xml:space="preserve"><value>Prima di tornare indietro</value></data>
+  <data name="DescRestoreNamed" xml:space="preserve"><value>Prima di tornare a «{0}»</value></data>
+  <data name="DescCreate" xml:space="preserve"><value>Prima di creare una partita</value></data>
+  <data name="DescCreateNamed" xml:space="preserve"><value>Prima di creare «{0}»</value></data>
+  <data name="DescDeleted" xml:space="preserve"><value>Partita «{0}» eliminata</value></data>
+  <data name="RecoverFailed" xml:space="preserve"><value>Non siamo riusciti a recuperare la partita: {0}</value></data>
+  <data name="Recovered" xml:space="preserve"><value>La partita «{0}» è tornata.</value></data>
+  <data name="ImportedDefaultName" xml:space="preserve"><value>Partita importata</value></data>
+  <data name="Adopted" xml:space="preserve"><value>Partita «{0}» salvata.</value></data>
+  <data name="ExportFailed" xml:space="preserve"><value>Non siamo riusciti a esportare la partita: {0}</value></data>
+  <data name="Exported" xml:space="preserve"><value>«{0}» esportata in {1}.</value></data>
+  <data name="ImportInvalid" xml:space="preserve"><value>Questo file non è una partita esportata da Control Save Manager.</value></data>
+  <data name="ImportFailed" xml:space="preserve"><value>Non siamo riusciti a importare la partita: {0}</value></data>
+  <data name="GameLaunching" xml:space="preserve"><value>Avvio di Control...</value></data>
+  <data name="LaunchFailed" xml:space="preserve"><value>Non siamo riusciti ad avviare Control tramite Steam: {0}
+Avvialo tu da Steam: la partita è già caricata.</value></data>
+  <data name="AppTitle" xml:space="preserve"><value>Control Save Manager</value></data>
+  <data name="PlaythroughNameHint" xml:space="preserve"><value>Lettere, cifre, spazi, _ e -. Potrai cambiarlo quando vuoi.</value></data>
+  <data name="AddNote" xml:space="preserve"><value>Aggiungi una nota</value></data>
+  <data name="BusyCreating" xml:space="preserve"><value>Creo la partita...</value></data>
+  <data name="BusyDeleting" xml:space="preserve"><value>Elimino la partita...</value></data>
+  <data name="BusyDeletingPoint" xml:space="preserve"><value>Elimino il punto...</value></data>
+  <data name="BusyExporting" xml:space="preserve"><value>Esporto «{0}»...</value></data>
+  <data name="BusyGoingBack" xml:space="preserve"><value>Torno indietro...</value></data>
+  <data name="BusyImporting" xml:space="preserve"><value>Importo la partita...</value></data>
+  <data name="BusyLoading" xml:space="preserve"><value>Carico «{0}»...</value></data>
+  <data name="BusyRecovering" xml:space="preserve"><value>Recupero la partita...</value></data>
+  <data name="BusyRenaming" xml:space="preserve"><value>Rinomino la partita...</value></data>
+  <data name="BusySavingOnExit" xml:space="preserve"><value>Il gioco si è chiuso: salvo «{0}»...</value></data>
+  <data name="BusySavingPoint" xml:space="preserve"><value>Salvo il punto...</value></data>
+  <data name="CaptionAutomaticCopies" xml:space="preserve"><value>COPIE AUTOMATICHE · FATTE PRIMA DI OGNI OPERAZIONE</value></data>
+  <data name="CaptionCopies" xml:space="preserve"><value>COPIE AUTOMATICHE</value></data>
+  <data name="CaptionData" xml:space="preserve"><value>DATI</value></data>
+  <data name="CaptionDeleted" xml:space="preserve"><value>PARTITE ELIMINATE</value></data>
+  <data name="CaptionGame" xml:space="preserve"><value>GIOCO</value></data>
+  <data name="CaptionLegacyCopies" xml:space="preserve"><value>COPIE NON LEGATE A UNA PARTITA</value></data>
+  <data name="CaptionMyPoints" xml:space="preserve"><value>PUNTI SALVATI DA TE · RESTANO FINCHÉ NON LI ELIMINI</value></data>
+  <data name="CaptionSavePoint" xml:space="preserve"><value>SALVA UN PUNTO ADESSO</value></data>
+  <data name="Change" xml:space="preserve"><value>Cambia</value></data>
+  <data name="CloudBarAction" xml:space="preserve"><value>Come si fa</value></data>
+  <data name="CloudBarText" xml:space="preserve"><value>All&apos;avvio del gioco Steam potrebbe rimettere salvataggi di un&apos;altra partita. Disattivalo per Control.</value></data>
+  <data name="CloudBarTitle" xml:space="preserve"><value>Steam Cloud è attivo per Control</value></data>
+  <data name="CloudConfirmHeading" xml:space="preserve"><value>Steam Cloud potrebbe mischiare le partite</value></data>
+  <data name="CloudConfirmMaybe" xml:space="preserve"><value>Non sappiamo se Steam Cloud è attivo per Control. Se lo è, Steam potrebbe rimettere salvataggi di un&apos;altra partita.
+
+L&apos;avviso non verrà ripetuto fino alla chiusura dell&apos;app.</value></data>
+  <data name="CloudConfirmOn" xml:space="preserve"><value>Steam Cloud è attivo per Control: all&apos;avvio del gioco Steam potrebbe rimettere salvataggi di un&apos;altra partita. Disattivalo nelle proprietà di Control.
+
+L&apos;avviso non verrà ripetuto fino alla chiusura dell&apos;app.</value></data>
+  <data name="CloudHelpHeading" xml:space="preserve"><value>Disattivare Steam Cloud per Control</value></data>
+  <data name="CloudHelpText" xml:space="preserve"><value>1. In Steam, apri la Libreria.
+2. Tasto destro su Control, poi Proprietà.
+3. In Generale, spegni «Mantieni i salvataggi su Steam Cloud».
+
+La barra sparisce appena l&apos;impostazione è spenta.</value></data>
+  <data name="ConfirmDeleteHeading" xml:space="preserve"><value>Eliminare «{0}»?</value></data>
+  <data name="ConfirmDeleteKeepAll" xml:space="preserve"><value>le copie automatiche non vengono mai eliminate</value></data>
+  <data name="ConfirmDeleteKeepN" xml:space="preserve"><value>si tengono solo le ultime {0} copie automatiche</value></data>
+  <data name="ConfirmDeletePoints" xml:space="preserve"><value>I suoi punti salvati ({0}) vengono eliminati per sempre.</value></data>
+  <data name="ConfirmDeletePointHeading" xml:space="preserve"><value>Eliminare il punto {0}?</value></data>
+  <data name="ConfirmDeletePointText" xml:space="preserve"><value>Non si può annullare.</value></data>
+  <data name="ConfirmDeleteText" xml:space="preserve"><value>La partita sparisce dall&apos;elenco. Per un po&apos; potrai ancora recuperarla da «Partite eliminate»: {0}.</value></data>
+  <data name="ConfirmLegacyHeading" xml:space="preserve"><value>Usare una copia di una versione precedente?</value></data>
+  <data name="ConfirmLegacyText" xml:space="preserve"><value>Non sappiamo a quale partita appartenga questa copia. Se torni a questa copia, diventa i salvataggi di «{0}». La situazione attuale viene copiata prima.</value></data>
+  <data name="ConfirmPruneHeading" xml:space="preserve"><value>Eliminare le copie automatiche più vecchie?</value></data>
+  <data name="ContinueAnyway" xml:space="preserve"><value>Continua comunque</value></data>
+  <data name="DeleteCopies" xml:space="preserve"><value>Elimina copie</value></data>
+  <data name="DeletePlaythrough" xml:space="preserve"><value>Elimina partita</value></data>
+  <data name="DeletePlaythroughMenu" xml:space="preserve"><value>Elimina partita...</value></data>
+  <data name="DeletePoint" xml:space="preserve"><value>Elimina punto</value></data>
+  <data name="DeletePointNamed" xml:space="preserve"><value>Elimina il punto {0}</value></data>
+  <data name="DeletedLink" xml:space="preserve"><value>Partite eliminate ({0})</value></data>
+  <data name="DeletedOn" xml:space="preserve"><value>eliminata il {0}</value></data>
+  <data name="DeletedTitle" xml:space="preserve"><value>Partite eliminate</value></data>
+  <data name="EditNote" xml:space="preserve"><value>Modifica nota</value></data>
+  <data name="ExportMenu" xml:space="preserve"><value>Esporta in un file...</value></data>
+  <data name="ExportTitle" xml:space="preserve"><value>Esporta partita</value></data>
+  <data name="FirstPlaythroughName" xml:space="preserve"><value>Partita principale</value></data>
+  <data name="FirstRunAccount" xml:space="preserve"><value>Account Steam: {0}</value></data>
+  <data name="FirstRunCloudOff" xml:space="preserve"><value>Steam Cloud disattivato per Control: va bene così</value></data>
+  <data name="FirstRunCloudOn" xml:space="preserve"><value>Steam Cloud è attivo per Control: meglio disattivarlo (trovi come nella finestra principale)</value></data>
+  <data name="FirstRunCloudUnknown" xml:space="preserve"><value>Non sappiamo se Steam Cloud è attivo per Control</value></data>
+  <data name="FirstRunIntro" xml:space="preserve"><value>Ogni partita ha i suoi salvataggi. Quando scegli «Gioca questa», il programma mette da parte la partita di prima e carica quella nuova. Prima di ogni cambio fa una copia, quindi puoi sempre tornare indietro.</value></data>
+  <data name="FirstRunNameCaption" xml:space="preserve"><value>NEL GIOCO C&apos;È GIÀ UNA PARTITA. COME LA CHIAMIAMO?</value></data>
+  <data name="FirstRunSave" xml:space="preserve"><value>Salva e comincia</value></data>
+  <data name="FirstRunSkip" xml:space="preserve"><value>Comincia senza salvarla</value></data>
+  <data name="FirstRunTitle" xml:space="preserve"><value>Più partite di Control, una alla volta nel gioco</value></data>
+  <data name="GameBarExit" xml:space="preserve"><value>Per cambiare partita o salvare un punto, esci da Control: il programma se ne accorge da solo.</value></data>
+  <data name="GameBarOpen" xml:space="preserve"><value>Control è aperto</value></data>
+  <data name="GameBarPlaying" xml:space="preserve"><value>Stai giocando «{0}»</value></data>
+  <data name="GameBarSaveOnExit" xml:space="preserve"><value>Quando chiudi il gioco, i progressi vengono salvati da soli in questa partita.</value></data>
+  <data name="GameBarSession" xml:space="preserve"><value>Sessione in corso: {0}</value></data>
+  <data name="GoBackHere" xml:space="preserve"><value>Torna qui</value></data>
+  <data name="HistoryButton" xml:space="preserve"><value>Cronologia</value></data>
+  <data name="HistoryGameRunning" xml:space="preserve"><value>Esci da Control per salvare un punto o tornare indietro.</value></data>
+  <data name="HistoryHeading" xml:space="preserve"><value>Cronologia di «{0}»</value></data>
+  <data name="HistoryIntro" xml:space="preserve"><value>Scegli un momento e torna lì. Prima di tornare indietro, la situazione attuale viene copiata.</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>Cronologia</value></data>
+  <data name="ImportButton" xml:space="preserve"><value>Importa...</value></data>
+  <data name="ImportTitle" xml:space="preserve"><value>Importa partita</value></data>
+  <data name="Imported" xml:space="preserve"><value>Partita «{0}» importata.</value></data>
+  <data name="InGameNow" xml:space="preserve"><value>NEL GIOCO ADESSO</value></data>
+  <data name="KeepAllCopies" xml:space="preserve"><value>Si tengono tutte le copie automatiche.</value></data>
+  <data name="KeepCopies" xml:space="preserve"><value>Si tengono le ultime {0} copie automatiche.</value></data>
+  <data name="LoadWithoutStarting" xml:space="preserve"><value>Carica senza avviare</value></data>
+  <data name="Loaded" xml:space="preserve"><value>Caricata «{0}» senza avviare il gioco.</value></data>
+  <data name="LoadedAndSaved" xml:space="preserve"><value>Caricata «{0}» senza avviare il gioco. I progressi di «{1}» sono stati salvati.</value></data>
+  <data name="MoreActionsFor" xml:space="preserve"><value>Altre azioni per {0}</value></data>
+  <data name="NeverPlayed" xml:space="preserve"><value>mai giocata: parte dall&apos;inizio</value></data>
+  <data name="NewPlaythroughButton" xml:space="preserve"><value>Nuova partita</value></data>
+  <data name="NoCopies" xml:space="preserve"><value>Ancora nessuna copia automatica.</value></data>
+  <data name="NoDeleted" xml:space="preserve"><value>Nessuna partita eliminata.</value></data>
+  <data name="NoPlaythroughs" xml:space="preserve"><value>Ancora nessuna partita. Creane una con «Nuova partita».</value></data>
+  <data name="NoPoints" xml:space="preserve"><value>Ancora nessun punto salvato. Salvane uno prima di un punto difficile.</value></data>
+  <data name="NoteCaption" xml:space="preserve"><value>Nota per {0}</value></data>
+  <data name="NoteHint" xml:space="preserve"><value>Per esempio «Missione Polaris, prima di Ahti». Lasciala vuota per toglierla.</value></data>
+  <data name="NoteTitle" xml:space="preserve"><value>Nota</value></data>
+  <data name="OnePoint" xml:space="preserve"><value>1 punto salvato</value></data>
+  <data name="OpenBackup" xml:space="preserve"><value>Apri la copia</value></data>
+  <data name="PlayButton" xml:space="preserve"><value>Gioca</value></data>
+  <data name="PlayThisButton" xml:space="preserve"><value>Gioca questa</value></data>
+  <data name="PlayTimeHours" xml:space="preserve"><value>{0} h {1} min di gioco</value></data>
+  <data name="PlayTimeMinutes" xml:space="preserve"><value>{0} min di gioco</value></data>
+  <data name="PointsCount" xml:space="preserve"><value>{0} punti salvati</value></data>
+  <data name="Recover" xml:space="preserve"><value>Recupera</value></data>
+  <data name="SaveButton" xml:space="preserve"><value>Salva</value></data>
+  <data name="SavePointButton" xml:space="preserve"><value>Salva un punto</value></data>
+  <data name="SavePointHint" xml:space="preserve"><value>Nome facoltativo, per esempio «Prima di Ahti». Se va male, torni qui.</value></data>
+  <data name="SavePointNow" xml:space="preserve"><value>Salva punto</value></data>
+  <data name="SavedOn" xml:space="preserve"><value>salvata il {0}</value></data>
+  <data name="SavedOnExit" xml:space="preserve"><value>Progressi di «{0}» salvati alla chiusura del gioco.</value></data>
+  <data name="SavedToday" xml:space="preserve"><value>salvata oggi alle {0}</value></data>
+  <data name="SavedYesterday" xml:space="preserve"><value>salvata ieri alle {0}</value></data>
+  <data name="SettingAbout" xml:space="preserve"><value>Account Steam: {0}  ·  Versione {1}  ·  Licenza MIT</value></data>
+  <data name="SettingDataFolder" xml:space="preserve"><value>Partite e copie sono in {0}</value></data>
+  <data name="SettingKeepCopies" xml:space="preserve"><value>Copie automatiche da tenere</value></data>
+  <data name="SettingKeepCopiesHint" xml:space="preserve"><value>0 = tutte</value></data>
+  <data name="SettingLaunch" xml:space="preserve"><value>«Gioca questa» avvia anche Control</value></data>
+  <data name="SettingLaunchHint" xml:space="preserve"><value>Se lo spegni, la partita viene solo caricata e il gioco lo avvii tu.</value></data>
+  <data name="SettingSaveOnExit" xml:space="preserve"><value>Salva i progressi quando chiudi Control</value></data>
+  <data name="SettingSaveOnExitHint" xml:space="preserve"><value>Appena esci dal gioco, la partita in uso viene aggiornata, con una copia automatica. Solo se l&apos;app è aperta.</value></data>
+  <data name="SettingSharePreferences" xml:space="preserve"><value>Stesse opzioni del gioco per tutte le partite</value></data>
+  <data name="SettingSharePreferencesHint" xml:space="preserve"><value>Comandi, audio e sottotitoli restano uguali quando cambi partita, anche in una partita nuova.</value></data>
+  <data name="SettingsButton" xml:space="preserve"><value>Impostazioni</value></data>
+  <data name="SettingsTitle" xml:space="preserve"><value>Impostazioni</value></data>
+  <data name="StartAnyway" xml:space="preserve"><value>Avvia comunque</value></data>
+  <data name="StartingWith" xml:space="preserve"><value>Avvio Control con «{0}»...</value></data>
+  <data name="Undo" xml:space="preserve"><value>Annulla</value></data>
+  <data name="YourPlaythroughs" xml:space="preserve"><value>Le tue partite</value></data>
+  <data name="ZipFilter" xml:space="preserve"><value>Partita di Control (*.zip)|*.zip</value></data>
 </root>

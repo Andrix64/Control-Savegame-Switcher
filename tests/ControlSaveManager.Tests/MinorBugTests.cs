@@ -87,10 +87,10 @@ public sealed class MinorBugTests : IDisposable
     {
         SaveManager manager = folder.CreateManager();
         manager.CreateProfile("Mario", false);
-        Directory.CreateDirectory(Path.Combine(manager.ProfilesPath, "Profilo_Mio Nome"));
+        Directory.CreateDirectory(Path.Combine(manager.ProfilesPath, "Profilo_Mio.Nome"));
         Directory.CreateDirectory(Path.Combine(manager.ProfilesPath, "Altro"));
 
-        Assert.Equal(new[] { "Altro", "Profilo_Mio Nome" }, manager.GetIgnoredProfileFolders());
+        Assert.Equal(new[] { "Altro", "Profilo_Mio.Nome" }, manager.GetIgnoredProfileFolders());
         Assert.Equal(new[] { "Profilo_Mario" }, manager.GetProfiles());
     }
 

@@ -54,7 +54,7 @@ public sealed class LocalizationTests
 
             // Lingue senza traduzione: inglese.
             CultureInfo.CurrentUICulture = new CultureInfo("de-DE");
-            Assert.Equal("Profile activated.", Strings.ProfileActivated);
+            Assert.Equal("Playthrough loaded.", Strings.ProfileActivated);
 
             CultureInfo.CurrentUICulture = Italian;
             Assert.Equal("Prima di attivare Mario", SaveManager.BackupReasonText("Prima_di_Profilo_Mario"));

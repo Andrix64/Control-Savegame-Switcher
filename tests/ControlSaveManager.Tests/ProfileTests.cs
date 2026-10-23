@@ -23,7 +23,7 @@ public sealed class ProfileTests : IDisposable
 
     [Theory]
     [InlineData("")]
-    [InlineData("con spazio")]
+    [InlineData(" spazio iniziale")]
     [InlineData("a/b")]
     public void CreateProfile_RejectsInvalidNames(string name)
     {
