@@ -1,68 +1,69 @@
-# Cose da fare
+# To do
 
-Quello che manca, in ordine di priorità. I bug sono in
-[BUG_NOTI.md](BUG_NOTI.md); quello che è già stato fatto è nel
+What's missing, in order of priority. Bugs are in
+[KNOWN_BUGS.md](KNOWN_BUGS.md); what's already done is in the
 [CHANGELOG](../CHANGELOG.md).
 
-## Da fare
+## To do
 
-- [ ] **Firma del codice. Urgente.** Il 23/10/2026, sul PC di sviluppo con
-  Smart App Control attivo, ogni nuova build dell'app veniva bloccata: l'exe,
-  la dll e tre exe singoli rigenerati (il 22/10 l'exe singolo partiva). Chi ha
-  Smart App Control attivo potrebbe non riuscire ad avviare la 0.9.0. Un
-  certificato autofirmato non basta. Strada scelta: firma gratuita di SignPath
-  Foundation con la build su GitHub Actions, già pronta (vedi
-  [SVILUPPO.md](SVILUPPO.md#firma-del-codice)). Mancano:
-  - [x] controllare che la prima build su GitHub vada a buon fine;
-  - [x] pubblicare la prima versione (0.9.0, non firmata);
-  - [ ] fare domanda su [signpath.org](https://signpath.org/);
-  - [ ] configurare progetto e token su SignPath e i secret/variabili su
+- [ ] **Code signing. Urgent.** On 2026-10-23, on the development PC with
+  Smart App Control on, every new build of the app was blocked: the exe, the
+  dll and three regenerated single exes (on 2026-10-22 the single exe
+  started). Anyone with Smart App Control on may not be able to start 0.9.0. A
+  self-signed certificate isn't enough. Chosen path: free signing by SignPath
+  Foundation with the GitHub Actions build, already in place (see
+  [DEVELOPMENT.md](DEVELOPMENT.md#code-signing)). Still missing:
+  - [x] check that the first build on GitHub succeeds;
+  - [x] publish the first version (0.9.0, unsigned);
+  - [ ] apply at [signpath.org](https://signpath.org/);
+  - [ ] configure project and token on SignPath and the secrets/variables on
     GitHub;
-  - [ ] fare un rilascio con tag e verificare che l'exe firmato parta con
-    Smart App Control attivo.
+  - [ ] make a tagged release and check that the signed exe starts with Smart
+    App Control on.
 
-## Prove con il gioco vero
+## Tests with the real game
 
-Prove fatte il 23/10/2026 sui dati veri, dopo una copia di sicurezza
-verificata (`H:\Backup Control Save Manager\2026-10-23_08-55`). L'app è stata
-avviata da un eseguibile di prova con lo stesso codice, perché Smart App Control
-bloccava quello vero (vedi sopra).
+Tests run on 2026-10-23 on real data, after a verified backup. The app was
+started from a test executable with the same code, because Smart App Control
+blocked the real one (see above).
 
-Riuscite:
+Passed:
 
-- [x] **Spostamento da Documenti** con i dati veri (22/10, 728 file, esito
-  "Moved" nel registro).
-- [x] **Spostamento tra due dischi veri** (H: → C:) con dati finti: 60 file su
-  60 identici, vecchia cartella eliminata, nessun avanzo.
-- [x] **Avvio di Control** con `SaveManager.LaunchGame`
-  (`steam://rungameid/870780`): con Steam chiuso, il gioco è partito in 21 s.
-- [x] **Sessione di gioco**: alla chiusura del gioco l'app ha registrato 103 s
-  nella partita giusta. Il gioco, rimasto al menu, non ha cambiato i
-  salvataggi e l'app non ha fatto salvataggi inutili.
-- [x] **Dati intatti**: dopo le prove, i dati dell'app erano identici alla
-  copia di sicurezza (a parte registro e tempo di gioco).
+- [x] **Move from Documents** with real data (2026-10-22, 728 files, outcome
+  "Moved" in the log).
+- [x] **Move between two real drives** (H: → C:) with fake data: 60 of 60
+  files identical, old folder deleted, nothing left behind.
+- [x] **Starting Control** with `SaveManager.LaunchGame`
+  (`steam://rungameid/870780`): with Steam closed, the game started in 21 s.
+- [x] **Play session**: when the game closed, the app recorded 103 s in the
+  right playthrough. The game, left at the menu, didn't change the saves and
+  the app made no needless saves.
+- [x] **Data intact**: after the tests, the app's data was identical to the
+  backup (apart from the log and play time).
 
-Da fare a mano (servono azioni dentro il gioco o una scelta su Steam):
+To do by hand (they need actions inside the game or a choice on Steam):
 
-- [ ] **Salvataggio alla chiusura con progressi veri.** Giocare fino a un
-  salvataggio, chiudere e controllare che la partita sia aggiornata (oggi
-  provato solo senza progressi e con i test automatici).
-- [ ] **Opzioni condivise.** `preferences_data` è un binario di 764 byte
-  (contiene `default` e un identificativo) e le due partite ne hanno versioni
-  diverse. Cambiare un'opzione nel gioco (per esempio i sottotitoli), cambiare
-  partita con l'impostazione attiva e verificare che resti.
-- [ ] **Esporta e importa tra due PC.** Sui dati veri non è stato possibile
-  provarlo per i blocchi di Smart App Control; il percorso è coperto dai test
-  automatici.
-- [ ] **Steam Cloud attivo.** Non provato apposta: riattivarlo potrebbe far
-  riscaricare salvataggi vecchi. Oggi l'app avvisa e consiglia di disattivarlo.
-- [ ] **Giro completo.** Due partite, punto salvato prima di un boss, ritorno
-  al punto, cambio di partita e ritorno: ogni partita deve ritrovare i suoi
-  punti di controllo.
+- [ ] **Save on exit with real progress.** Play until a save, close the game
+  and check that the playthrough is updated (so far tested only without
+  progress and with automated tests).
+- [ ] **Shared options.** `preferences_data` is a 764-byte binary (it contains
+  `default` and an identifier) and the two playthroughs have different
+  versions of it. Change an option in the game (subtitles, for example), switch
+  playthrough with the setting on and check that it stays.
+- [ ] **Export and import between two PCs.** It couldn't be tested on real
+  data because of Smart App Control blocks; the code path is covered by
+  automated tests.
+- [ ] **Steam Cloud on.** Deliberately not tested: turning it back on might
+  download old saves again. The app currently warns and recommends turning it
+  off.
+- [ ] **Full round.** Two playthroughs, a saved point before a boss, going
+  back to the point, switching playthrough and back: each playthrough must
+  find its own control points.
 
-## Idee
+## Ideas
 
-- **Collegamento sul desktop "Gioca <partita>".** Un clic carica la partita e
-  avvia il gioco senza aprire l'app. Va controllato con Smart App Control.
-- **Più lingue.** Basta un `Strings.<codice>.resx` con le stesse chiavi (vedi
-  [SVILUPPO.md](SVILUPPO.md#lingue)).
+- **Desktop shortcut "Play <playthrough>".** One click loads the playthrough
+  and starts the game without opening the app. To be checked with Smart App
+  Control.
+- **More languages.** Just a `Strings.<code>.resx` with the same keys (see
+  [DEVELOPMENT.md](DEVELOPMENT.md#languages)).

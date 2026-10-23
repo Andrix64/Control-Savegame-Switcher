@@ -1,168 +1,134 @@
 # Control Save Manager
 
-Più partite di **Control** (Steam) sullo stesso account: scegli quale giocare
-e il programma carica i suoi salvataggi e avvia il gioco. Con i punti salvati
-da usare prima dei passaggi difficili e una copia automatica prima di ogni
-operazione.
+Several playthroughs of **Control** (Steam) on the same account: pick the one
+you want to play and the app loads its saves and starts the game. With saved
+points for the hard parts and an automatic copy before every operation.
 
-![Finestra principale](docs/img/main.png)
+![Main window](docs/img/main.png)
 
-*[English below](#english)*
+The app is in English or Italian, following the Windows language.
 
-## Installazione
+## Installation
 
-1. Scarica `ControlSaveManager-<versione>-win-x64.zip` dalla
-   [pagina dei rilasci](https://github.com/Andrix64/Control-Savegame-Switcher/releases)
-   ed estrai `ControlSaveManager.exe` dove vuoi.
-2. Avvialo. Non serve installare nulla: il programma contiene già tutto quello
-   che gli serve (per questo pesa circa 50 MB).
+1. Download `ControlSaveManager-<version>-win-x64.zip` from the
+   [releases page](https://github.com/Andrix64/Control-Savegame-Switcher/releases)
+   and extract `ControlSaveManager.exe` wherever you like.
+2. Run it. Nothing to install: the program already contains everything it
+   needs (that's why it's about 50 MB).
 
-Requisiti: Windows 10 o 11 a 64 bit, Control su Steam avviato almeno una volta.
+Requirements: Windows 10 or 11, 64-bit, and Control on Steam started at least
+once.
 
-> **Firma digitale.** I rilasci pubblicati su GitHub sono firmati da SignPath
-> Foundation (vedi [CODE_SIGNING.md](CODE_SIGNING.md)) appena la firma è
-> attiva: la pagina del rilascio dice se l'exe è firmato. Un exe non firmato
-> può far comparire "Windows ha protetto il PC" (scegli *Ulteriori informazioni
-> → Esegui comunque*) e Smart App Control, se attivo, può impedirne l'avvio.
-> Anche con la firma, SmartScreen può avvisare nei primi tempi, finché il
-> programma non è conosciuto.
+> **Digital signature.** Releases published on GitHub will be signed by
+> SignPath Foundation (see [CODE_SIGNING.md](CODE_SIGNING.md)) once signing is
+> active: each release page says whether the exe is signed. An unsigned exe
+> may show "Windows protected your PC" (choose *More info → Run anyway*), and
+> Smart App Control, if it's on, may block it. Even when signed, SmartScreen
+> may warn for a while until the program becomes known.
 
-Al primo avvio il programma ti chiede come chiamare la partita che è già nel
-gioco e la salva come prima partita.
+On first start the app asks what to call the playthrough already in the game
+and saves it as your first playthrough.
 
-### Prima di cominciare: disattiva Steam Cloud per Control
+### Before you start: turn off Steam Cloud for Control
 
-Con Steam Cloud attivo, all'avvio del gioco Steam può rimettere salvataggi di
-un'altra partita. Disattivalo per Control: in Steam, **Libreria → tasto destro
-su Control → Proprietà → Generale** e spegni *Mantieni i salvataggi su Steam
-Cloud*. Finché è attivo, il programma lo segnala con una barra gialla in alto.
+With Steam Cloud on, Steam may put back saves from another playthrough when
+the game starts. Turn it off for Control: in Steam, **Library → right-click
+Control → Properties → General**, and switch off *Keep games saves in the
+Steam Cloud*. While it's on, the app shows a yellow bar at the top.
 
-## Come si usa
+## How to use it
 
-### Le partite
+### Playthroughs
 
-Ogni partita ha i suoi salvataggi. Quella con il bordo rosso e la scritta
-*NEL GIOCO ADESSO* è quella caricata nel gioco.
+Each playthrough has its own saves. The one with the red border and
+*IN THE GAME NOW* is the one loaded in the game.
 
-- **Gioca questa**: salva i progressi della partita di adesso, carica quella
-  scelta e avvia Control tramite Steam. Non ci sono domande: prima di ogni
-  cambio si fa una copia.
-- **Gioca**, sulla partita già nel gioco: avvia solo Control.
-- **⋯** su ogni partita: *Carica senza avviare*, *Rinomina*, *Modifica nota*,
-  *Esporta in un file...* ed *Elimina partita...*. Se carichi senza avviare,
-  in basso compare **Annulla** per tornare subito alla partita di prima.
-- **Nuova partita**: con i salvataggi attuali del gioco oppure vuota, per
-  ricominciare dall'inizio.
+- **Play this**: saves the progress of the current playthrough, loads the
+  chosen one and starts Control through Steam. No questions asked: a copy is
+  made before every switch.
+- **Play**, on the playthrough already in the game: only starts Control.
+- **⋯** on every playthrough: *Load without starting*, *Rename*, *Edit note*,
+  *Export to a file...* and *Delete playthrough...*. If you load without
+  starting, an **Undo** button appears at the bottom to go straight back to
+  the previous playthrough.
+- **New playthrough**: with the game's current saves, or empty to start again
+  from the beginning.
 
-  ![Nuova partita](docs/img/newprofile.png)
+  ![New playthrough](docs/img/newprofile.png)
 
-- **Importa...**: aggiunge una partita esportata da un altro PC.
+- **Import...**: adds a playthrough exported on another PC.
 
-Ogni scheda mostra la nota, il tempo di gioco, quando è stata salvata e i
-punti salvati.
+Each card shows the note, the play time, when it was last saved and the saved
+points.
 
-### Mentre giochi
+### While you play
 
-Finché Control è aperto il programma non tocca i salvataggi e lo dice in alto.
-Quando chiudi il gioco, i progressi vengono salvati da soli nella partita che
-stavi giocando e il tempo di gioco viene aggiornato (serve che il programma
-sia aperto).
+While Control is running the app doesn't touch the saves and says so at the
+top. When you close the game, your progress is saved automatically to the
+playthrough you were playing and the play time is updated (the app needs to
+be open).
 
-![Gioco aperto](docs/img/playing.png)
+![Game running](docs/img/playing.png)
 
-### Cronologia e punti salvati
+### History and saved points
 
-**Salva un punto** (dalla partita nel gioco) salva i salvataggi di adesso con
-un nome, per esempio prima di un boss: se va male, torni lì. La
-**Cronologia** mostra i tuoi punti salvati e le copie automatiche fatte prima
-di ogni operazione; ogni riga ha **Torna qui**. Prima di tornare indietro la
-situazione attuale viene copiata, quindi puoi sempre cambiare idea.
+**Save a point** (on the playthrough in the game) saves the current saves
+under a name, for example before a boss: if it goes badly, you go back there.
+**History** shows your saved points and the automatic copies made before
+every operation; each row has **Go back here**. Before going back, the
+current situation is copied, so you can always change your mind.
 
-![Cronologia](docs/img/history.png)
+![History](docs/img/history.png)
 
-### Impostazioni
+### Settings
 
-- *«Gioca questa» avvia anche Control*: se lo spegni, la partita viene solo
-  caricata.
-- *Salva i progressi quando chiudi Control*.
-- *Stesse opzioni del gioco per tutte le partite*: comandi, audio e
-  sottotitoli restano uguali cambiando partita.
-- Quante copie automatiche tenere (20 di base, 0 = tutte).
+- *“Play this” also starts Control*: if you turn it off, the playthrough is
+  only loaded.
+- *Save progress when you close Control*.
+- *Same game options for all playthroughs*: controls, audio and subtitles stay
+  the same when you switch playthrough.
+- How many automatic copies to keep (20 by default, 0 = all).
 
-![Impostazioni](docs/img/settings.png)
+![Settings](docs/img/settings.png)
 
-## Dove sono i file
+## Where the files are
 
-Partite, punti salvati, copie automatiche e registro delle operazioni
-(`log.txt`) sono in `%LOCALAPPDATA%\ControlSaveManager` (di solito
-`C:\Users\<nome>\AppData\Local\ControlSaveManager`). È una cartella che OneDrive
-non sincronizza: così i salvataggi non vengono bloccati, scaricati a metà o
-duplicati come "copie in conflitto". Le Impostazioni hanno un pulsante per
-aprirla; altrimenti premi Win+R e scrivi `%LOCALAPPDATA%\ControlSaveManager`.
+Playthroughs, saved points, automatic copies and the operation log
+(`log.txt`) are in `%LOCALAPPDATA%\ControlSaveManager` (usually
+`C:\Users\<name>\AppData\Local\ControlSaveManager`). OneDrive doesn't sync
+that folder, so saves aren't locked, half-downloaded or duplicated as
+"conflict copies". Settings has a button to open it; otherwise press Win+R and
+type `%LOCALAPPDATA%\ControlSaveManager`.
 
-Se più account Steam sul PC hanno Control, all'avvio il programma chiede quale
-usare; ogni account ha le sue partite.
+If more than one Steam account on the PC has Control, the app asks which one
+to use at startup; each account has its own playthroughs.
 
-Se avevi usato una versione di prova che salvava in `Documenti\ControlSaves`,
-al primo avvio i dati vengono spostati da soli nella nuova cartella e il
-programma te lo dice.
+If you used a test version that saved to `Documents\ControlSaves`, the data is
+moved to the new folder automatically on first start, and the app tells you.
 
-Per disinstallare basta cancellare l'exe. Se vuoi, cancella anche
-`%LOCALAPPDATA%\ControlSaveManager` (ma lì ci sono le tue partite).
+To uninstall, just delete the exe. If you want, also delete
+`%LOCALAPPDATA%\ControlSaveManager` (but that's where your playthroughs are).
 
-## Domande
+## FAQ
 
-**Ho caricato la partita sbagliata.** Se il gioco non è partito, premi
-**Annulla** nell'avviso in basso; altrimenti gioca quella di prima: i suoi
-progressi erano stati salvati prima del cambio.
+**I loaded the wrong playthrough.** If the game didn't start, press **Undo**
+in the notice at the bottom; otherwise play the previous one: its progress was
+saved before the switch.
 
-**Ho perso dei progressi.** Apri la **Cronologia**: c'è una copia prima di
-ogni operazione, con data e descrizione.
+**I lost some progress.** Open **History**: there's a copy before every
+operation, with date and description.
 
-**Ho eliminato una partita per sbaglio.** In fondo alla finestra principale
-compare *Partite eliminate*: da lì la recuperi, finché la pulizia delle copie
-automatiche non la toglie.
+**I deleted a playthrough by mistake.** *Deleted playthroughs* appears at the
+bottom of the main window: recover it from there, until the cleanup of
+automatic copies removes it.
 
-**I salvataggi si mescolano tra le partite.** Quasi sempre è Steam Cloud:
-controlla che sia disattivato (vedi sopra).
+**Saves get mixed up between playthroughs.** It's almost always Steam Cloud:
+make sure it's off (see above).
 
-**Lingua.** Il programma è in italiano o in inglese, in base alla lingua di
-Windows.
+## License
 
-## English
+[MIT](LICENSE). What's new in each version: [CHANGELOG](CHANGELOG.md). For
+developers: [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
 
-Several **Control** (Steam) playthroughs on the same account: pick the one to
-play and the app loads its saves and starts the game. With saved points for
-the hard parts and an automatic copy before every operation. The app is in
-English or Italian, following the Windows language.
-
-![Main window](docs/img/main_en.png)
-
-- Download the zip from the
-  [releases page](https://github.com/Andrix64/Control-Savegame-Switcher/releases),
-  extract `ControlSaveManager.exe` and run it. No installation needed
-  (Windows 10/11, 64-bit). Releases are signed by SignPath Foundation once
-  signing is active (see [CODE_SIGNING.md](CODE_SIGNING.md)); an unsigned exe
-  may trigger SmartScreen or be blocked by Smart App Control. On first start
-  it saves the playthrough already in the game.
-- **Turn off Steam Cloud for Control** (Library → right-click Control →
-  Properties → General), otherwise Steam may mix up playthroughs. A yellow bar
-  shows while it is on.
-- **Play this** saves the current playthrough, loads the chosen one and starts
-  Control through Steam. The **⋯** menu has *Load without starting* (with
-  *Undo*), *Rename*, *Edit note*, *Export* and *Delete*. **Import...** adds an
-  exported playthrough.
-- When you close the game, progress is saved automatically and the play time
-  is updated (while the app is open).
-- **Save a point** and **History**: saved points and automatic copies, each
-  with *Go back here*.
-- Everything is in `%LOCALAPPDATA%\ControlSaveManager`, a folder OneDrive
-  doesn't sync.
-
-## Licenza
-
-[MIT](LICENSE). Novità di ogni versione nel [CHANGELOG](CHANGELOG.md). Per chi
-vuole lavorare sul codice: [docs/SVILUPPO.md](docs/SVILUPPO.md).
-
-*Control è un marchio di Remedy Entertainment. Questo programma non è affiliato
-né approvato da Remedy o da Valve.*
+*Control is a trademark of Remedy Entertainment. This program is not
+affiliated with or endorsed by Remedy or Valve.*

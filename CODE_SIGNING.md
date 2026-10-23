@@ -30,9 +30,3 @@ Control Save Manager works only on local files: the Control save folder in
 Steam's `userdata` and its own data in `%LOCALAPPDATA%\ControlSaveManager`.
 To start the game it asks the locally installed Steam client to run Control
 (`steam://rungameid/870780`); it does not connect to the internet by itself.
-
----
-
-*In italiano:* l'exe dei rilasci è firmato gratuitamente da SignPath
-Foundation. Viene compilato da GitHub Actions a partire da questo repository,
-e ogni firma viene approvata a mano. Il programma non invia dati in rete.

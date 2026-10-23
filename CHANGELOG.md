@@ -1,63 +1,63 @@
-# Novità
+# Changelog
 
-Tutte le modifiche rilevanti, dalla più recente. Le versioni seguono
-[Semantic Versioning](https://semver.org/lang/it/).
+All notable changes, newest first. Versions follow
+[Semantic Versioning](https://semver.org/).
 
 ## 0.9.0 — 2026-10-23
 
-Prima versione distribuita.
+First public release.
 
-### Partite
+### Playthroughs
 
-- Più partite di Control sullo stesso account, una alla volta nel gioco.
-- **Gioca questa**: salva i progressi della partita di adesso, carica quella
-  scelta e avvia Control tramite Steam. Si può anche solo caricare, con
-  **Annulla** subito dopo.
-- Nota e tempo di gioco per ogni partita; il tempo si misura da solo mentre
-  l'app è aperta.
-- Alla chiusura del gioco i progressi vengono salvati da soli (si può
-  spegnere).
-- Opzione per tenere le stesse opzioni del gioco in tutte le partite.
-- Nuova partita (vuota o copia dei salvataggi attuali), rinomina, esportazione
-  e importazione in un file zip.
-- Una partita eliminata si può recuperare da «Partite eliminate».
-- Al primo avvio la partita già nel gioco viene salvata con un nome a scelta.
-- Se sul PC ci sono più account Steam con Control, all'avvio si sceglie quale
-  usare.
-- Nomi delle partite con spazi e lettere accentate. Le cartelle in `Profili`
-  con un nome non valido vengono segnalate all'avvio.
+- Several Control playthroughs on the same account, one at a time in the game.
+- **Play this**: saves the progress of the current playthrough, loads the
+  chosen one and starts Control through Steam. It can also just load, with
+  **Undo** right after.
+- Note and play time for each playthrough; play time is measured
+  automatically while the app is open.
+- Progress is saved automatically when the game closes (can be turned off).
+- Option to keep the same game options in all playthroughs.
+- New playthrough (empty or a copy of the current saves), rename, export and
+  import as a zip file.
+- A deleted playthrough can be recovered from “Deleted playthroughs”.
+- On first start, the playthrough already in the game is saved under a name of
+  your choice.
+- If the PC has more than one Steam account with Control, you choose which
+  one to use at startup.
+- Playthrough names with spaces and accented letters. Folders in `Profili`
+  with an invalid name are reported at startup.
 
-### Cronologia
+### History
 
-- Punti salvati (per esempio prima di un boss) e copie automatiche fatte prima
-  di ogni operazione, per partita, con **Torna qui**.
-- Si conservano le ultime 20 copie automatiche (impostabile).
+- Saved points (for example before a boss) and automatic copies made before
+  every operation, per playthrough, with **Go back here**.
+- The last 20 automatic copies are kept (configurable).
 
-### Sicurezza dei salvataggi
+### Save safety
 
-- Ogni copia viene verificata byte per byte.
-- Sostituzione in due passaggi: i nuovi salvataggi vengono preparati e
-  verificati in una cartella a parte prima dello scambio; in caso di errore si
-  ripristina la copia.
-- Se un'operazione viene interrotta (per esempio da uno spegnimento), al
-  successivo avvio le cartelle tornano da sole allo stato di prima.
-- Operazioni bloccate mentre Control è aperto; una sola istanza dell'app.
-- Dati in `%LOCALAPPDATA%\ControlSaveManager`, che OneDrive non sincronizza. I
-  dati delle versioni di prova in `Documenti\ControlSaves` vengono spostati da
-  soli al primo avvio, senza mai perdere nulla.
-- Registro delle operazioni in `log.txt`.
+- Every copy is verified byte by byte.
+- Two-step replacement: the new saves are prepared and verified in a separate
+  folder before the swap; if anything fails, the copy is restored.
+- If an operation is interrupted (for example by a power cut), the folders go
+  back to their previous state on the next start.
+- Operations are blocked while Control is running; only one instance of the
+  app at a time.
+- Data in `%LOCALAPPDATA%\ControlSaveManager`, which OneDrive doesn't sync.
+  Data from test versions in `Documents\ControlSaves` is moved automatically on
+  first start, without ever losing anything.
+- Operation log in `log.txt`.
 
 ### Steam Cloud
 
-- L'app legge se Steam Cloud è attivo per Control e lo segnala con una barra,
-  con le istruzioni per disattivarlo. Con il cloud disattivato non avvisa più.
+- The app reads whether Steam Cloud is on for Control and shows a bar with
+  instructions to turn it off. With the cloud off it no longer warns.
 
-### Interfaccia
+### Interface
 
-- Una scheda per partita con le sue azioni visibili, barre per gli stati
-  (gioco aperto, Steam Cloud) e conferme con verbi ("Elimina partita",
-  "Annulla") solo per ciò che non si può annullare. Progettata seguendo le
-  euristiche di Nielsen Norman Group e le linee guida Microsoft per Windows.
-- Tema scuro, finestre di messaggio comprese.
-- Italiano e inglese: la lingua e il formato delle date seguono Windows.
-- Exe singolo per Windows a 64 bit, senza installazione.
+- One card per playthrough with its actions visible, bars for app-wide states
+  (game running, Steam Cloud) and confirmations with verbs ("Delete
+  playthrough", "Cancel") only for what can't be undone. Designed following
+  the Nielsen Norman Group heuristics and Microsoft's Windows guidelines.
+- Dark theme, message boxes included.
+- English and Italian: language and date format follow Windows.
+- Single exe for 64-bit Windows, no installation.
