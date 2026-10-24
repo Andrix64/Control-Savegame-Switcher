@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Lss.App.Services;
+using Lss.App.Views;
 
 namespace Lss.App.ViewModels;
 
@@ -343,11 +344,74 @@ public partial class GameViewModel : ObservableObject
         await ShowResult(result);
     }
 
-    // Finestre delle fasi G9 e G10: fino ad allora le azioni non fanno ancora nulla.
-    public Task RenameAsync(string profile) => throw new NotImplementedException("Finestra di rinomina: G9.");
+    [RelayCommand]
+    public async Task NewAsync()
+    {
+        if (IsBusy)
+            return;
 
-    public Task EditNoteAsync(string profile) => throw new NotImplementedException("Finestra della nota: G9.");
+        var window = new NewPlaythroughWindow(new NewPlaythroughViewModel(
+            name => Manager.ProfileExists(SaveManager.ProfileFolderName(name))));
 
+        NewPlaythroughResult? choice = await dialogs.ShowAsync<NewPlaythroughResult>(window);
+
+        if (choice == null)
+            return;
+
+        Result result = await RunBusyAsync(Strings.BusyCreating,
+            () => Manager.CreateProfile(choice.Name, choice.CopyCurrentSaves));
+
+        await ShowResult(result);
+
+        if (result.Success && choice.ActivateNow)
+            await PlayAsync(SaveManager.ProfileFolderName(choice.Name), Manager.State.LaunchGame);
+    }
+
+    public async Task RenameAsync(string profile)
+    {
+        var window = new NewPlaythroughWindow(new NewPlaythroughViewModel(
+            name => Manager.ProfileExists(SaveManager.ProfileFolderName(name)),
+            SaveManager.ProfileDisplayName(profile)));
+
+        NewPlaythroughResult? choice = await dialogs.ShowAsync<NewPlaythroughResult>(window);
+
+        if (choice == null)
+            return;
+
+        string newName = choice.Name;
+
+        Result result = await RunBusyAsync(Strings.BusyRenaming,
+            () => Manager.RenameProfile(profile, newName));
+
+        await ShowResult(result);
+    }
+
+    public async Task EditNoteAsync(string profile)
+    {
+        string name = SaveManager.ProfileDisplayName(profile);
+
+        var window = new TextPromptWindow(new TextPromptViewModel(
+            Strings.NoteTitle,
+            Loc.F(Strings.NoteCaption, name).ToUpperInvariant(),
+            Manager.GetInfo(profile).Note,
+            Strings.NoteHint,
+            SaveManager.MaxNoteLength,
+            Strings.SaveButton));
+
+        string? note = await dialogs.ShowAsync<string>(window);
+
+        if (note == null)
+            return;
+
+        Result result = Manager.SetNote(profile, note);
+
+        if (!result.Success)
+            await ShowError(result);
+
+        Refresh();
+    }
+
+    // Finestra della cronologia: fase G10.
     public Task ShowHistoryAsync(bool focusSave) => throw new NotImplementedException("Cronologia: G10.");
 
     [RelayCommand]

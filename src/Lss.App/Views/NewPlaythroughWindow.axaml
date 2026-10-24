@@ -1,0 +1,47 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="using:Lss.App.Localization"
+        xmlns:vm="using:Lss.App.ViewModels"
+        x:Class="Lss.App.Views.NewPlaythroughWindow"
+        x:DataType="vm:NewPlaythroughViewModel"
+        Title="{Binding Title}"
+        Width="420" SizeToContent="Height"
+        CanResize="False"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner">
+
+  <StackPanel Margin="22,20" Spacing="0">
+
+    <TextBlock Classes="caption" Text="{loc:Str CaptionProfileName}" Margin="2,0,0,6" />
+
+    <Border Background="{StaticResource Surface}" BorderBrush="{StaticResource Border}" BorderThickness="1"
+            CornerRadius="6" Padding="12,6" Margin="0,0,0,6">
+      <TextBox Text="{Binding Name, Mode=TwoWay}" Background="Transparent" BorderThickness="0"
+               FontSize="14" Padding="0,4" />
+    </Border>
+
+    <TextBlock Classes="small" Text="{Binding HintText}" IsVisible="{Binding !HintIsError}"
+               Foreground="{StaticResource TextMuted}" Margin="2,0,0,18" TextWrapping="Wrap" />
+    <TextBlock FontSize="12" Text="{Binding HintText}" IsVisible="{Binding HintIsError}"
+               Foreground="{StaticResource Error}" Margin="2,0,0,18" TextWrapping="Wrap" />
+
+    <!-- Solo per una partita nuova: da dove partono i salvataggi. -->
+    <StackPanel IsVisible="{Binding !IsRename}" Spacing="4">
+      <TextBlock Classes="caption" Text="{loc:Str CaptionContent}" Margin="2,0,0,6" />
+      <RadioButton GroupName="Content" Content="{loc:Str CopyCurrentSaves}"
+                   IsChecked="{Binding CopyCurrentSaves, Mode=TwoWay}" />
+      <RadioButton GroupName="Content" Content="{loc:Str EmptyProfileOption}"
+                   IsChecked="{Binding EmptyProfile, Mode=TwoWay}" Margin="0,0,0,14" />
+      <CheckBox Content="{loc:Str ActivateNow}" IsChecked="{Binding ActivateNow, Mode=TwoWay}" />
+    </StackPanel>
+
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,22,0,0">
+      <Button Classes="secondary" Content="{loc:Str Cancel}" IsCancel="True" MinWidth="110"
+              Click="Cancel_Click" />
+      <Button Classes="primary" Content="{Binding CreateText}" IsDefault="True" IsEnabled="{Binding CanCreate}"
+              MinWidth="110" Click="Create_Click" />
+    </StackPanel>
+
+  </StackPanel>
+
+</Window>

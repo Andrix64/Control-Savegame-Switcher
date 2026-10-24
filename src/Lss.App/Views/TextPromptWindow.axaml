@@ -1,0 +1,35 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="using:Lss.App.Localization"
+        xmlns:vm="using:Lss.App.ViewModels"
+        x:Class="Lss.App.Views.TextPromptWindow"
+        x:DataType="vm:TextPromptViewModel"
+        Title="{Binding Title}"
+        Width="440" SizeToContent="Height"
+        CanResize="False"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner">
+
+  <StackPanel Margin="22,20" Spacing="0">
+
+    <TextBlock Classes="caption" Text="{Binding Caption}" Margin="2,0,0,6" />
+
+    <Border Background="{StaticResource Surface}" BorderBrush="{StaticResource Border}" BorderThickness="1"
+            CornerRadius="6" Padding="12,6" Margin="0,0,0,6">
+      <TextBox Text="{Binding Value, Mode=TwoWay}" MaxLength="{Binding MaxLength}"
+               Background="Transparent" BorderThickness="0" FontSize="14" Padding="0,4" />
+    </Border>
+
+    <TextBlock Classes="small" Text="{Binding Hint}" Foreground="{StaticResource TextMuted}"
+               Margin="2,0,0,0" TextWrapping="Wrap" />
+
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,22,0,0">
+      <Button Classes="secondary" Content="{loc:Str Cancel}" IsCancel="True" MinWidth="110"
+              Click="Cancel_Click" />
+      <Button Classes="primary" Content="{Binding ConfirmText}" IsDefault="True" MinWidth="110"
+              Click="Confirm_Click" />
+    </StackPanel>
+
+  </StackPanel>
+
+</Window>
