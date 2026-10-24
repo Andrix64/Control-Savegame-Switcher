@@ -23,6 +23,12 @@ root="$(cd "$(dirname "$0")/.." && pwd)"
 # nfpm legge i percorsi di nfpm.yaml dalla cartella corrente.
 cd "$root"
 
+# deb e rpm si creano con nfpm: meglio saperlo prima di pubblicare.
+if ! command -v nfpm >/dev/null 2>&1; then
+    echo "nfpm non trovato (https://nfpm.goreleaser.com): serve per creare deb e rpm." >&2
+    exit 1
+fi
+
 project="src/Lss.App/Lss.App.csproj"
 tests="tests/Lss.Tests"
 publish_dir="bin/publish/linux-x64"
@@ -125,8 +131,15 @@ chmod +x "$stage/LSS" "$stage/install.sh"
 tar -C "$dist" -czf "$dist/$name.tar.gz" "$name"
 rm -rf "$stage"
 
-# File creati in dist/ (i pacchetti deb, rpm e AppImage si aggiungono sotto).
+# File creati in dist/ (l'AppImage si aggiunge sotto).
 artifacts=("$name.tar.gz")
+
+echo "== deb e rpm"
+VERSION="$version" nfpm package --config packaging/linux/nfpm.yaml --packager deb \
+    --target "$dist/lss_${version}_amd64.deb"
+VERSION="$version" nfpm package --config packaging/linux/nfpm.yaml --packager rpm \
+    --target "$dist/lss-${version}-1.x86_64.rpm"
+artifacts+=("lss_${version}_amd64.deb" "lss-${version}-1.x86_64.rpm")
 
 echo "== SHA-256"
 for file in "${artifacts[@]}"; do

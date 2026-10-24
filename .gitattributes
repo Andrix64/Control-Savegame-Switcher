@@ -3,4 +3,5 @@
 *.sh text eol=lf
 packaging/linux/*.desktop text eol=lf
 packaging/linux/*.xml text eol=lf
+packaging/linux/*.yaml text eol=lf
 *.png binary

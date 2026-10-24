@@ -1,0 +1,54 @@
+# deb and rpm packages, built by scripts/release.sh with nfpm.
+name: lss
+arch: amd64
+platform: linux
+version: ${VERSION}
+version_schema: semver
+maintainer: Andrix64 <MAINTAINER_EMAIL>
+description: Multiple playthroughs for Steam games.
+homepage: https://github.com/Andrix64/Local-Save-Switcher
+license: MIT
+
+contents:
+  - src: ./bin/publish/linux-x64/LSS
+    dst: /usr/lib/lss/LSS
+    file_info:
+      mode: 0755
+  - src: ./packaging/linux/lss.sh
+    dst: /usr/bin/lss
+    file_info:
+      mode: 0755
+  - src: ./packaging/linux/io.github.andrix64.LocalSaveSwitcher.desktop
+    dst: /usr/share/applications/io.github.andrix64.LocalSaveSwitcher.desktop
+  - src: ./packaging/linux/io.github.andrix64.LocalSaveSwitcher.metainfo.xml
+    dst: /usr/share/metainfo/io.github.andrix64.LocalSaveSwitcher.metainfo.xml
+  - src: ./packaging/linux/icons/16x16/io.github.andrix64.LocalSaveSwitcher.png
+    dst: /usr/share/icons/hicolor/16x16/apps/io.github.andrix64.LocalSaveSwitcher.png
+  - src: ./packaging/linux/icons/24x24/io.github.andrix64.LocalSaveSwitcher.png
+    dst: /usr/share/icons/hicolor/24x24/apps/io.github.andrix64.LocalSaveSwitcher.png
+  - src: ./packaging/linux/icons/32x32/io.github.andrix64.LocalSaveSwitcher.png
+    dst: /usr/share/icons/hicolor/32x32/apps/io.github.andrix64.LocalSaveSwitcher.png
+  - src: ./packaging/linux/icons/48x48/io.github.andrix64.LocalSaveSwitcher.png
+    dst: /usr/share/icons/hicolor/48x48/apps/io.github.andrix64.LocalSaveSwitcher.png
+  - src: ./packaging/linux/icons/64x64/io.github.andrix64.LocalSaveSwitcher.png
+    dst: /usr/share/icons/hicolor/64x64/apps/io.github.andrix64.LocalSaveSwitcher.png
+  - src: ./packaging/linux/icons/256x256/io.github.andrix64.LocalSaveSwitcher.png
+    dst: /usr/share/icons/hicolor/256x256/apps/io.github.andrix64.LocalSaveSwitcher.png
+  - src: ./LICENSE
+    dst: /usr/share/doc/lss/LICENSE
+
+overrides:
+  deb:
+    depends:
+      - libx11-6
+      - libice6
+      - libsm6
+      - libfontconfig1
+      - libicu76 | libicu74 | libicu72 | libicu70
+  rpm:
+    depends:
+      - libX11
+      - libICE
+      - libSM
+      - fontconfig
+      - libicu
