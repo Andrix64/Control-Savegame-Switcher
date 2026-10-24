@@ -308,4 +308,12 @@ La barra sparisce appena l&apos;impostazione è spenta.</value></data>
   <data name="UnknownGameName" xml:space="preserve"><value>App {0}</value></data>
   <data name="GameNotSupported" xml:space="preserve"><value>{0} non tiene i salvataggi nella cartella userdata di Steam: LSS non può gestirlo.</value></data>
   <data name="ImportOtherGame" xml:space="preserve"><value>Questa partita è di {0}, non di {1}.</value></data>
+  <data name="GamesCaption" xml:space="preserve"><value>GIOCHI</value></data>
+  <data name="OtherGamesCaption" xml:space="preserve"><value>Altri giochi</value></data>
+  <data name="SupportSavesElsewhere" xml:space="preserve"><value>I salvataggi sono fuori dalla cartella userdata di Steam: per ora non è supportato.</value></data>
+  <data name="SupportNoSaves" xml:space="preserve"><value>Ancora nessun salvataggio: avvia il gioco una volta.</value></data>
+  <data name="NoSupportedGames" xml:space="preserve"><value>Per questo account non c'è nessun gioco con i salvataggi nella cartella userdata di Steam.</value></data>
+  <data name="OnlyUserdataNotice" xml:space="preserve"><value>LSS copia solo i file di {0} nella cartella userdata di Steam. Se il gioco salva anche altrove, quei file non cambiano tra le partite.</value></data>
+  <data name="NoAccountWithGames" xml:space="preserve"><value>Nessun account Steam su questo PC ha giochi con i salvataggi nella cartella userdata.</value></data>
+  <data name="AppSubtitle" xml:space="preserve"><value>LOCAL SAVE SWITCHER</value></data>
 </root>

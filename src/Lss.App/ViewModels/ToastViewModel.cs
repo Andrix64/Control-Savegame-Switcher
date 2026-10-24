@@ -35,6 +35,19 @@ public partial class ToastViewModel : ObservableObject
     [ObservableProperty]
     private bool isVisible;
 
+    // Un bool per tipo: la barra prende il colore dallo stile "infobar.<tipo>".
+    [ObservableProperty]
+    private bool isInfo;
+
+    [ObservableProperty]
+    private bool isWarning;
+
+    [ObservableProperty]
+    private bool isSuccess;
+
+    [ObservableProperty]
+    private bool isError;
+
     public void Show(InfoKind kind, string text, string? actionText = null, Action? action = null, bool autoHide = true)
     {
         timer.Stop();
@@ -45,6 +58,10 @@ public partial class ToastViewModel : ObservableObject
         HasAction = action != null;
         this.action = action;
         IsVisible = true;
+        IsInfo = kind == InfoKind.Info;
+        IsWarning = kind == InfoKind.Warning;
+        IsSuccess = kind == InfoKind.Success;
+        IsError = kind == InfoKind.Error;
 
         if (autoHide)
             timer.Start();
@@ -54,6 +71,12 @@ public partial class ToastViewModel : ObservableObject
     {
         timer.Stop();
         IsVisible = false;
+
+        // Spegne anche il tipo: ogni barra si vede solo con il suo flag.
+        IsInfo = false;
+        IsWarning = false;
+        IsSuccess = false;
+        IsError = false;
     }
 
     // Prima si nasconde, poi fa l'azione (come HideToast e poi action in MainForm).

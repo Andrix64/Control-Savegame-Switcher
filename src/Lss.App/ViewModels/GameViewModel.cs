@@ -20,6 +20,7 @@ public partial class GameViewModel : ObservableObject
     {
         Manager = manager;
         this.dialogs = dialogs;
+        UserdataNotice = Loc.F(Strings.OnlyUserdataNotice, manager.Game.Name);
     }
 
     public SaveManager Manager { get; }
@@ -30,6 +31,9 @@ public partial class GameViewModel : ObservableObject
     public ToastViewModel Toast { get; } = new();
 
     public ObservableCollection<PlaythroughViewModel> Playthroughs { get; } = [];
+
+    // Nota sotto l'elenco: quali file LSS copia (vedi OnlyUserdataNotice).
+    public string UserdataNotice { get; }
 
     // true mentre un'operazione sui file è in corso.
     [ObservableProperty]

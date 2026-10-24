@@ -1,7 +1,85 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="using:Lss.App.Localization"
+        xmlns:vm="using:Lss.App.ViewModels"
+        xmlns:views="using:Lss.App.Views"
         x:Class="Lss.App.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
         Title="Local Save Switcher"
-        Width="900" Height="640"
-        Background="#0F0F10">
+        Width="860" Height="720"
+        MinWidth="640" MinHeight="560"
+        WindowStartupLocation="CenterScreen">
+
+  <DockPanel>
+
+    <!-- Intestazione -->
+    <Border DockPanel.Dock="Top" Height="68" Background="{StaticResource Header}" Padding="16,0">
+      <Grid ColumnDefinitions="Auto,*">
+        <Border Grid.Column="0" Width="4" CornerRadius="2" Margin="0,16,14,16"
+                Background="{StaticResource Accent}" />
+        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+          <TextBlock Classes="title" Text="LSS" />
+          <TextBlock Classes="caption" Text="{Binding HeaderCaption}" />
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <!-- Colonna dei giochi (nascosta se c'è un solo gioco supportato) -->
+    <Border DockPanel.Dock="Left" Width="240" Background="{StaticResource Header}" Padding="12,16"
+            IsVisible="{Binding ShowSidebar}">
+      <DockPanel>
+        <TextBlock DockPanel.Dock="Top" Classes="caption" Text="{loc:Str GamesCaption}" Margin="4,0,0,10" />
+
+        <Expander DockPanel.Dock="Bottom" IsVisible="{Binding HasOtherGames}" Margin="0,12,0,0"
+                  HorizontalAlignment="Stretch">
+          <Expander.Header>
+            <TextBlock Classes="caption" Text="{loc:Str OtherGamesCaption}" />
+          </Expander.Header>
+          <ItemsControl ItemsSource="{Binding OtherGames}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:GameItemViewModel">
+                <StackPanel Margin="0,4,0,8" Spacing="2">
+                  <TextBlock Text="{Binding Name}" Foreground="{StaticResource TextMuted}" TextWrapping="Wrap" />
+                  <TextBlock Classes="small" Text="{Binding SupportText}" TextWrapping="Wrap" />
+                </StackPanel>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </Expander>
+
+        <ListBox ItemsSource="{Binding Games}" SelectedItem="{Binding SelectedGame}"
+                 Background="Transparent" BorderThickness="0">
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:GameItemViewModel">
+              <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,2">
+                <Image Source="{Binding Icon}" Width="32" Height="32" IsVisible="{Binding HasIcon}" />
+                <Border Width="32" Height="32" CornerRadius="6" Background="{StaticResource SurfaceSelected}"
+                        IsVisible="{Binding !HasIcon}">
+                  <TextBlock Text="{Binding Initial}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                             FontWeight="Bold" />
+                </Border>
+                <TextBlock Text="{Binding Name}" VerticalAlignment="Center" TextWrapping="Wrap" />
+              </StackPanel>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </DockPanel>
+    </Border>
+
+    <!-- Gioco selezionato, o il messaggio se non ce n'è nessuno -->
+    <Grid>
+      <TextBlock Text="{loc:Str NoSupportedGames}" TextWrapping="Wrap" Margin="24" MaxWidth="480"
+                 HorizontalAlignment="Left" VerticalAlignment="Top" IsVisible="{Binding ShowNoGames}" />
+
+      <ContentControl Content="{Binding CurrentGame}" IsVisible="{Binding !ShowNoGames}">
+        <ContentControl.DataTemplates>
+          <DataTemplate x:DataType="vm:GameViewModel">
+            <views:GameView />
+          </DataTemplate>
+        </ContentControl.DataTemplates>
+      </ContentControl>
+    </Grid>
+
+  </DockPanel>
+
 </Window>

@@ -1,0 +1,72 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="using:Lss.App.Localization"
+             xmlns:vm="using:Lss.App.ViewModels"
+             xmlns:views="using:Lss.App.Views"
+             x:Class="Lss.App.Views.GameView"
+             x:DataType="vm:GameViewModel">
+
+  <Grid RowDefinitions="Auto,Auto,Auto,Auto,*,Auto" Margin="24,16,24,12">
+
+    <!-- Steam Cloud attivo per il gioco -->
+    <Border Grid.Row="0" Classes="infobar warning" Margin="0,0,0,8" IsVisible="{Binding ShowCloudBar}">
+      <Grid ColumnDefinitions="*,Auto">
+        <StackPanel Grid.Column="0" Spacing="4">
+          <TextBlock Text="{Binding CloudBarTitle}" FontWeight="SemiBold" TextWrapping="Wrap" />
+          <TextBlock Text="{Binding CloudBarText}" TextWrapping="Wrap" />
+        </StackPanel>
+        <Button Grid.Column="1" Classes="secondary" Content="{loc:Str CloudBarAction}"
+                Command="{Binding CloudHelpCommand}" VerticalAlignment="Center" Margin="12,0,0,0" />
+      </Grid>
+    </Border>
+
+    <!-- Gioco aperto: come gestirlo -->
+    <Border Grid.Row="1" Classes="infobar info" Margin="0,0,0,8" IsVisible="{Binding ShowGameBar}">
+      <StackPanel Spacing="4">
+        <TextBlock Text="{Binding GameBarTitle}" FontWeight="SemiBold" TextWrapping="Wrap" />
+        <TextBlock Text="{Binding GameBarText}" TextWrapping="Wrap" />
+      </StackPanel>
+    </Border>
+
+    <!-- Titolo dell'elenco e azioni -->
+    <Grid Grid.Row="2" ColumnDefinitions="*,Auto" Margin="0,4,0,8">
+      <TextBlock Grid.Column="0" Classes="heading" Text="{loc:Str YourPlaythroughs}" VerticalAlignment="Center" />
+      <Button Grid.Column="1" Classes="secondary" Content="{loc:Str ImportButton}"
+              Command="{Binding ImportCommand}" IsEnabled="{Binding !IsBusy}" />
+    </Grid>
+
+    <TextBlock Grid.Row="3" Text="{Binding UserdataNotice}" TextWrapping="Wrap" FontSize="12"
+               Foreground="{StaticResource TextMuted}" Margin="0,0,0,10" />
+
+    <!-- Le schede delle partite -->
+    <ScrollViewer Grid.Row="4">
+      <StackPanel>
+        <ItemsControl ItemsSource="{Binding Playthroughs}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:PlaythroughViewModel">
+              <views:PlaythroughCardView />
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <TextBlock Text="{Binding EmptyText}" Foreground="{StaticResource TextMuted}" Margin="2,8,0,0" />
+      </StackPanel>
+    </ScrollViewer>
+
+    <!-- Avviso dell'ultima operazione -->
+    <Border Grid.Row="5" Classes="infobar" Margin="0,6,0,0" IsVisible="{Binding Toast.IsVisible}"
+            Classes.info="{Binding Toast.IsInfo}"
+            Classes.warning="{Binding Toast.IsWarning}"
+            Classes.success="{Binding Toast.IsSuccess}"
+            Classes.error="{Binding Toast.IsError}">
+      <Grid ColumnDefinitions="*,Auto">
+        <TextBlock Grid.Column="0" Text="{Binding Toast.Text}" TextWrapping="Wrap" VerticalAlignment="Center" />
+        <Button Grid.Column="1" Classes="secondary" Content="{Binding Toast.ActionText}"
+                IsVisible="{Binding Toast.HasAction}" Command="{Binding Toast.RunActionCommand}"
+                VerticalAlignment="Center" Margin="12,0,0,0" />
+      </Grid>
+    </Border>
+
+  </Grid>
+
+</UserControl>
