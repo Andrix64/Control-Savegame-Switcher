@@ -70,7 +70,7 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 ## Phase H — Linux ([H-linux.md](H-linux.md))
 
 - [x] H1 — Steam folders (241528a)
-- [ ] H2 — `registry.vdf`
+- [x] H2 — `registry.vdf` (bdb46ca)
 - [ ] H3 — Game processes
 - [ ] H4 — Launching and single instance
 - [ ] H5 — Case of names
