@@ -554,7 +554,7 @@ public sealed partial class SaveManager
         if (!Directory.Exists(profile))
             return Result.Fail(Strings.ProfileNotFound);
 
-        string temp = Path.Combine(Path.GetTempPath(), "csm_esporta_" + Guid.NewGuid().ToString("N"));
+        string temp = Path.Combine(Path.GetTempPath(), "lss_esporta_" + Guid.NewGuid().ToString("N"));
         string tempZip = zipPath + ".tmp";
 
         try
@@ -568,7 +568,9 @@ public sealed partial class SaveManager
 
             var values = new List<KeyValuePair<string, string>>
             {
-                new("Formato", "1"),
+                new("Formato", "2"),
+                new("AppId", Game.AppId),
+                new("Gioco", Game.Name),
                 new("Nome", ProfileDisplayName(profileName))
             };
             values.AddRange(FormatInfo(GetInfo(profileName)));
@@ -586,6 +588,10 @@ public sealed partial class SaveManager
             {
                 if (archive.Entries.Count(e => e.Name != "") != files)
                     throw new IOException("Lo zip non contiene tutti i file.");
+
+                // Lo stesso zip deve funzionare su Windows e su Linux: percorsi con /.
+                if (archive.Entries.Any(e => e.FullName.Contains('\\')))
+                    throw new IOException("Percorsi con \\ nello zip.");
             }
 
             File.Move(tempZip, zipPath, overwrite: true);
@@ -616,7 +622,7 @@ public sealed partial class SaveManager
 
     private Result<string> ImportProfileCore(string zipPath)
     {
-        string temp = Path.Combine(Path.GetTempPath(), "csm_importa_" + Guid.NewGuid().ToString("N"));
+        string temp = Path.Combine(Path.GetTempPath(), "lss_importa_" + Guid.NewGuid().ToString("N"));
 
         try
         {
@@ -629,6 +635,14 @@ public sealed partial class SaveManager
                 return Result<string>.Fail(Strings.ImportInvalid);
 
             Dictionary<string, string> values = IniFile.Read(Path.Combine(temp, ExportInfoFile));
+
+            // Le partite esportate da Control Save Manager (formato 1) non hanno AppId: sono di Control.
+            string appId = values.GetValueOrDefault("AppId", GameInfo.ControlAppId);
+            string gameName = values.GetValueOrDefault("Gioco", "Control");
+
+            if (appId != Game.AppId)
+                return Result<string>.Fail(Loc.F(Strings.ImportOtherGame, gameName, Game.Name));
+
             string name = UniqueName(values.GetValueOrDefault("Nome", "").Trim());
             string profileName = ProfileFolderName(name);
 

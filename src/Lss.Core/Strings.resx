@@ -306,4 +306,5 @@ The bar disappears as soon as the setting is off.</value></data>
   <data name="ZipFilter" xml:space="preserve"><value>{0} playthrough (*.zip)|*.zip</value></data>
   <data name="UnknownGameName" xml:space="preserve"><value>App {0}</value></data>
   <data name="GameNotSupported" xml:space="preserve"><value>{0} doesn't keep its saves in Steam's userdata folder: LSS can't manage it.</value></data>
+  <data name="ImportOtherGame" xml:space="preserve"><value>This playthrough is from {0}, not from {1}.</value></data>
 </root>

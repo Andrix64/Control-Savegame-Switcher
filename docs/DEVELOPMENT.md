@@ -189,10 +189,15 @@ exit), `ripristino` (restore), `creazione` (creation), `eliminazione`
 
 ### Exported playthrough
 
-A zip with `partita.ini` (`Formato=1`, `Nome`, `Nota`, `TempoDiGioco`,
-`UltimaSessione`), `salvataggi\` (the playthrough folder) and, if any,
-`punti\` (the saved points). Import rejects zips without `salvataggi\` and
-paths that leave the folder.
+A zip with `partita.ini` (`Formato=2`, `AppId`, `Gioco`, `Nome`, `Nota`,
+`TempoDiGioco`, `UltimaSessione`), `salvataggi\` (the playthrough folder) and,
+if any, `punti\` (the saved points). `AppId` is the Steam number of the game
+and `Gioco` its name. Import rejects zips without `salvataggi\`, paths that
+leave the folder, and playthroughs of another game (`ImportOtherGame`).
+Zip entries always use `/`, so the same zip imports on Windows and Linux.
+
+Format 1 (written by Control Save Manager) has no `AppId`: it is read as
+Control (`870780`). Format 2 is the only one written now.
 
 ### Steam Cloud
 

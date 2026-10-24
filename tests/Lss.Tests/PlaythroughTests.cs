@@ -154,6 +154,91 @@ public sealed class PlaythroughTests : IDisposable
     }
 
     [Fact]
+    public void Export_WritesFormat2WithGame()
+    {
+        SaveManager manager = TwoPlaythroughs();
+        string zip = Path.Combine(folder.Root, "formato2.zip");
+
+        Assert.True(manager.ExportProfile("Profilo_Mario", zip).Success);
+
+        using ZipArchive archive = ZipFile.OpenRead(zip);
+        string info = ReadEntry(archive, "partita.ini");
+
+        Assert.Contains("Formato=2", info);
+        Assert.Contains("AppId=870780", info);
+        Assert.Contains("Gioco=Control", info);
+    }
+
+    [Fact]
+    public void Export_UsesForwardSlashes()
+    {
+        SaveManager manager = TwoPlaythroughs();
+        string zip = Path.Combine(folder.Root, "barre.zip");
+
+        Assert.True(manager.ExportProfile("Profilo_Mario", zip).Success);
+
+        using ZipArchive archive = ZipFile.OpenRead(zip);
+        Assert.NotEmpty(archive.Entries);
+        Assert.All(archive.Entries, entry => Assert.DoesNotContain("\\", entry.FullName));
+    }
+
+    [Fact]
+    public void Import_Format1IsControl()
+    {
+        string zip = WriteZip("formato1.zip", "Formato=1\nNome=Mario\n");
+        SaveManager control = folder.CreateManager();
+
+        Assert.True(control.ImportProfile(zip).Success);
+        Assert.Contains("Profilo_Mario", control.GetProfiles());
+
+        SaveManager other = new(folder.Game, Path.Combine(folder.Root, "altro"), "", OtherGame);
+        Result<string> refused = other.ImportProfile(zip);
+
+        Assert.False(refused.Success);
+        Assert.Equal(Loc.F(Strings.ImportOtherGame, "Control", "Test"), refused.Message);
+        Assert.Empty(other.GetProfiles());
+    }
+
+    [Fact]
+    public void Import_OtherGameRefused()
+    {
+        TestFolder.Write(folder.SaveFile, "partita");
+        SaveManager other = new(folder.Game, Path.Combine(folder.Root, "altro"), "", OtherGame);
+        other.CreateProfile("Mario", copyCurrentSaves: false);
+        string zip = Path.Combine(folder.Root, "altro_gioco.zip");
+
+        Assert.True(other.ExportProfile("Profilo_Mario", zip).Success);
+
+        SaveManager control = folder.CreateManager();
+        Result<string> refused = control.ImportProfile(zip);
+
+        Assert.False(refused.Success);
+        Assert.Empty(control.GetProfiles());
+    }
+
+    private static GameInfo OtherGame => new("123450", "Test", "", "", "", SupportState.Supported);
+
+    private static string ReadEntry(ZipArchive archive, string name)
+    {
+        using var reader = new StreamReader(archive.GetEntry(name)!.Open());
+        return reader.ReadToEnd();
+    }
+
+    /// <summary>
+    /// Zip fatto a mano, con partita.ini e una cartella salvataggi come quelli esportati.
+    /// </summary>
+    private string WriteZip(string name, string info)
+    {
+        string source = Path.Combine(folder.Root, name + "_src");
+        TestFolder.Write(Path.Combine(source, "salvataggi", "slot.sav"), "partita");
+        TestFolder.Write(Path.Combine(source, "partita.ini"), info);
+
+        string zip = Path.Combine(folder.Root, name);
+        ZipFile.CreateFromDirectory(source, zip);
+        return zip;
+    }
+
+    [Fact]
     public void AdoptGameSavesKeepsGameFolderAndMarksItActive()
     {
         SaveManager manager = folder.CreateManager("partita");
