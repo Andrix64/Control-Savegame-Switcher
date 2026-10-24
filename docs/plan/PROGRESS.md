@@ -54,7 +54,7 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 
 - [x] G1 — Project skeleton (f1a0faa)
 - [x] G2 — Theme and texts in XAML (24aa28d)
-- [ ] G3 — Services
+- [x] G3 — Services (db28682)
 - [ ] G4 — `MessageWindow`
 - [ ] G5 — `SessionTracker`
 - [ ] G6 — `GameViewModel`
