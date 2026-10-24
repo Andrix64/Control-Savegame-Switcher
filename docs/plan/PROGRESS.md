@@ -26,7 +26,7 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 
 - [x] D1 — `GameInfo` and `SupportState` (c563816)
 - [x] D2 — Library folders (e345f9b)
-- [ ] D3 — Manifests
+- [x] D3 — Manifests (91efc49)
 - [ ] D4 — Support state
 - [ ] D5 — Images
 - [ ] D6 — List the games of an account
