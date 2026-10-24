@@ -15,7 +15,7 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 - [x] C1 — Solution file (bafaacf)
 - [x] C2 — `IPlatform`, still inside the WinForms project (035d396)
 - [x] C3 — Card texts out of the WinForms control (b80bb70)
-- [ ] C4 — Projects `Lss.Core` and `Lss.Platform`
+- [x] C4 — Projects `Lss.Core` and `Lss.Platform` (af1f6f1)
 - [ ] C5 — Tests on plain `net10.0`
 - [ ] C6 — Tests on Linux in GitHub Actions
 - [ ] C7 — 👤 Check the WinForms app, push, note failing Linux tests
@@ -102,5 +102,10 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 Write here anything that didn't match the plan, decisions taken with
 Andrix, and results of the 👤 checks. Newest first, with the date.
 
+- 2026-10-24 — C4: the check "grep for Microsoft.Win32 / System.Windows.Forms /
+  Process.Start in src/Lss.Core" also matches the standard resx header lines
+  (`ResXResourceReader, System.Windows.Forms`) in `Strings.resx` and
+  `Strings.it.resx`. Restricted to `*.cs` the grep prints nothing: the code
+  is clean and the build has 0 warnings.
 - 2026-10-24 — Plan written. Open questions for Andrix: maintainer email
   for the Linux packages (I4).
