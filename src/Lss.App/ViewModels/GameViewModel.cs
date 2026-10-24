@@ -411,8 +411,21 @@ public partial class GameViewModel : ObservableObject
         Refresh();
     }
 
-    // Finestra della cronologia: fase G10.
-    public Task ShowHistoryAsync(bool focusSave) => throw new NotImplementedException("Cronologia: G10.");
+    public async Task ShowHistoryAsync(bool focusSave)
+    {
+        if (!Manager.HasActiveProfile)
+            return;
+
+        // Le impostazioni dalla cronologia arrivano con la finestra di G11: fino ad allora il collegamento non fa nulla.
+        var history = new HistoryViewModel(Manager, dialogs,
+            () => ConfirmCloudAsync(launching: false),
+            () => Task.FromResult(false));
+
+        await dialogs.ShowAsync<bool>(new HistoryWindow(history, focusSave));
+
+        if (history.Changed)
+            Refresh();
+    }
 
     [RelayCommand]
     public async Task CloudHelpAsync()
