@@ -84,7 +84,7 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 - [x] I2 — Linux desktop files and icons (9158360)
 - [x] I3 — `scripts/release.sh` (88519f5)
 - [x] I4 — `nfpm.yaml` (deb, rpm) (b88596e)
-- [ ] I5 — AppImage
+- [x] I5 — AppImage (e5e9f9e)
 - [ ] I6 — Workflow
 - [ ] I7 — 👤 First CI run
 
