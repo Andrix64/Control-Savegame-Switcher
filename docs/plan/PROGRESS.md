@@ -16,7 +16,7 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 - [x] C2 — `IPlatform`, still inside the WinForms project (035d396)
 - [x] C3 — Card texts out of the WinForms control (b80bb70)
 - [x] C4 — Projects `Lss.Core` and `Lss.Platform` (af1f6f1)
-- [ ] C5 — Tests on plain `net10.0`
+- [x] C5 — Tests on plain `net10.0` (98d083e)
 - [ ] C6 — Tests on Linux in GitHub Actions
 - [ ] C7 — 👤 Check the WinForms app, push, note failing Linux tests
 
