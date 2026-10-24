@@ -30,7 +30,7 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 - [x] D4 — Support state (745b9f8)
 - [x] D5 — Images (2220175)
 - [x] D6 — List the games of an account (401f983)
-- [ ] D7 — Docs
+- [x] D7 — Docs (2195cef)
 
 ## Phase E — Any game ([E-per-game.md](E-per-game.md))
 
