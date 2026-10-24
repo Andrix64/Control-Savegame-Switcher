@@ -8,14 +8,14 @@ Technical notes for people working on the code. The user guide is in the
 | What | Path |
 |---|---|
 | Game saves | `<Steam>\userdata\<AccountID>\870780\` |
-| App data | `%LOCALAPPDATA%\ControlSaveManager\` (`AppData.Root`) |
-| Playthroughs | `<data>\<AccountID>\Profili\Profilo_<name>\` |
-| Note and play time | `<data>\<AccountID>\Info\Profilo_<name>.ini` |
-| Automatic copies | `<data>\<AccountID>\Backup\<reason>_<date>\` plus `<reason>_<date>.ini` next to it |
-| Saved points | `<data>\<AccountID>\Savestate\Profilo_<name>\<date>_<point name>\` |
-| State | `<data>\<AccountID>\stato.ini` |
+| App data | `%LOCALAPPDATA%\LSS\` (`AppData.Root`); on Linux `~/.local/share/LSS/` |
+| Playthroughs | `<data>\<AccountID>\<AppID>\Profili\Profilo_<name>\` |
+| Note and play time | `<data>\<AccountID>\<AppID>\Info\Profilo_<name>.ini` |
+| Automatic copies | `<data>\<AccountID>\<AppID>\Backup\<reason>_<date>\` plus `<reason>_<date>.ini` next to it |
+| Saved points | `<data>\<AccountID>\<AppID>\Savestate\Profilo_<name>\<date>_<point name>\` |
+| State | `<data>\<AccountID>\<AppID>\stato.ini` |
 | Log | `<data>\log.txt` (above 1 MB it becomes `log.old.txt`) |
-| Last account used | `<data>\account.txt` |
+| Settings (last account and game) | `<data>\lss.ini`: `UltimoAccount=`, `UltimoGioco=` |
 | Steam Cloud setting | `<Steam>\userdata\<AccountID>\7\remote\sharedconfig.vdf` (read only) |
 
 Data lives in `%LOCALAPPDATA%` rather than Documents because Documents is often
@@ -24,13 +24,24 @@ in the cloud ("files on demand") and creates "conflict" copies: all things
 that make copies fail or mix up playthroughs in a save folder. `Local` rather
 than `Roaming` because backups can be large.
 
-Earlier development versions used `Documents\ControlSaves`. At startup
-`AppData.MoveFromDocuments` moves that folder: on the same drive with a single
-`Directory.Move`; across drives by copying into `ControlSaveManager.spostamento`,
-verifying every file, and only then deleting the original. If both folders
-contain data it touches nothing and uses the new one; if the move fails it
-keeps using the old one. The outcome goes to the log and is shown once to the
-user.
+Control Save Manager kept its data in `%LOCALAPPDATA%\ControlSaveManager`, and
+earlier development versions used `Documents\ControlSaves`. At startup
+`AppData.MigrateToLss` moves them to `LSS` in two steps: `Documents\ControlSaves`
+to `ControlSaveManager`, then `ControlSaveManager` to `LSS`. Each step goes
+through `AppData.Move`: on the same drive a single `Directory.Move`; across
+drives a copy into `<destination>.spostamento`, verifying every file, and only
+then deleting the original. If a step fails, the old folder stays in use and
+nothing else is touched. If the destination already has data, it is left as
+it is. Then `AppData.RestructureAccounts` moves each account's Control data from
+`<AccountID>\` into `<AccountID>\870780\`, skipping whatever is already there,
+and turns `account.txt` into `lss.ini`. The restructuring runs at every start
+and can be repeated safely. The outcome goes to the log, and the user is told
+when data was moved.
+
+Single instance: `WindowsPlatform.AcquireSingleInstance` takes two named
+mutexes, `Local\ControlSaveManager` (so an old Control Save Manager still
+installed cannot run next to LSS) and `Local\LSS`. If either is taken, the
+app does not start.
 
 The Steam folder is read from the registry
 (`HKCU\Software\Valve\Steam\SteamPath`), falling back to the standard paths in
@@ -233,7 +244,7 @@ build (`StronglyTypedLanguage` in the `.csproj`), no Visual Studio needed.
 | `IniFile.cs` | Safe reading and writing of `.ini` files. |
 | `FileOps.cs` | Copying, verifying and replacing folders. |
 | `AppState.cs` | Reading and writing `stato.ini`. |
-| `AppData.cs` | App data folder and move from Documents. |
+| `AppData.cs` | App data folder and migration from older folders. |
 | `Vdf.cs` | Reader for Steam configuration files. |
 | `src/Lss.Core/SteamLibrary.cs` | Steam libraries, manifests, support state, images and the list of an account's games. |
 | `src/Lss.Core/GameInfo.cs` | `GameInfo` record and `SupportState`. |
