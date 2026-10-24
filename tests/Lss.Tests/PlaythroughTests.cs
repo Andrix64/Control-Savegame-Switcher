@@ -196,6 +196,76 @@ public sealed class PlaythroughTests : IDisposable
     }
 
     [Fact]
+    public void SharedFiles_DefaultForControl()
+    {
+        SaveManager manager = folder.CreateManager();
+
+        Assert.Equal(new[] { "remote/preferences_data" }, manager.SharedFiles);
+    }
+
+    [Fact]
+    public void SharedFiles_EmptyForOtherGames()
+    {
+        var game = new GameInfo("123450", "Test", "", "", folder.Game, SupportState.Supported);
+        var manager = new SaveManager(folder.Game, folder.Data, "", game);
+
+        Assert.Empty(manager.SharedFiles);
+    }
+
+    [Fact]
+    public void SharedFiles_FromStateWinOverDefaults()
+    {
+        SaveManager manager = folder.CreateManager();
+        manager.State.SharedFiles = new[] { "remote/a.cfg" };
+        manager.State.Save();
+
+        manager.ReloadState();
+
+        Assert.Equal(new[] { "remote/a.cfg" }, manager.SharedFiles);
+    }
+
+    [Fact]
+    public void SharedFiles_SeveralFilesKeptAcrossActivation()
+    {
+        var game = new GameInfo("123450", "Test", "", "", folder.Game, SupportState.Supported);
+        SaveManager manager = new(folder.Game, folder.Data, "", game);
+        manager.State.SharedFiles = new[] { "remote/a.cfg", "b.ini" };
+        manager.State.SharePreferences = true;
+        manager.State.Save();
+
+        TestFolder.Write(folder.SaveFile, "L");
+        manager.CreateProfile("Luigi", true);
+        TestFolder.Write(folder.SaveFile, "M");
+        manager.CreateProfile("Mario", true);
+        manager.ActivateProfile("Profilo_Mario");
+
+        TestFolder.Write(Path.Combine(folder.Game, "remote", "a.cfg"), "a adesso");
+        TestFolder.Write(Path.Combine(folder.Game, "b.ini"), "b adesso");
+
+        manager.ActivateProfile("Profilo_Luigi");
+
+        Assert.Equal("a adesso", File.ReadAllText(Path.Combine(folder.Game, "remote", "a.cfg")));
+        Assert.Equal("b adesso", File.ReadAllText(Path.Combine(folder.Game, "b.ini")));
+    }
+
+    [Fact]
+    public void SharedFiles_PathOutsideGameIsIgnored()
+    {
+        // "../evil.txt" punterebbe fuori dalla cartella del gioco: non va letto né scritto.
+        TestFolder.Write(Path.Combine(folder.Root, "evil.txt"), "fuori");
+        SaveManager manager = folder.CreateManager();
+        manager.State.SharedFiles = new[] { "../evil.txt" };
+        manager.State.SharePreferences = true;
+        manager.State.Save();
+        manager.CreateProfile("Luigi", true);
+
+        manager.ActivateProfile("Profilo_Luigi");
+
+        Assert.Equal("fuori", File.ReadAllText(Path.Combine(folder.Root, "evil.txt")));
+        Assert.False(File.Exists(Path.Combine(manager.ProfilesPath, "evil.txt")));
+    }
+
+    [Fact]
     public void SettingsArePersisted()
     {
         SaveManager manager = folder.CreateManager();

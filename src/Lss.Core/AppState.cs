@@ -31,10 +31,15 @@ public sealed class AppState
     public bool SaveOnGameExit { get; set; } = true;
 
     /// <summary>
-    /// Le opzioni del gioco (remote\preferences_data) restano le stesse
-    /// cambiando partita.
+    /// Le opzioni del gioco (SharedFiles) restano le stesse cambiando partita.
     /// </summary>
     public bool SharePreferences { get; set; }
+
+    /// <summary>
+    /// File da tenere uguali in tutte le partite (FileCondivisi in stato.ini),
+    /// o null se non è mai stato impostato: allora valgono quelli di GameDefaults.
+    /// </summary>
+    public IReadOnlyList<string>? SharedFiles { get; set; }
 
     public AppState(string path)
     {
@@ -50,6 +55,7 @@ public sealed class AppState
         LaunchGame = true;
         SaveOnGameExit = true;
         SharePreferences = false;
+        SharedFiles = null;
 
         if (!File.Exists(path))
             return;
@@ -93,6 +99,10 @@ public sealed class AppState
                 case "OpzioniCondivise":
                     SharePreferences = value == "1";
                     break;
+
+                case "FileCondivisi":
+                    SharedFiles = value.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                    break;
             }
         }
     }
@@ -116,6 +126,9 @@ public sealed class AppState
             writer.WriteLine("AvviaGioco=" + (LaunchGame ? "1" : "0"));
             writer.WriteLine("SalvaAllaChiusura=" + (SaveOnGameExit ? "1" : "0"));
             writer.WriteLine("OpzioniCondivise=" + (SharePreferences ? "1" : "0"));
+
+            if (SharedFiles != null)
+                writer.WriteLine("FileCondivisi=" + Format(string.Join("|", SharedFiles)));
 
             writer.Flush();
             stream.Flush(flushToDisk: true);

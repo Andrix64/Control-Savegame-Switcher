@@ -36,9 +36,6 @@ public sealed partial class SaveManager
 {
     public const int MaxNoteLength = 100;
 
-    // Opzioni del gioco, salvate da Control insieme ai salvataggi.
-    private static readonly string PreferencesFile = Path.Combine("remote", "preferences_data");
-
     // Formato delle date nei file .ini.
     private const string InfoDateFormat = "yyyy-MM-dd HH:mm:ss";
 
@@ -422,11 +419,15 @@ public sealed partial class SaveManager
     /// <summary>
     /// Salva le impostazioni ed elimina subito le copie automatiche in eccesso.
     /// </summary>
-    public Result SaveSettings(bool launchGame, bool saveOnGameExit, bool sharePreferences, int backupsToKeep)
+    public Result SaveSettings(bool launchGame, bool saveOnGameExit, bool sharePreferences, int backupsToKeep,
+        IReadOnlyList<string>? sharedFiles = null)
     {
         State.LaunchGame = launchGame;
         State.SaveOnGameExit = saveOnGameExit;
         State.SharePreferences = sharePreferences;
+
+        if (sharedFiles != null)
+            State.SharedFiles = sharedFiles;
 
         Result result = SetBackupsToKeep(backupsToKeep);
 
@@ -439,55 +440,101 @@ public sealed partial class SaveManager
     // OPZIONI CONDIVISE
 
     /// <summary>
-    /// Copia le opzioni che il gioco ha adesso nella cartella di una partita.
-    /// Non lancia eccezioni: senza opzioni la partita usa le sue.
+    /// File da tenere uguali in tutte le partite, relativi a SavePath.
+    /// </summary>
+    public IReadOnlyList<string> SharedFiles => State.SharedFiles ?? GameDefaults.SharedFiles(Game.AppId);
+
+    /// <summary>
+    /// Copia le opzioni condivise che il gioco ha adesso nella cartella di una
+    /// partita. Non lancia eccezioni: senza opzioni la partita usa le sue.
     /// </summary>
     private void CopyPreferencesTo(string profile)
     {
-        try
+        foreach (string relative in SharedFiles)
         {
-            string source = Path.Combine(SavePath, PreferencesFile);
+            string? source = SharedFilePath(relative);
 
-            if (!File.Exists(source))
-                return;
+            if (source == null || !File.Exists(source))
+                continue;
 
-            string destination = Path.Combine(profile, PreferencesFile);
-            Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
-            File.Copy(source, destination, true);
-        }
-        catch (Exception ex)
-        {
-            Log.Write("Opzioni del gioco non copiate in " + profile, ex);
+            try
+            {
+                string destination = Path.Combine(profile, ToLocal(relative));
+                Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
+                File.Copy(source, destination, true);
+            }
+            catch (Exception ex)
+            {
+                Log.Write("Opzioni del gioco non copiate in " + profile, ex);
+            }
         }
     }
 
-    private byte[]? ReadPreferences()
+    /// <summary>
+    /// Legge le opzioni condivise che il gioco ha adesso, per percorso relativo.
+    /// I file mancanti o illeggibili vengono saltati.
+    /// </summary>
+    private Dictionary<string, byte[]> ReadPreferences()
     {
-        try
+        var files = new Dictionary<string, byte[]>();
+
+        foreach (string relative in SharedFiles)
         {
-            string file = Path.Combine(SavePath, PreferencesFile);
-            return File.Exists(file) ? File.ReadAllBytes(file) : null;
+            string? file = SharedFilePath(relative);
+
+            if (file == null || !File.Exists(file))
+                continue;
+
+            try
+            {
+                files[relative] = File.ReadAllBytes(file);
+            }
+            catch (Exception ex)
+            {
+                Log.Write("Opzioni del gioco non lette: " + relative, ex);
+            }
         }
-        catch (Exception ex)
+
+        return files;
+    }
+
+    private void WritePreferences(Dictionary<string, byte[]> files)
+    {
+        foreach ((string relative, byte[] content) in files)
         {
-            Log.Write("Opzioni del gioco non lette", ex);
-            return null;
+            string? file = SharedFilePath(relative);
+
+            if (file == null)
+                continue;
+
+            try
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(file)!);
+                File.WriteAllBytes(file, content);
+            }
+            catch (Exception ex)
+            {
+                Log.Write("Opzioni del gioco non rimesse a posto: " + relative, ex);
+            }
         }
     }
 
-    private void WritePreferences(byte[] preferences)
+    /// <summary>
+    /// Percorso di un file condiviso nella cartella del gioco, o null se il
+    /// percorso esce da quella cartella (il file viene ignorato).
+    /// </summary>
+    private string? SharedFilePath(string relative)
     {
-        try
-        {
-            string file = Path.Combine(SavePath, PreferencesFile);
-            Directory.CreateDirectory(Path.GetDirectoryName(file)!);
-            File.WriteAllBytes(file, preferences);
-        }
-        catch (Exception ex)
-        {
-            Log.Write("Opzioni del gioco non rimesse a posto", ex);
-        }
+        string file = Path.Combine(SavePath, ToLocal(relative));
+
+        if (IsInside(file, SavePath))
+            return file;
+
+        Log.Write("File condiviso fuori dalla cartella del gioco: " + relative);
+        return null;
     }
+
+    private static string ToLocal(string relative) => relative.Replace('/', Path.DirectorySeparatorChar);
 
     // ESPORTAZIONE E IMPORTAZIONE
 

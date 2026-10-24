@@ -1105,7 +1105,7 @@ public sealed partial class SaveManager
         // La pulizia dei backup avviene solo in Finish, a ripristino concluso:
         // il backup da ripristinare non può sparire durante la copia.
         // Opzioni condivise: restano quelle che il gioco ha adesso.
-        byte[]? preferences = State.SharePreferences ? ReadPreferences() : null;
+        Dictionary<string, byte[]>? preferences = State.SharePreferences ? ReadPreferences() : null;
 
         // Per un savestate il dettaglio è il suo nome, per un backup la sua descrizione.
         string detail = root == SavestatePath ? snapshot.Name : BackupDescription(snapshot);
