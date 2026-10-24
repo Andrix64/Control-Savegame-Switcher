@@ -101,7 +101,7 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
   - A (`proposal-a.svg`): two cards, a grey one behind and one with a red border in front.
   - B (`proposal-b.svg`): two red arrows in a circle around the white dot of the current icon.
   - C (`proposal-c.svg`): three horizontal save slots, the middle one red and longer.
-- [ ] J1b — 👤 Choose the icon
+- [x] J1b — 👤 Choose the icon (Andrix chose B, 2026-10-24)
 - [ ] J1c — New icon in the app and the packages
 - [ ] J2 — Links and README
 - [ ] J3 — Other documents
