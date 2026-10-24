@@ -39,7 +39,7 @@ internal static class SteamLibrary
         {
             Vdf.Node root = Vdf.Parse(File.ReadAllText(file));
 
-            if (root["libraryfolders"] is not Vdf.Node libraries)
+            if (root.GetValueOrDefault("libraryfolders") is not Vdf.Node libraries)
                 return result;
 
             foreach (object entry in libraries.Values)
