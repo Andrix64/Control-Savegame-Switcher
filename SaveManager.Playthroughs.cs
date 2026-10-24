@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Globalization;
 using System.IO.Compression;
 
@@ -636,7 +635,7 @@ public sealed partial class SaveManager
     {
         try
         {
-            Process.Start(new ProcessStartInfo("steam://rungameid/" + AppId) { UseShellExecute = true })?.Dispose();
+            Platform.Current.OpenSteamUri("steam://rungameid/" + AppId);
             Log.Write("Avvio di Control tramite Steam");
             return Result.Ok(Strings.GameLaunching);
         }
@@ -649,33 +648,5 @@ public sealed partial class SaveManager
     /// <summary>
     /// Quando è partito il gioco in esecuzione, se si riesce a leggerlo.
     /// </summary>
-    public static DateTime? GameStartTime()
-    {
-        foreach (string name in new[] { "Control_DX12", "Control_DX11" })
-        {
-            Process[] processes = Process.GetProcessesByName(name);
-
-            try
-            {
-                foreach (Process process in processes)
-                {
-                    try
-                    {
-                        return process.StartTime;
-                    }
-                    catch
-                    {
-                        // Processo non leggibile: si prova il prossimo.
-                    }
-                }
-            }
-            finally
-            {
-                foreach (Process process in processes)
-                    process.Dispose();
-            }
-        }
-
-        return null;
-    }
+    public static DateTime? GameStartTime() => Platform.Current.GameStartTime();
 }

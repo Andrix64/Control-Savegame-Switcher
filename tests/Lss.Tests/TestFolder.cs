@@ -57,6 +57,9 @@ public sealed class TestFolder : IDisposable
 
 internal static class TestSetup
 {
+    /// <summary>Piattaforma finta usata da tutti i test.</summary>
+    public static FakePlatform Fake { get; } = new();
+
     /// <summary>
     /// Il registro dei test non va nel log.txt vero. I testi attesi nei test
     /// sono in italiano, qualunque sia la lingua di Windows.
@@ -64,6 +67,7 @@ internal static class TestSetup
     [ModuleInitializer]
     internal static void Init()
     {
+        Platform.Current = Fake;
         Log.FilePath = Path.Combine(Path.GetTempPath(), "csm_test_log.txt");
         CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("it-IT");
         CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("it-IT");

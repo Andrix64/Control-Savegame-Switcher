@@ -1,5 +1,3 @@
-using Microsoft.Win32;
-using System.Diagnostics;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
@@ -107,7 +105,7 @@ public sealed partial class SaveManager
     public static Result<SaveManager> Initialize(
         Func<IReadOnlyList<SteamAccount>, string?, SteamAccount?> chooseAccount)
     {
-        string steam = FindSteam();
+        string steam = Platform.Current.FindSteamRoots().FirstOrDefault() ?? "";
 
         if (steam == "")
             return Result<SaveManager>.Fail(Strings.SteamNotFound);
@@ -310,31 +308,6 @@ public sealed partial class SaveManager
         {
             // Solo una comodità: la prossima volta non sarà preselezionato.
         }
-    }
-
-    private static string FindSteam()
-    {
-        try
-        {
-            using var key = Registry.CurrentUser.OpenSubKey(@"Software\Valve\Steam");
-
-            string? path = key?.GetValue("SteamPath") as string;
-
-            if (!string.IsNullOrWhiteSpace(path) && Directory.Exists(path))
-                return path;
-        }
-        catch
-        {
-            // Se il registro non è disponibile, prova i percorsi standard.
-        }
-
-        string[] paths =
-        {
-            @"C:\Program Files (x86)\Steam",
-            @"C:\Program Files\Steam"
-        };
-
-        return paths.FirstOrDefault(Directory.Exists) ?? "";
     }
 
     public void ReloadState()
@@ -1212,91 +1185,9 @@ public sealed partial class SaveManager
 
     // CONTROLLI
 
-    public static bool IsGameRunning()
-    {
-        return IsProcessRunning("Control_DX12") ||
-               IsProcessRunning("Control_DX11") ||
-               IsGameLauncherRunning();
-    }
+    public static bool IsGameRunning() => Platform.Current.IsGameRunning();
 
-    /// <summary>
-    /// Il launcher del gioco si chiama Control.exe, come il Pannello di
-    /// controllo di Windows: si scartano gli eseguibili nella cartella di Windows.
-    /// </summary>
-    private static bool IsGameLauncherRunning()
-    {
-        string windows = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
-        bool found = false;
-
-        foreach (Process process in Process.GetProcessesByName("Control"))
-        {
-            try
-            {
-                if (IsGameLauncher(process.MainModule?.FileName, windows))
-                    found = true;
-            }
-            catch (Exception) when (!HasExited(process))
-            {
-                // Percorso non leggibile, per esempio perché il processo è avviato
-                // come amministratore: nel dubbio si considera il gioco aperto.
-                found = true;
-            }
-            catch
-            {
-                // Processo già chiuso.
-            }
-            finally
-            {
-                process.Dispose();
-            }
-        }
-
-        return found;
-    }
-
-    /// <summary>
-    /// true se l'eseguibile non è nella cartella di Windows. Un percorso
-    /// sconosciuto (null) conta come gioco: meglio bloccare per errore che
-    /// cambiare profilo con il gioco aperto.
-    /// </summary>
-    internal static bool IsGameLauncher(string? file, string windowsFolder)
-    {
-        return file == null ||
-               !file.StartsWith(windowsFolder.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar,
-                   StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static bool HasExited(Process process)
-    {
-        try
-        {
-            return process.HasExited;
-        }
-        catch
-        {
-            // Nemmeno lo stato è leggibile: il processo esiste ancora.
-            return false;
-        }
-    }
-
-    /// <summary>
-    /// Con Steam aperto, Steam Cloud può risincronizzare i salvataggi
-    /// e annullare un cambio di profilo.
-    /// </summary>
-    public static bool IsSteamRunning()
-    {
-        return IsProcessRunning("steam");
-    }
-
-    private static bool IsProcessRunning(string name)
-    {
-        Process[] processes = Process.GetProcessesByName(name);
-
-        foreach (Process process in processes)
-            process.Dispose();
-
-        return processes.Length > 0;
-    }
+    public static bool IsSteamRunning() => Platform.Current.IsSteamRunning();
 
     /// <summary>
     /// Nome di una partita: lettere (anche accentate), cifre, spazi, _ e -,

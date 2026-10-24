@@ -13,6 +13,8 @@ internal static class Program
     [STAThread]
     static void Main()
     {
+        Platform.Current = new WindowsPlatform();
+
         // Vanno chiamati prima di creare qualsiasi finestra.
         Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
         Application.ThreadException += (_, e) => ShowUnexpectedError(e.Exception);
@@ -21,12 +23,10 @@ internal static class Program
 
         ApplicationConfiguration.Initialize();
 
-        // Due finestre aperte lavorerebbero sugli stessi file. Il nome resta
-        // quello di Control Save Manager finché i dati sono nella sua cartella:
-        // così la vecchia versione e LSS non possono essere aperte insieme.
-        using Mutex mutex = new(true, @"Local\ControlSaveManager", out bool firstInstance);
+        // Due finestre aperte lavorerebbero sugli stessi file.
+        using IDisposable? instance = Platform.Current.AcquireSingleInstance();
 
-        if (!firstInstance)
+        if (instance == null)
         {
             MessageDialog.Show(
                 Strings.AppAlreadyRunning,

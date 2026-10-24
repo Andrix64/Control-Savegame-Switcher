@@ -76,10 +76,12 @@ public sealed class MinorBugTests : IDisposable
     [InlineData(null, true)]
     public void GameLauncherIsRecognized(string? file, bool expected)
     {
+        if (!OperatingSystem.IsWindows()) return;
+
         // null = percorso non leggibile (processo avviato come amministratore):
         // nel dubbio conta come gioco aperto.
-        Assert.Equal(expected, SaveManager.IsGameLauncher(file, @"C:\Windows"));
-        Assert.Equal(expected, SaveManager.IsGameLauncher(file, @"C:\Windows\"));
+        Assert.Equal(expected, WindowsPlatform.IsGameLauncher(file, @"C:\Windows"));
+        Assert.Equal(expected, WindowsPlatform.IsGameLauncher(file, @"C:\Windows\"));
     }
 
     [Fact]
