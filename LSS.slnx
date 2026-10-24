@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/Lss.App/Lss.App.csproj" />
     <Project Path="src/Lss.Core/Lss.Core.csproj" />
     <Project Path="src/Lss.Platform/Lss.Platform.csproj" />
   </Folder>

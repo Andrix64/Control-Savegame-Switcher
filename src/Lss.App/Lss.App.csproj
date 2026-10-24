@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Lss.App</RootNamespace>
+    <!-- Diventa LSS quando l'app WinForms viene eliminata (G14). -->
+    <AssemblyName>Lss.App</AssemblyName>
+    <ApplicationIcon>..\..\app.ico</ApplicationIcon>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <Version>0.9.0</Version>
+    <Product>Local Save Switcher</Product>
+    <Company>Andrix64</Company>
+    <Authors>Andrix64</Authors>
+    <Copyright>© 2026 Andrix64</Copyright>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="12.1.4" />
+    <PackageReference Include="Avalonia.Desktop" Version="12.1.4" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.4" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.4" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Lss.Core\Lss.Core.csproj" />
+    <ProjectReference Include="..\Lss.Platform\Lss.Platform.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+    <InternalsVisibleTo Include="Lss.Tests" />
+  </ItemGroup>
+
+  <!-- I .pdb delle librerie native (100 MB) non servono a chi usa l'app. -->
+  <Target Name="RemoveNativePdbs" AfterTargets="Publish">
+    <Delete Files="$(PublishDir)libSkiaSharp.pdb;$(PublishDir)libHarfBuzzSharp.pdb" />
+  </Target>
+
+</Project>

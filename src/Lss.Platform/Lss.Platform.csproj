@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Lss.App" />
     <InternalsVisibleTo Include="Lss.Tests" />
   </ItemGroup>
 
