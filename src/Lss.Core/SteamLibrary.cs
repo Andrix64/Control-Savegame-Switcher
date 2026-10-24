@@ -8,6 +8,21 @@ internal static class SteamLibrary
     private static readonly StringComparison PathComparison =
         OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
 
+    // Cartelle di userdata che non sono giochi.
+    private static readonly HashSet<string> SystemApps = ["7", "760", "241100"];
+
+    // Nomi dei manifest che non sono giochi (runtime di Steam e di Proton).
+    private static readonly string[] SystemNamePrefixes =
+    [
+        "Proton", "Steam Linux Runtime", "Steamworks Common Redistributables"
+    ];
+
+    // Nomi noti dei giochi senza manifest (disinstallati ma con i salvataggi).
+    private static readonly Dictionary<string, string> KnownNames = new()
+    {
+        [GameInfo.ControlAppId] = "Control"
+    };
+
     /// <summary>
     /// Librerie di Steam da steamapps/libraryfolders.vdf, la cartella di Steam
     /// per prima. Solo le cartelle che esistono, senza doppioni.
@@ -140,6 +155,56 @@ internal static class SteamLibrary
 
     private static string? FirstFile(params string[] files) =>
         files.FirstOrDefault(File.Exists);
+
+    /// <summary>
+    /// Giochi con una cartella in userdata/IDAccount, i supportati per primi,
+    /// poi in ordine di nome.
+    /// </summary>
+    public static IReadOnlyList<GameInfo> FindGames(string steamRoot, string accountFolder)
+    {
+        var games = new List<GameInfo>();
+
+        if (!Directory.Exists(accountFolder))
+            return games;
+
+        IReadOnlyList<string> libraries = LibraryFolders(steamRoot);
+
+        foreach (string dir in Directory.GetDirectories(accountFolder))
+        {
+            string appId = Path.GetFileName(dir);
+
+            if (!appId.All(char.IsAsciiDigit) || SystemApps.Contains(appId))
+                continue;
+
+            var manifest = ReadManifest(libraries, appId);
+
+            if (manifest is { } found && IsSystemName(found.Name))
+                continue;
+
+            string name = manifest?.Name
+                ?? KnownNames.GetValueOrDefault(appId)
+                ?? Loc.F(Strings.UnknownGameName, appId);
+            (string icon, string cover) = FindImages(steamRoot, appId);
+
+            games.Add(new GameInfo(
+                appId,
+                name,
+                manifest?.InstallDir ?? "",
+                manifest?.Library ?? "",
+                dir,
+                GetSupport(dir),
+                icon,
+                cover));
+        }
+
+        return games
+            .OrderBy(game => game.Support != SupportState.Supported)
+            .ThenBy(game => game.Name, StringComparer.CurrentCultureIgnoreCase)
+            .ToList();
+    }
+
+    private static bool IsSystemName(string name) =>
+        SystemNamePrefixes.Any(prefix => name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
 
     private static bool Contains(List<string> paths, string path) =>
         paths.Any(existing => string.Equals(NormalizePath(existing), NormalizePath(path), PathComparison));

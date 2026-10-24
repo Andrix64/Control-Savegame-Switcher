@@ -304,4 +304,5 @@ La barra sparisce appena l&apos;impostazione è spenta.</value></data>
   <data name="Undo" xml:space="preserve"><value>Annulla</value></data>
   <data name="YourPlaythroughs" xml:space="preserve"><value>Le tue partite</value></data>
   <data name="ZipFilter" xml:space="preserve"><value>Partita di Control (*.zip)|*.zip</value></data>
+  <data name="UnknownGameName" xml:space="preserve"><value>App {0}</value></data>
 </root>

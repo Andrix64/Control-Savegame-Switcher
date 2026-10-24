@@ -174,4 +174,67 @@ public sealed class SteamLibraryTests : IDisposable
 
         Assert.Equal(SupportState.Supported, SteamLibrary.GetSupport(folder.Game));
     }
+
+    [Fact]
+    public void FindGames_ListsGamesWithNamesAndSupport()
+    {
+        string second = Path.Combine(folder.Root, "Lib2");
+        string account = Path.Combine(SteamRoot, "userdata", "111");
+        TestFolder.Write(
+            Path.Combine(SteamRoot, "steamapps", "libraryfolders.vdf"),
+            LibraryFoldersFile(SteamRoot, second));
+        TestFolder.Write(Path.Combine(SteamRoot, "steamapps", "appmanifest_105600.acf"), Manifest("105600", "Terraria", "Terraria"));
+        TestFolder.Write(Path.Combine(second, "steamapps", "appmanifest_814380.acf"), Manifest("814380", "Sekiro", "Sekiro"));
+        TestFolder.Write(Path.Combine(account, "105600", "remote", "a.sav"), "x");
+        TestFolder.Write(Path.Combine(account, "814380", "remotecache.vdf"), "cache");
+        TestFolder.Write(Path.Combine(account, "7", "remote", "sharedconfig.vdf"), "x");
+        TestFolder.Write(Path.Combine(account, "config", "localconfig.vdf"), "x");
+        TestFolder.Write(Path.Combine(account, "241100", "x.vdf"), "x");
+
+        var games = SteamLibrary.FindGames(SteamRoot, account);
+
+        Assert.Equal(2, games.Count);
+        Assert.Equal("Terraria", games[0].Name);
+        Assert.Equal(SupportState.Supported, games[0].Support);
+        Assert.Equal("Terraria", games[0].InstallDir);
+        Assert.Equal(SteamRoot, games[0].LibraryPath);
+        Assert.Equal("Sekiro", games[1].Name);
+        Assert.Equal(SupportState.SavesElsewhere, games[1].Support);
+        Assert.Equal(second, games[1].LibraryPath);
+    }
+
+    [Fact]
+    public void FindGames_UsesKnownNameWithoutManifest()
+    {
+        string account = Path.Combine(SteamRoot, "userdata", "111");
+        TestFolder.Write(Path.Combine(account, "870780", "remote", "x"), "x");
+
+        var games = SteamLibrary.FindGames(SteamRoot, account);
+
+        Assert.Single(games);
+        Assert.Equal("Control", games[0].Name);
+        Assert.False(games[0].IsInstalled);
+    }
+
+    [Fact]
+    public void FindGames_UnknownGameWithoutManifest()
+    {
+        string account = Path.Combine(SteamRoot, "userdata", "111");
+        TestFolder.Write(Path.Combine(account, "123450", "remote", "x"), "x");
+
+        var games = SteamLibrary.FindGames(SteamRoot, account);
+
+        Assert.Single(games);
+        Assert.Equal("App 123450", games[0].Name);
+    }
+
+    [Fact]
+    public void FindGames_SkipsProtonAndRuntimes()
+    {
+        string account = Path.Combine(SteamRoot, "userdata", "111");
+        TestFolder.Write(Path.Combine(SteamRoot, "steamapps", "appmanifest_1391110.acf"), Manifest("1391110", "Steam Linux Runtime 2.0 (soldier)", "x"));
+        TestFolder.Write(Path.Combine(account, "1391110", "remote", "x"), "x");
+
+        Assert.Empty(SteamLibrary.FindGames(SteamRoot, account));
+    }
 }
