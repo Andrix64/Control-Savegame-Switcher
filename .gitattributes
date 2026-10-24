@@ -1,0 +1,6 @@
+# Gli script e i file dei pacchetti Linux restano con fine riga LF anche su Windows
+# (core.autocrlf=true): con CRLF lo shebang non funziona.
+*.sh text eol=lf
+packaging/linux/*.desktop text eol=lf
+packaging/linux/*.xml text eol=lf
+*.png binary

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.andrix64.LocalSaveSwitcher</id>
+  <name>Local Save Switcher</name>
+  <summary>Multiple playthroughs for Steam games</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <developer id="io.github.andrix64">
+    <name>Andrix64</name>
+  </developer>
+  <description>
+    <p>Keep several playthroughs of the same Steam game on one account: pick
+    the one you want, LSS loads its saves and starts the game. Works with
+    games that keep their saves in Steam's userdata folder.</p>
+    <p>Steam is a trademark of Valve Corporation. LSS is not affiliated with
+    or endorsed by Valve.</p>
+  </description>
+  <launchable type="desktop-id">io.github.andrix64.LocalSaveSwitcher.desktop</launchable>
+  <url type="homepage">https://github.com/Andrix64/Local-Save-Switcher</url>
+  <url type="bugtracker">https://github.com/Andrix64/Local-Save-Switcher/issues</url>
+  <content_rating type="oars-1.1" />
+  <releases>
+    <!-- Data segnaposto: J4 la aggiorna alla data del rilascio. -->
+    <release version="1.0.0" date="2026-12-01" />
+  </releases>
+</component>

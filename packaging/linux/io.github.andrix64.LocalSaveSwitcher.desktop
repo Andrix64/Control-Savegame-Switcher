@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Local Save Switcher
+GenericName=Save switcher
+Comment=Multiple playthroughs for Steam games
+Comment[it]=Più partite per i giochi Steam
+Exec=lss
+Icon=io.github.andrix64.LocalSaveSwitcher
+Terminal=false
+Categories=Game;Utility;
+Keywords=steam;save;savegame;playthrough;
