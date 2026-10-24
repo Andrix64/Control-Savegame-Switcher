@@ -19,6 +19,8 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 - [x] C5 — Tests on plain `net10.0` (98d083e)
 - [x] C6 — Tests on Linux in GitHub Actions (79683d9)
 - [ ] C7 — 👤 Check the WinForms app, push, note failing Linux tests
+  (app checked by Andrix on 2026-10-24: works; push and Linux results
+  still to do)
 
 ## Phase D — Game catalogue ([D-catalog.md](D-catalog.md))
 
