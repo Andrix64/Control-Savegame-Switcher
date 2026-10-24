@@ -82,7 +82,7 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 
 - [x] I1 — `--version` (4891315)
 - [x] I2 — Linux desktop files and icons (9158360)
-- [ ] I3 — `scripts/release.sh`
+- [x] I3 — `scripts/release.sh` (88519f5)
 - [ ] I4 — `nfpm.yaml` (deb, rpm)
 - [ ] I5 — AppImage
 - [ ] I6 — Workflow
