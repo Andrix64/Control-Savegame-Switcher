@@ -2,6 +2,7 @@ using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
+using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using Lss;
 using Lss.App.Services;
@@ -138,7 +139,14 @@ internal static class Program
         AvaloniaHeadlessPlatform.ForceRenderTimerTick();
         Dispatcher.UIThread.RunJobs();
 
-        window.CaptureRenderedFrame()?.Save(Path.Combine(output, name + ".png"));
+        using Bitmap? frame = window.CaptureRenderedFrame();
+
+        if (frame != null)
+        {
+            using FileStream file = File.Create(Path.Combine(output, name + ".png"));
+            frame.Save(file, PngBitmapEncoderOptions.Default);
+        }
+
         window.Close();
         Console.WriteLine(name);
     }
