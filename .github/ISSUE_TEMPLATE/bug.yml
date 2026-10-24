@@ -1,0 +1,72 @@
+name: Bug report
+description: Something in LSS doesn't work as it should.
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug. Please fill in what you can. Don't attach
+        saves or playthroughs: the log is enough.
+  - type: dropdown
+    id: system
+    attributes:
+      label: System
+      options:
+        - Windows
+        - Linux
+        - Steam Deck (desktop mode)
+    validations:
+      required: true
+  - type: input
+    id: distribution
+    attributes:
+      label: Windows version or Linux distribution
+      description: For example "Windows 11 24H2" or "Ubuntu 24.04".
+    validations:
+      required: true
+  - type: dropdown
+    id: steam-install
+    attributes:
+      label: How Steam is installed
+      options:
+        - Native package
+        - Flatpak
+        - Snap
+        - Windows (not applicable)
+    validations:
+      required: true
+  - type: input
+    id: lss-version
+    attributes:
+      label: LSS version
+      description: Shown in the window header, for example "v1.0.0-beta.1".
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: The game, the playthrough and the buttons you pressed, in order.
+      placeholder: |
+        1. Open LSS
+        2. Select the game
+        3. Press "Play this"
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Log
+      description: |
+        The file log.txt of the data folder. Windows: %LOCALAPPDATA%\LSS\log.txt.
+        Linux: ~/.local/share/LSS/log.txt. Paste the last lines around the
+        problem, or attach the file. Remove personal data if you want.
+      render: text

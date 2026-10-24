@@ -1,0 +1,51 @@
+name: Game report
+description: Tell us whether LSS works with a Steam game.
+title: "[Game] "
+labels: ["game"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Reports of games that work, partly work or don't work help the
+        compatibility list ([docs/COMPATIBILITY.md](https://github.com/Andrix64/Local-Save-Switcher/blob/main/docs/COMPATIBILITY.md)).
+  - type: input
+    id: game-name
+    attributes:
+      label: Game name
+    validations:
+      required: true
+  - type: input
+    id: app-id
+    attributes:
+      label: AppID
+      description: The number in the game's Steam page address, for example 870780 for Control.
+    validations:
+      required: true
+  - type: dropdown
+    id: system
+    attributes:
+      label: System
+      options:
+        - Windows
+        - Linux
+        - Steam Deck (desktop mode)
+    validations:
+      required: true
+  - type: dropdown
+    id: works
+    attributes:
+      label: Does LSS work with this game?
+      options:
+        - "Yes"
+        - Partly
+        - "No"
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: |
+        Which files are in the game's folder in Steam's userdata, if you know
+        them. Is Steam Cloud on or off? Does the game save anywhere else
+        (Documents, the game folder)?
