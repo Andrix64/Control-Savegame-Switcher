@@ -166,6 +166,28 @@ public sealed partial class SaveManager
     }
 
     /// <summary>
+    /// Manager per un gioco di un account: dati in dataRoot/IDAccount/AppID.
+    /// </summary>
+    public static Result<SaveManager> Open(string dataRoot, SteamAccount account, GameInfo game)
+    {
+        if (game.Support != SupportState.Supported)
+            return Result<SaveManager>.Fail(Loc.F(Strings.GameNotSupported, game.Name));
+
+        try
+        {
+            return Result<SaveManager>.Ok(new SaveManager(
+                game.SaveFolder,
+                Path.Combine(dataRoot, account.Id, game.AppId),
+                account.Name,
+                game));
+        }
+        catch (Exception ex)
+        {
+            return Result<SaveManager>.Fail(Loc.F(Strings.InitError, ex.Message));
+        }
+    }
+
+    /// <summary>
     /// Rimette a posto la cartella del gioco di ogni account dopo una
     /// sostituzione interrotta (vedi FileOps.RecoverInterruptedReplace).
     /// </summary>
