@@ -300,7 +300,7 @@ internal sealed class MainForm : Form
                 : Strings.GameBarExit;
 
             if (sessionStart is DateTime start && DateTime.Now - start >= TimeSpan.FromMinutes(1))
-                text += "\n" + Loc.F(Strings.GameBarSession, PlaythroughCard.FormatPlayTime(DateTime.Now - start));
+                text += "\n" + Loc.F(Strings.GameBarSession, CardText.FormatPlayTime(DateTime.Now - start));
 
             gameBar.Show(InfoKind.Info,
                 active == "" ? Strings.GameBarOpen : Loc.F(Strings.GameBarPlaying, active), text);
