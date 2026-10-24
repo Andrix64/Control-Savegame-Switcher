@@ -72,7 +72,7 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 - [x] H1 — Steam folders (241528a)
 - [x] H2 — `registry.vdf` (bdb46ca)
 - [x] H3 — Game processes (5870599)
-- [ ] H4 — Launching and single instance
+- [x] H4 — Launching and single instance (35fd677)
 - [ ] H5 — Case of names
 - [ ] H6 — Paths and permissions
 - [ ] H7 — Linux tests required in CI
