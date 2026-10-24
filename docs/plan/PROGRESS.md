@@ -48,7 +48,7 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 - [x] F3 — Migration from Control Save Manager (d5d2bba)
 - [ ] F4 — 👤 Migration with real data
 - [x] F5 — Export format 2 (320fb77)
-- [ ] F6 — Docs for the data folder
+- [x] F6 — Docs for the data folder (62a5ef5)
 
 ## Phase G — Avalonia interface ([G-avalonia.md](G-avalonia.md))
 
@@ -104,6 +104,23 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 Write here anything that didn't match the plan, decisions taken with
 Andrix, and results of the 👤 checks. Newest first, with the date.
 
+- 2026-10-24 — F3, to check with Andrix before F4: (a) `AppData.MigrateToLss`
+  is `internal` with three roots and returns four values (result, detail,
+  root in use, source of the move): the public wrapper needs the last two to
+  set `Root` and `LastMoveSource`, and the tests need the roots as
+  parameters. (b) Step 4 is applied as written, which gives `Moved` also when
+  Documents → ControlSaveManager moved and ControlSaveManager → LSS found LSS
+  already with data (`BothExist`): then ControlSaveManager's data stays out of
+  use and the message says it was moved to LSS. Maybe it should say
+  `BothExist` instead. (c) If the first step fails, `ReportDataMove` still names
+  LSS as the destination. (d) `RestructureAccounts` also runs when the result
+  is `BothExist` (only inside LSS). (e) `account.txt` is deleted only when
+  `lss.ini` was written; if `lss.ini` already exists, `account.txt` is left.
+  (f) `Move` already builds `newRoot + ".spostamento"`: unchanged.
+  `SaveManager.IsNumeric` became `internal` so `AppData` can use it.
+- 2026-10-24 — F2/F5: `ImportOtherGame` and `GameNotSupported` texts added as
+  the plan says. Zip entries: the export check for `\` is `Any` instead of the
+  plan's `All(!…)`, same meaning. Tests: 113 → 128.
 - 2026-10-24 — E3: the check `grep -rn "870780\|Control_DX\|\"Control\""
   src/` lists, besides `GameInfo.cs` and `SteamLibrary.cs`, the literal
   `"Control"` of `SavesNotFound` in `SaveManager.Initialize` (E2 keeps it on
