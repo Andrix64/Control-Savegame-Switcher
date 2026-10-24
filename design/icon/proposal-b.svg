@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Sfondo: quadrato arrotondato del tema, bordo sottile -->
+  <rect x="0.5" y="0.5" width="255" height="255" rx="56" fill="#16161A" stroke="#2E2E33" stroke-width="1"/>
+  <!-- Due frecce curve che formano un cerchio: lo scambio di partita -->
+  <path d="M57.09 115.5 A72 72 0 0 1 190.35 92" fill="none" stroke="#E0261B" stroke-width="22"/>
+  <polygon points="209.4,81 171.3,103 205.35,118" fill="#E0261B"/>
+  <path d="M198.91 140.5 A72 72 0 0 1 65.65 164" fill="none" stroke="#E0261B" stroke-width="22"/>
+  <polygon points="46.6,175 84.7,153 50.65,138" fill="#E0261B"/>
+  <!-- Punto bianco al centro, come nell'icona attuale -->
+  <circle cx="128" cy="128" r="26" fill="#F2F2F2"/>
+</svg>
