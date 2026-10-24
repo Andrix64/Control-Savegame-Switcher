@@ -74,6 +74,9 @@ public partial class MainWindowViewModel : ObservableObject
 
     public bool HasOtherGames => OtherGames.Count > 0;
 
+    // Senza giochi gestibili "Altri giochi" è l'unica cosa da vedere: già aperto.
+    public bool OtherGamesExpanded => Games.Count == 0;
+
     partial void OnCurrentGameChanged(GameViewModel? value) => ShowNoGames = value == null;
 
     public string AccountText { get; }

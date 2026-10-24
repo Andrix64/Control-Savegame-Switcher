@@ -122,6 +122,23 @@ public sealed class RecoveryTests : IDisposable
     }
 
     [Fact]
+    public void FindAccountsWithAnyGame_IncludesAccountsWithOnlyUnsupportedGames()
+    {
+        // Come su uno Steam Deck: giochi Proton con solo remotecache.vdf, più le cartelle di Steam.
+        TestFolder.Write(Path.Combine(UserData, "111", "1145360", "remotecache.vdf"), "x");
+        TestFolder.Write(Path.Combine(UserData, "111", "367520", "remotecache.vdf"), "x");
+        TestFolder.Write(Path.Combine(UserData, "111", "760", "remote", "screenshot.jpg"), "x");
+        TestFolder.Write(Path.Combine(UserData, "222", "7", "remote", "sharedconfig.vdf"), "x");
+        TestFolder.Write(Path.Combine(UserData, "222", "config", "localconfig.vdf"), "x");
+
+        Assert.Empty(SaveManager.FindAccountsWithGames(UserData));
+
+        // L'account 222 ha solo cartelle di Steam: non conta.
+        SteamAccount account = Assert.Single(SaveManager.FindAccountsWithAnyGame(UserData));
+        Assert.Equal("111", account.Id);
+    }
+
+    [Fact]
     public void RecoverAllGameFolders_RestoresAnyGame()
     {
         // Sostituzione interrotta di un gioco qualsiasi, non solo di Control.

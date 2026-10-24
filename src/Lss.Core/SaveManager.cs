@@ -383,6 +383,31 @@ public sealed partial class SaveManager
     }
 
     /// <summary>
+    /// Account in userdata con almeno la cartella di un gioco, anche se nessuno
+    /// è gestibile (per esempio con i salvataggi nel prefisso di Proton): così
+    /// l'app si apre lo stesso e mostra i giochi con il motivo.
+    /// </summary>
+    internal static IReadOnlyList<SteamAccount> FindAccountsWithAnyGame(string userData)
+    {
+        var accounts = new List<SteamAccount>();
+
+        foreach (string dir in Directory.GetDirectories(userData))
+        {
+            if (!IsNumeric(Path.GetFileName(dir)))
+                continue;
+
+            bool hasGame = Directory.GetDirectories(dir)
+                .Any(game => IsNumeric(Path.GetFileName(game)) &&
+                             !SteamLibrary.SystemApps.Contains(Path.GetFileName(game)));
+
+            if (hasGame)
+                accounts.Add(new SteamAccount(Path.GetFileName(dir), ReadPersonaName(dir), dir, null));
+        }
+
+        return accounts;
+    }
+
+    /// <summary>
     /// I file di salvataggio di una cartella di gioco: tutti tranne
     /// remotecache.vdf al primo livello (il file di Steam Cloud).
     /// </summary>

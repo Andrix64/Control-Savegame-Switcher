@@ -89,6 +89,11 @@ public partial class App : Application
 
         IReadOnlyList<SteamAccount> accounts = SaveManager.FindAccountsWithGames(userData);
 
+        // Nessun gioco gestibile (per esempio tutti con i salvataggi in Proton):
+        // la finestra si apre lo stesso e mostra i giochi con il motivo.
+        if (accounts.Count == 0)
+            accounts = SaveManager.FindAccountsWithAnyGame(userData);
+
         if (accounts.Count == 0)
         {
             await ShowStandaloneAsync(Strings.NoAccountWithGames, InfoKind.Warning);
