@@ -86,10 +86,11 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 - [x] I4 — `nfpm.yaml` (deb, rpm) (b88596e)
 - [x] I5 — AppImage (e5e9f9e)
 - [x] I6 — Workflow (951350d)
-- [ ] I7 — 👤 First CI run (2026-10-24: done locally with
+- [x] I7 — 👤 First CI run (2026-10-24: locally with
   `scripts/linux-check.sh` on Andrix's Debian server: 176 tests on Linux, the
   four packages built, installed and started on Ubuntu 24.04/22.04, Debian 13,
-  Fedora 42, Arch, AppImage. The GitHub run of the four jobs is still to do)
+  Fedora 42, Arch, AppImage. GitHub run #10 at `29f8be2`: test, windows and
+  linux green, release skipped as expected without a tag)
 
 ## Phase J — Docs and release ([J-docs-release.md](J-docs-release.md))
 
