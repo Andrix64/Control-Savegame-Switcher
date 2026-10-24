@@ -75,7 +75,7 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 - [x] H4 — Launching and single instance (35fd677)
 - [x] H5 — Case of names (34b0517)
 - [x] H6 — Paths and permissions (f77a0cb)
-- [ ] H7 — Linux tests required in CI
+- [x] H7 — Linux tests required in CI (7217d15)
 - [ ] H8 — 👤 Real Linux check
 
 ## Phase I — Packages ([I-packaging.md](I-packaging.md))
@@ -104,6 +104,29 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 Write here anything that didn't match the plan, decisions taken with
 Andrix, and results of the 👤 checks. Newest first, with the date.
 
+- 2026-10-24 — Fase H, H1–H7 (Haiku), 176 test verdi e 0 warning su Windows
+  (`dotnet test`: 157 prima, 19 nuovi). Non eseguiti: i test Linux (nessun WSL
+  né Docker sul PC), cioè `SteamLinkIsNotCountedTwice`, `NativeComesBeforeFlatpak`,
+  `FolderWithoutUserdataIsSkipped`, `SecondLockFailsUntilTheFirstIsReleased`,
+  `CopyKeepsUnixPermissions` e le varianti Linux di `Move_LeavesOldFolderIntactWhenItFails`
+  e `Migrate_StaysInOldRootWhenFirstStepFails`: li esegue l'Ubuntu della CI
+  (ora obbligatoria). Le funzioni che leggono /proc e il registro di Steam non hanno
+  test: si verificano con H8.
+  - H1–H4: `LinuxPlatform` non ha l'attributo `SupportedOSPlatform("linux")` del
+    piano: con l'attributo il CA1416 scatta nei test delle funzioni pure, che girano su
+    ogni sistema. La classe si crea solo su Linux (`Program.cs`).
+  - H5: `ProfileExists` confronta i nomi senza maiuscole su ogni sistema; creazione e
+    rinomina lo usano (prima `Directory.Exists`, che su Linux distingueva `Mario` da `mario`).
+  - H6: la ricerca dei `\` in Core e Platform non ha trovato path da correggere (i casi
+    rimasti sono elencati nel commit). Il test dei permessi 0o755 è stato scritto senza
+    cambiare `File.Copy`: .NET su Linux di solito conserva il modo del file; se fallisce
+    in CI, va aggiunto `File.SetUnixFileMode` dopo le copie in `FileOps`.
+  - Fuori piano: `tools/UiScreenshots` aveva un warning (`Bitmap.Save` obsoleto),
+    corretto in `3bcdd6b` perché il build deve avere 0 warning.
+  - Durante il lavoro un `Lss.App.exe` avviato dal bin Release del repo (alle 12:28)
+    bloccava la copia delle dll: build e test di prova con `-p:BaseOutputPath`, poi a
+    app chiusa l'ultima verifica con l'output normale.
+  - H8 (👤) non fatto.
 - 2026-10-24 — G13, first round (Andrix + Opus): decisions: in
   confirmations the **verb is the default button** (Enter = confirm, Esc =
   cancel, Cancel on the left); the **Open folder** button stays in the
