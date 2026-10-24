@@ -57,7 +57,7 @@
     <TextBlock Classes="caption" Text="{Binding CaptionData}" Margin="2,0,0,6" />
     <StackPanel Orientation="Horizontal" Spacing="12">
       <TextBlock Text="{Binding DataFolderText}" Classes="small" TextWrapping="Wrap" MaxWidth="400"
-                 VerticalAlignment="Center" />
+                 VerticalAlignment="Center" HorizontalAlignment="Left" />
       <Button Classes="secondary" Content="{Binding OpenFolderText}" Command="{Binding OpenFolderCommand}"
               VerticalAlignment="Center" />
     </StackPanel>

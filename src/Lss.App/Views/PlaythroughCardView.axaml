@@ -20,12 +20,14 @@
           </Border>
         </StackPanel>
 
+        <!-- Con MaxWidth e senza allineamento Avalonia centra il testo: va a sinistra. -->
         <TextBlock Classes="note" Text="{Binding Note}" TextWrapping="Wrap"
-                   IsVisible="{Binding HasNote}" MaxWidth="420" />
+                   IsVisible="{Binding HasNote}" MaxWidth="420" HorizontalAlignment="Left" />
 
-        <TextBlock Classes="small" Text="{Binding Details}" TextWrapping="Wrap" MaxWidth="440" />
+        <TextBlock Classes="small" Text="{Binding Details}" TextWrapping="Wrap" MaxWidth="440"
+                   HorizontalAlignment="Left" />
 
-        <Button Classes="link" Content="{loc:Str AddNote}" Margin="0,2,0,0"
+        <Button Classes="link" Content="{loc:Str AddNote}" Margin="0,2,0,0" HorizontalAlignment="Left"
                 IsVisible="{Binding !HasNote}" Command="{Binding EditNoteCommand}" />
       </StackPanel>
 

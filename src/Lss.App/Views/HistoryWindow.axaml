@@ -33,7 +33,7 @@
 
     <TextBlock Classes="heading" Text="{Binding Heading}" Margin="0,0,0,4" />
     <TextBlock Text="{Binding Intro}" Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap"
-               MaxWidth="620" Margin="0,0,0,16" />
+               MaxWidth="620" Margin="0,0,0,16" HorizontalAlignment="Left" />
 
     <!-- Un punto nuovo, con il nome -->
     <TextBlock Classes="caption" Text="{Binding SavePointCaption}" Margin="2,0,0,6" />

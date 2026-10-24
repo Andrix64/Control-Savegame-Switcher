@@ -28,10 +28,25 @@ public partial class App : Application
                 _ = ShowStandaloneAsync(Loc.F(Strings.UnexpectedErrorWithLog, e.Exception.Message, Log.FilePath), InfoKind.Error);
             };
 
-            _ = StartAsync(desktop);
+            _ = StartSafelyAsync(desktop);
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    // Un errore nell'avvio non deve lasciare l'app aperta senza finestre.
+    private static async Task StartSafelyAsync(IClassicDesktopStyleApplicationLifetime desktop)
+    {
+        try
+        {
+            await StartAsync(desktop);
+        }
+        catch (Exception ex)
+        {
+            Log.Write("Avvio fallito", ex);
+            await ShowStandaloneAsync(Loc.F(Strings.UnexpectedErrorWithLog, ex.Message, Log.FilePath), InfoKind.Error);
+            desktop.Shutdown();
+        }
     }
 
     private static async Task StartAsync(IClassicDesktopStyleApplicationLifetime desktop)
@@ -111,6 +126,9 @@ public partial class App : Application
 
         window.Closed += (_, _) => desktop.Shutdown();
         desktop.MainWindow = window;
+
+        // Dopo l'avvio del framework assegnare MainWindow non basta: va mostrata.
+        window.Show();
     }
 
     // Messaggio senza finestra proprietaria (all'avvio).
