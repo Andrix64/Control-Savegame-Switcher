@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
+using Lss.App.Views;
 
 namespace Lss.App.Services;
 
@@ -8,11 +9,11 @@ namespace Lss.App.Services;
 /// </summary>
 public sealed class DialogService(Func<Window?> owner) : IDialogService
 {
-    public Task<bool> InformAsync(string heading, string text, InfoKind kind, string? actionText = null) =>
-        throw new NotImplementedException("Finestra dei messaggi: G4.");
+    public async Task<bool> InformAsync(string heading, string text, InfoKind kind, string? actionText = null) =>
+        await ShowAsync<bool>(MessageWindow.Inform(heading, text, kind, actionText));
 
-    public Task<bool> ConfirmAsync(string heading, string text, string verb, bool destructive = false, InfoKind kind = InfoKind.Warning) =>
-        throw new NotImplementedException("Finestra dei messaggi: G4.");
+    public async Task<bool> ConfirmAsync(string heading, string text, string verb, bool destructive = false, InfoKind kind = InfoKind.Warning) =>
+        await ShowAsync<bool>(MessageWindow.Confirm(heading, text, verb, destructive, kind));
 
     // Serve una finestra padre: senza, il dialogo non sarebbe modale.
     public async Task<T?> ShowAsync<T>(Window dialog) =>

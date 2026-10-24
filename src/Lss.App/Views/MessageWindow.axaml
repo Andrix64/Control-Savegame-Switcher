@@ -1,0 +1,29 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Lss.App.Views.MessageWindow"
+        Title="Local Save Switcher"
+        Width="460" SizeToContent="Height"
+        CanResize="False"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner">
+
+  <StackPanel Margin="24,22,24,18">
+    <Grid ColumnDefinitions="Auto,*">
+      <!-- Cerchio con il simbolo del tipo di messaggio (riempito in code-behind). -->
+      <Border x:Name="Badge" Grid.Column="0" Width="36" Height="36" CornerRadius="18"
+              BorderThickness="2" VerticalAlignment="Top" Margin="0,2,16,0">
+        <TextBlock x:Name="Glyph" HorizontalAlignment="Center" VerticalAlignment="Center"
+                   FontSize="16" FontWeight="Bold" />
+      </Border>
+
+      <StackPanel Grid.Column="1" Spacing="10">
+        <TextBlock x:Name="HeadingText" Classes="heading" TextWrapping="Wrap" IsVisible="False" />
+        <TextBlock x:Name="BodyText" TextWrapping="Wrap" />
+      </StackPanel>
+    </Grid>
+
+    <StackPanel x:Name="ButtonRow" Orientation="Horizontal" HorizontalAlignment="Right"
+                Spacing="10" Margin="0,22,0,0" />
+  </StackPanel>
+
+</Window>
