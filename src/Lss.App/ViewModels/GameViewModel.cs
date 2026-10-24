@@ -410,16 +410,61 @@ public partial class GameViewModel : ObservableObject
 
         Refresh();
     }
+    /// <summary>
+    /// Impostazioni della partita. true se sono state salvate: aggiorna le schede e avvisa.
+    /// </summary>
+    [RelayCommand]
+    public async Task<bool> SettingsAsync()
+    {
+        if (IsBusy)
+            return false;
+
+        bool saved = await dialogs.ShowAsync<bool>(new SettingsWindow(new SettingsViewModel(Manager, dialogs)));
+
+        if (saved)
+        {
+            Refresh();
+            Toast.Show(InfoKind.Success, Strings.SettingSaved);
+        }
+
+        return saved;
+    }
+
+    /// <summary>
+    /// Primo avvio: il gioco ha salvataggi ma nessuna partita. Si sceglie il nome
+    /// della prima partita e si salvano i salvataggi attuali.
+    /// </summary>
+    public async Task OfferFirstRunAsync()
+    {
+        try
+        {
+            if (Manager.GetProfiles().Count > 0 || Manager.GameSavesAreEmpty())
+                return;
+        }
+        catch
+        {
+            return;
+        }
+
+        string? name = await dialogs.ShowAsync<string>(new FirstRunWindow(new FirstRunViewModel(Manager, Cloud)));
+
+        if (name == null)
+            return;
+
+        Result result = await RunBusyAsync(Strings.BusyCreating, () => Manager.AdoptGameSaves(name));
+
+        await ShowResult(result);
+    }
+
 
     public async Task ShowHistoryAsync(bool focusSave)
     {
         if (!Manager.HasActiveProfile)
             return;
 
-        // Le impostazioni dalla cronologia arrivano con la finestra di G11: fino ad allora il collegamento non fa nulla.
         var history = new HistoryViewModel(Manager, dialogs,
             () => ConfirmCloudAsync(launching: false),
-            () => Task.FromResult(false));
+            SettingsAsync);
 
         await dialogs.ShowAsync<bool>(new HistoryWindow(history, focusSave));
 

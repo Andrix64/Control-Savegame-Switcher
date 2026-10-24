@@ -14,13 +14,15 @@
 
     <!-- Intestazione -->
     <Border DockPanel.Dock="Top" Height="68" Background="{StaticResource Header}" Padding="16,0">
-      <Grid ColumnDefinitions="Auto,*">
+      <Grid ColumnDefinitions="Auto,*,Auto">
         <Border Grid.Column="0" Width="4" CornerRadius="2" Margin="0,16,14,16"
                 Background="{StaticResource Accent}" />
         <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
           <TextBlock Classes="title" Text="LSS" />
           <TextBlock Classes="caption" Text="{Binding HeaderCaption}" />
         </StackPanel>
+        <Button Grid.Column="2" Classes="secondary" Content="{loc:Str SettingsButton}"
+                Command="{Binding CurrentGame.SettingsCommand}" VerticalAlignment="Center" />
       </Grid>
     </Border>
 

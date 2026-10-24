@@ -51,6 +51,14 @@ public sealed class FakeDialogService : IDialogService
         return Task.FromResult(ZipToOpen);
     }
 
+    public string? FileToPick { get; set; }
+
+    public Task<string?> PickFileAsync(string title, string startFolder)
+    {
+        Calls.Add("PickFile");
+        return Task.FromResult(FileToPick);
+    }
+
     public Task<bool> OpenFolderAsync(string path)
     {
         Calls.Add("Folder: " + path);

@@ -18,6 +18,7 @@ public partial class MainWindow : Window
     {
         base.OnOpened(e);
         ViewModel.Monitor.Start();
+        _ = ViewModel.OnOpenedAsync();
     }
 
     // Non interrompere una copia a metà.

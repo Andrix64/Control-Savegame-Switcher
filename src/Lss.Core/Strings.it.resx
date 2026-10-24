@@ -316,4 +316,8 @@ La barra sparisce appena l&apos;impostazione è spenta.</value></data>
   <data name="OnlyUserdataNotice" xml:space="preserve"><value>LSS copia solo i file di {0} nella cartella userdata di Steam. Se il gioco salva anche altrove, quei file non cambiano tra le partite.</value></data>
   <data name="NoAccountWithGames" xml:space="preserve"><value>Nessun account Steam su questo PC ha giochi con i salvataggi nella cartella userdata.</value></data>
   <data name="AppSubtitle" xml:space="preserve"><value>LOCAL SAVE SWITCHER</value></data>
+  <data name="SharedFilesCaption" xml:space="preserve"><value>FILE UGUALI IN TUTTE LE PARTITE</value></data>
+  <data name="AddSharedFile" xml:space="preserve"><value>Aggiungi file...</value></data>
+  <data name="RemoveSharedFile" xml:space="preserve"><value>Rimuovi</value></data>
+  <data name="SharedFileOutside" xml:space="preserve"><value>Scegli un file dentro la cartella dei salvataggi del gioco.</value></data>
 </root>

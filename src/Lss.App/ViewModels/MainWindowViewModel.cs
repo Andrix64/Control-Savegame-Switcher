@@ -17,8 +17,11 @@ public partial class MainWindowViewModel : ObservableObject
     // Una GameViewModel per gioco, per AppID.
     private readonly Dictionary<string, GameViewModel> gameModels = [];
 
-    // Il primo gioco selezionato controlla le cartelle in Profili (come MainForm.Load).
+    // Giochi già aperti in lista: al primo ingresso si fa il primo avvio e il controllo delle cartelle.
     private readonly HashSet<string> checkedGames = [];
+
+    // Dopo l'apertura della finestra le selezioni fanno subito il primo avvio (vedi OnOpenedAsync).
+    private bool opened;
 
     internal MainWindowViewModel(SteamAccount account, IEnumerable<GameInfo> games, AppSettings settings, IDialogService dialogs)
     {
@@ -89,12 +92,31 @@ public partial class MainWindowViewModel : ObservableObject
             return;
         }
 
-        CurrentGame = GameFor(value.Info);
+        GameViewModel game = GameFor(value.Info);
+        CurrentGame = game;
         settings.LastGame = value.Info.AppId;
         settings.Save();
 
-        if (checkedGames.Add(value.Info.AppId))
-            CurrentGame.ReportIgnoredProfileFolders();
+        // Alla prima selezione di un gioco (quelle prima dell'apertura le fa OnOpenedAsync).
+        if (checkedGames.Add(value.Info.AppId) && opened)
+            _ = OpenGameAsync(game);
+    }
+
+    /// <summary>
+    /// Finestra aperta: primo avvio e cartelle ignorate per il gioco selezionato.
+    /// </summary>
+    public async Task OnOpenedAsync()
+    {
+        opened = true;
+
+        if (CurrentGame != null)
+            await OpenGameAsync(CurrentGame);
+    }
+
+    private static async Task OpenGameAsync(GameViewModel game)
+    {
+        await game.OfferFirstRunAsync();
+        game.ReportIgnoredProfileFolders();
     }
 
     /// <summary>
