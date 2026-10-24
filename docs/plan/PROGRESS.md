@@ -94,9 +94,9 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 
 ## Phase J — Docs and release ([J-docs-release.md](J-docs-release.md))
 
-- [ ] J1 — 👤 Rename the repository (2026-10-24: renamed to
-  `Andrix64/Local-Save-Switcher`, `origin` updated; the GitHub description and
-  topics are still the old ones)
+- [x] J1 — 👤 Rename the repository (2026-10-24: renamed to
+  `Andrix64/Local-Save-Switcher`, `origin` updated; description and topics
+  set with `gh repo edit`)
 - [x] J1a — New icon: three proposals (8f095a9)
   - A (`proposal-a.svg`): two cards, a grey one behind and one with a red border in front.
   - B (`proposal-b.svg`): two red arrows in a circle around the white dot of the current icon.
