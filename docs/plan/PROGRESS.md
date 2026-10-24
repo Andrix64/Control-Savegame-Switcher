@@ -94,7 +94,12 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 
 ## Phase J — Docs and release ([J-docs-release.md](J-docs-release.md))
 
-- [ ] J1 — 👤 Rename the repository
+- [ ] J1 — 👤 Rename the repository (2026-10-24: renamed to
+  `Andrix64/Local-Save-Switcher`, `origin` updated; the GitHub description and
+  topics are still the old ones)
+- [ ] J1a — New icon: three proposals
+- [ ] J1b — 👤 Choose the icon
+- [ ] J1c — New icon in the app and the packages
 - [ ] J2 — Links and README
 - [ ] J3 — Other documents
 - [ ] J4 — Version `1.0.0-beta.1`

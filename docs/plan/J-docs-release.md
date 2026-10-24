@@ -22,6 +22,85 @@ notes are `docs/DEVELOPMENT.md`.
 
 ---
 
+## J1a — New icon: three proposals
+
+The current icon is a red "C" (from Control) on a dark rounded square: it
+no longer fits LSS. The agent draws three proposals; Andrix chooses (J1b).
+
+Rules for every proposal:
+
+- SVG, `viewBox="0 0 256 256"`, only shapes (`rect`, `circle`, `path`...),
+  **no text** and no fonts, no gradients, no filters, no embedded images.
+- Same base as today: a rounded square filling the canvas
+  (`rx` about 56) in `#16161A`, with a 1-unit `#2E2E33` border.
+- Colours only from the app theme: accent `#E0261B`, white `#F2F2F2`,
+  grey `#2E2E33` / `#96969C`.
+- Readable at **16×16**: few, thick shapes (lines at least 20 units thick at
+  256), nothing thinner than that.
+- No letter "C", no Steam or Valve logo or shapes that recall them, no
+  game controllers.
+
+The three ideas (one file each):
+
+| File | Idea |
+|---|---|
+| `design/icon/proposal-a.svg` | **Two cards**: two rounded rectangles like the playthrough cards, offset diagonally; the back one grey, the front one with a red border, as the card "in the game". |
+| `design/icon/proposal-b.svg` | **Switch**: two thick curved arrows forming a circle (swap), red, around the white dot of today's icon. |
+| `design/icon/proposal-c.svg` | **Slots**: three stacked horizontal bars (save slots), the middle one red and slightly longer, the others grey. |
+
+Render each proposal at 256, 48 and 16 pixels into one preview image
+`design/icon/preview.png` (three rows, one per proposal, with the three
+sizes side by side on a `#0F0F10` background). Tools: `rsvg-convert`
+(`librsvg2-bin`) and ImageMagick in a temporary container on the Linux
+check host, if the session brief gives one:
+
+```bash
+docker run --rm -v "$PWD/design/icon:/icon" debian:13 bash -c "apt-get update -qq && apt-get install -y -qq librsvg2-bin imagemagick >/dev/null && cd /icon && for p in a b c; do for s in 256 48 16; do rsvg-convert -w \$s -h \$s proposal-\$p.svg -o \$p-\$s.png; done; done && ..."
+```
+
+(build the preview with ImageMagick `montage` or `convert +append/-append`;
+copy the `design/icon` folder there and back with `tar` over `ssh`, as
+`scripts/linux-check.sh` does). Open `preview.png` with the Read tool and
+check that every proposal is still recognisable at 16 px; if one isn't,
+simplify it before showing.
+
+Commit: `Icon proposals` (the SVGs and `preview.png`; the intermediate
+PNGs are not committed).
+
+## J1b — 👤 Choose the icon (Andrix)
+
+Andrix looks at `design/icon/preview.png` and chooses one proposal, or
+asks for changes (each round of changes is a task `J1a.n`). Write the
+choice in `PROGRESS.md`.
+
+## J1c — New icon in the app and the packages
+
+1. Copy the chosen SVG to `src/Lss.App/Assets/app.svg`: it's the only
+   source of the icon from now on. Delete `design/icon/` (the proposals stay
+   in git history).
+2. New script `scripts/make-icons.sh` (bash, comments in Italian like
+   `release.sh`), which needs `rsvg-convert` and `icotool` (`icoutils`) and
+   says so if they're missing:
+   - renders `app.svg` at 16, 24, 32, 48, 64, 256 into
+     `packaging/linux/icons/<n>x<n>/io.github.andrix64.LocalSaveSwitcher.png`
+     (overwriting the current ones);
+   - builds `src/Lss.App/Assets/app.ico` with all six sizes:
+     `icotool -c -o app.ico 16.png 24.png 32.png 48.png 64.png --raw=256.png`
+     (256 as PNG inside the ICO, as today).
+   Run it in a temporary container on the Linux check host
+   (`apt-get install -y librsvg2-bin icoutils`), then bring the files back.
+3. Check:
+   - open the 256 and 16 PNGs with the Read tool;
+   - `dotnet build LSS.slnx -c Release` and the tests;
+   - `bash scripts/linux-check.sh <host>` (the packages contain the icons);
+   - in `docs/DEVELOPMENT.md` code structure table add `app.svg` ("source of
+     the icon") and a line on `scripts/make-icons.sh` in the build section.
+4. The header of the main window ("LSS" with the red bar) stays as it is.
+
+Commit: `New icon`
+
+---
+
 ## J2 — Links and README
 
 1. Replace `Andrix64/Control-Savegame-Switcher` with
