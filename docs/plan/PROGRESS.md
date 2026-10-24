@@ -74,7 +74,7 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 - [x] H3 — Game processes (5870599)
 - [x] H4 — Launching and single instance (35fd677)
 - [x] H5 — Case of names (34b0517)
-- [ ] H6 — Paths and permissions
+- [x] H6 — Paths and permissions (f77a0cb)
 - [ ] H7 — Linux tests required in CI
 - [ ] H8 — 👤 Real Linux check
 
