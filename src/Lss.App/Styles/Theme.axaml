@@ -1,3 +1,153 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <!-- Colori del tema scuro con accento rosso (Theme.cs di WinForms, stessi nomi). -->
+  <Styles.Resources>
+    <SolidColorBrush x:Key="Background">#0F0F10</SolidColorBrush>
+    <SolidColorBrush x:Key="Header">#0A0A0B</SolidColorBrush>
+    <SolidColorBrush x:Key="Surface">#19191B</SolidColorBrush>
+    <SolidColorBrush x:Key="SurfaceHover">#232326</SolidColorBrush>
+    <SolidColorBrush x:Key="SurfaceSelected">#2C2C30</SolidColorBrush>
+    <SolidColorBrush x:Key="Border">#2E2E33</SolidColorBrush>
+    <SolidColorBrush x:Key="Text">#F2F2F2</SolidColorBrush>
+    <SolidColorBrush x:Key="TextMuted">#96969C</SolidColorBrush>
+    <SolidColorBrush x:Key="TextSecondary">#A8A8AE</SolidColorBrush>
+    <SolidColorBrush x:Key="TextDisabled">#5A5A60</SolidColorBrush>
+    <SolidColorBrush x:Key="Accent">#E0261B</SolidColorBrush>
+    <SolidColorBrush x:Key="AccentHover">#F03C30</SolidColorBrush>
+    <SolidColorBrush x:Key="AccentPressed">#B81E15</SolidColorBrush>
+    <SolidColorBrush x:Key="AccentSoft">#3E1816</SolidColorBrush>
+    <SolidColorBrush x:Key="AccentSoftText">#FF8076</SolidColorBrush>
+    <SolidColorBrush x:Key="Success">#4CC38A</SolidColorBrush>
+    <SolidColorBrush x:Key="Warning">#F5B83D</SolidColorBrush>
+    <SolidColorBrush x:Key="Error">#FF5C5C</SolidColorBrush>
+    <SolidColorBrush x:Key="InfoBlue">#7FB0F0</SolidColorBrush>
+    <SolidColorBrush x:Key="InfoBack">#1B2230</SolidColorBrush>
+    <SolidColorBrush x:Key="InfoBorder">#34507A</SolidColorBrush>
+    <SolidColorBrush x:Key="WarningBack">#2A2110</SolidColorBrush>
+    <SolidColorBrush x:Key="WarningBorder">#5C4515</SolidColorBrush>
+    <SolidColorBrush x:Key="SuccessBack">#18261F</SolidColorBrush>
+    <SolidColorBrush x:Key="SuccessBorder">#2E5C44</SolidColorBrush>
+    <SolidColorBrush x:Key="ErrorBack">#2E1717</SolidColorBrush>
+    <SolidColorBrush x:Key="ErrorBorder">#6B2B2B</SolidColorBrush>
+    <SolidColorBrush x:Key="DangerBorder">#7A2A24</SolidColorBrush>
+    <SolidColorBrush x:Key="DangerText">#FFB4AD</SolidColorBrush>
+  </Styles.Resources>
+
+  <Style Selector="Window">
+    <Setter Property="Background" Value="{StaticResource Background}" />
+    <Setter Property="Foreground" Value="{StaticResource Text}" />
+    <Setter Property="FontSize" Value="13" />
+  </Style>
+
+  <!-- Testi: corpi di Theme.cs in pixel (punti × 96/72). -->
+  <Style Selector="TextBlock.caption">
+    <Setter Property="FontSize" Value="11" />
+    <Setter Property="FontWeight" Value="Bold" />
+    <Setter Property="Foreground" Value="{StaticResource TextMuted}" />
+  </Style>
+  <Style Selector="TextBlock.small">
+    <Setter Property="FontSize" Value="12" />
+    <Setter Property="Foreground" Value="{StaticResource TextSecondary}" />
+  </Style>
+  <Style Selector="TextBlock.heading">
+    <Setter Property="FontSize" Value="19" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+  <Style Selector="TextBlock.title">
+    <Setter Property="FontSize" Value="21" />
+    <Setter Property="FontWeight" Value="Bold" />
+  </Style>
+  <Style Selector="TextBlock.cardTitle">
+    <Setter Property="FontSize" Value="16" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+  <Style Selector="TextBlock.note">
+    <Setter Property="FontSize" Value="13" />
+    <Setter Property="FontStyle" Value="Italic" />
+    <Setter Property="Foreground" Value="#D8D8DC" />
+  </Style>
+
+  <!-- Pulsanti. -->
+  <Style Selector="Button.primary">
+    <Setter Property="Background" Value="{StaticResource Accent}" />
+    <Setter Property="Foreground" Value="White" />
+    <Setter Property="FontSize" Value="13" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+  <Style Selector="Button.primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{StaticResource AccentHover}" />
+  </Style>
+  <Style Selector="Button.primary:pressed /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{StaticResource AccentPressed}" />
+  </Style>
+  <Style Selector="Button.secondary">
+    <Setter Property="Background" Value="{StaticResource SurfaceSelected}" />
+    <Setter Property="Foreground" Value="{StaticResource Text}" />
+    <Setter Property="FontSize" Value="13" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+  <Style Selector="Button.danger">
+    <Setter Property="Background" Value="{StaticResource Error}" />
+    <Setter Property="Foreground" Value="White" />
+    <Setter Property="FontSize" Value="13" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+  <Style Selector="Button.link">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="Foreground" Value="{StaticResource AccentSoftText}" />
+  </Style>
+  <Style Selector="Button.link:pointerover TextBlock">
+    <Setter Property="TextDecorations" Value="Underline" />
+  </Style>
+
+  <!-- Schede delle partite. -->
+  <Style Selector="Border.card">
+    <Setter Property="Background" Value="{StaticResource Surface}" />
+    <Setter Property="BorderBrush" Value="{StaticResource Border}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="10" />
+    <Setter Property="Padding" Value="18,14,14,14" />
+  </Style>
+  <Style Selector="Border.card.active">
+    <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
+  </Style>
+
+  <!-- Etichetta "IN THE GAME NOW". -->
+  <Style Selector="Border.pill">
+    <Setter Property="Background" Value="{StaticResource Accent}" />
+    <Setter Property="CornerRadius" Value="10" />
+    <Setter Property="Padding" Value="8,1" />
+  </Style>
+  <Style Selector="Border.pill TextBlock">
+    <Setter Property="FontSize" Value="11" />
+    <Setter Property="FontWeight" Value="Bold" />
+    <Setter Property="Foreground" Value="White" />
+  </Style>
+
+  <!-- Barre informative (come InfoBar di WinForms). -->
+  <Style Selector="Border.infobar">
+    <Setter Property="CornerRadius" Value="6" />
+    <Setter Property="Padding" Value="12,8" />
+    <Setter Property="BorderThickness" Value="1" />
+  </Style>
+  <Style Selector="Border.infobar.info">
+    <Setter Property="Background" Value="{StaticResource InfoBack}" />
+    <Setter Property="BorderBrush" Value="{StaticResource InfoBorder}" />
+  </Style>
+  <Style Selector="Border.infobar.warning">
+    <Setter Property="Background" Value="{StaticResource WarningBack}" />
+    <Setter Property="BorderBrush" Value="{StaticResource WarningBorder}" />
+  </Style>
+  <Style Selector="Border.infobar.success">
+    <Setter Property="Background" Value="{StaticResource SuccessBack}" />
+    <Setter Property="BorderBrush" Value="{StaticResource SuccessBorder}" />
+  </Style>
+  <Style Selector="Border.infobar.error">
+    <Setter Property="Background" Value="{StaticResource ErrorBack}" />
+    <Setter Property="BorderBrush" Value="{StaticResource ErrorBorder}" />
+  </Style>
+
 </Styles>
