@@ -104,6 +104,13 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 Write here anything that didn't match the plan, decisions taken with
 Andrix, and results of the 👤 checks. Newest first, with the date.
 
+- 2026-10-24 — F3 review (Opus): (b) fixed: when ControlSaveManager → LSS
+  finds LSS already with data the result is `BothExist`, even if Documents
+  → ControlSaveManager moved first. (c)+(d): when a move fails the app stays
+  in the old folder, and `RestructureAccounts` now runs there too, so the
+  playthroughs are found under `IDAccount\870780` (before, the app would
+  have seen none). (a), (e), (f) are fine as they are. New test
+  `Migrate_FromDocumentsButLssHasData_IsBothExist`; 129 tests.
 - 2026-10-24 — F3, to check with Andrix before F4: (a) `AppData.MigrateToLss`
   is `internal` with three roots and returns four values (result, detail,
   root in use, source of the move): the public wrapper needs the last two to

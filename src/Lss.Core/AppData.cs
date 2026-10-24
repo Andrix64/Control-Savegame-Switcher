@@ -75,19 +75,30 @@ internal static class AppData
     {
         (MoveResult first, string firstDetail) = Move(documentsRoot, csmRoot);
 
+        // Se uno spostamento fallisce si resta nella vecchia cartella, ma con le
+        // cartelle di ogni account già al posto nuovo (IDAccount\870780):
+        // altrimenti l'app non vi troverebbe le partite.
         if (first == MoveResult.Failed)
+        {
+            RestructureAccounts(documentsRoot);
             return (MoveResult.Failed, firstDetail, documentsRoot, documentsRoot);
+        }
 
         (MoveResult second, string secondDetail) = Move(csmRoot, lssRoot);
 
         if (second == MoveResult.Failed)
+        {
+            RestructureAccounts(csmRoot);
             return (MoveResult.Failed, secondDetail, csmRoot, csmRoot);
+        }
 
         // Anche senza niente da spostare: completa uno spostamento interrotto.
         RestructureAccounts(lssRoot);
 
-        MoveResult result = first == MoveResult.Moved || second == MoveResult.Moved
-            ? MoveResult.Moved
+        // Con dati in tutte e due le cartelle quelli di Control Save Manager
+        // restano fuori uso, anche se prima sono arrivati lì da Documenti.
+        MoveResult result = second == MoveResult.BothExist ? MoveResult.BothExist
+            : first == MoveResult.Moved || second == MoveResult.Moved ? MoveResult.Moved
             : second;
 
         string detail = string.Join(" ", new[] { firstDetail, secondDetail }.Where(d => d != ""));

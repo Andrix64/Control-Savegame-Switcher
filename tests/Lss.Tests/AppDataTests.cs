@@ -164,9 +164,25 @@ public sealed class AppDataTests : IDisposable
             Assert.Equal(Old, source);
         }
 
-        Assert.True(File.Exists(Path.Combine(Old, "123", "stato.ini")));
+        // L'app resta nella vecchia cartella, già con la struttura per gioco.
+        Assert.True(File.Exists(Path.Combine(Old, "123", "870780", "stato.ini")));
+        Assert.Equal("mario", File.ReadAllText(Path.Combine(Old, "123", "870780", "Profili", "Profilo_Mario", "remote", "slot.sav")));
         Assert.False(Directory.Exists(New));
         Assert.False(Directory.Exists(Lss));
+    }
+
+    [Fact]
+    public void Migrate_FromDocumentsButLssHasData_IsBothExist()
+    {
+        WriteOldData();
+        TestFolder.Write(Path.Combine(Lss, "log.txt"), "nuovo");
+
+        (AppData.MoveResult result, string _, string root, _) = AppData.MigrateToLss(Old, New, Lss);
+
+        Assert.Equal(AppData.MoveResult.BothExist, result);
+        Assert.Equal(Lss, root);
+        Assert.True(File.Exists(Path.Combine(New, "123", "stato.ini")));
+        Assert.Equal("nuovo", File.ReadAllText(Path.Combine(Lss, "log.txt")));
     }
 
     [Fact]

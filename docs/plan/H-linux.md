@@ -286,6 +286,10 @@ app:
 
    Check the names `folder`, `Old` and `WriteOldData` against the test
    class before pasting.
+
+   `AppDataTests.Migrate_StaysInOldRootWhenFirstStepFails` (added in F3)
+   uses the same open-file trick: give it the same Linux variant (a file
+   named like the parent of `New`, so `Move(Old, New)` fails).
 2. `LocalizationTests.StoredDatesAreShownInTheCurrentCulture` (strings
    differ at position 18). On Linux .NET formats dates with ICU, which puts
    a narrow no-break space (U+202F) before `PM`. In the English assertion
