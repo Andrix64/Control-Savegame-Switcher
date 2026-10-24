@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Lss</RootNamespace>
+    <AssemblyName>Lss.Core</AssemblyName>
+    <NeutralLanguage>en</NeutralLanguage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Genera la classe Strings dai testi, senza bisogno di Visual Studio. -->
+    <EmbeddedResource Update="Strings.resx"
+                      StronglyTypedLanguage="CSharp"
+                      StronglyTypedClassName="Strings"
+                      StronglyTypedNamespace="Lss"
+                      StronglyTypedFileName="$(IntermediateOutputPath)Strings.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Lss.Platform" />
+    <InternalsVisibleTo Include="LSS" />
+    <InternalsVisibleTo Include="Lss.App" />
+    <InternalsVisibleTo Include="Lss.Tests" />
+  </ItemGroup>
+
+</Project>

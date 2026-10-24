@@ -1,4 +1,8 @@
 <Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Lss.Core/Lss.Core.csproj" />
+    <Project Path="src/Lss.Platform/Lss.Platform.csproj" />
+  </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Lss.Tests/Lss.Tests.csproj" />
   </Folder>

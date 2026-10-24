@@ -11,7 +11,7 @@
     <AssemblyName>LSS</AssemblyName>
     <RootNamespace>Lss</RootNamespace>
     <!-- I test e la prova di Avalonia hanno il loro progetto. -->
-    <DefaultItemExcludes>$(DefaultItemExcludes);tests/**;dist/**;scripts/**;spike/**</DefaultItemExcludes>
+    <DefaultItemExcludes>$(DefaultItemExcludes);tests/**;src/**;dist/**;scripts/**;spike/**</DefaultItemExcludes>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -39,17 +39,11 @@
   <ItemGroup>
     <!-- Icona delle finestre (Theme.AppIcon). -->
     <EmbeddedResource Include="app.ico" LogicalName="Lss.app.ico" />
-
-    <!-- Genera la classe Strings dai testi, senza bisogno di Visual Studio. -->
-    <EmbeddedResource Update="Strings.resx"
-                      StronglyTypedLanguage="CSharp"
-                      StronglyTypedClassName="Strings"
-                      StronglyTypedNamespace="Lss"
-                      StronglyTypedFileName="$(IntermediateOutputPath)Strings.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="Lss.Tests" />
+    <ProjectReference Include="src\Lss.Core\Lss.Core.csproj" />
+    <ProjectReference Include="src\Lss.Platform\Lss.Platform.csproj" />
   </ItemGroup>
 
 </Project>
