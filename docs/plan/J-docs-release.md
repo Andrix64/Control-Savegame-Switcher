@@ -265,3 +265,24 @@ Steam folders, `--socket=wayland`, `--socket=fallback-x11`; process
 detection works only through `registry.vdf` inside the sandbox), AUR
 package `lss-bin`, games that save outside `userdata`, macOS. Write a new
 plan for these when 1.0 is out.
+
+**Direction decided with Andrix (2026-10-24): LSS will support N game
+launchers**, not only Steam (Epic Games Launcher, GOG Galaxy, EA app,
+Ubisoft Connect, games without a launcher...). Until that plan exists,
+every change keeps this in mind:
+
+- Product texts stay launcher-neutral where they describe LSS in general
+  ("PC games"); they name Steam only where they describe what works
+  today (installation, "which games work").
+- New code doesn't add Steam assumptions to the generic parts
+  (`SaveManager`, `FileOps`, the playthrough/history/session logic, the
+  ViewModels): Steam-specific code stays in `SteamLibrary`, in the Steam
+  parts of `IPlatform`, and in texts that say "Steam".
+- Sketch for that plan, not to do now: an `IGameProvider` per launcher
+  (find installed games, save folders, running game, launch URI, cloud
+  sync state) with `SteamProvider` as the first one; `GameInfo` gets a
+  provider id and a generic game id instead of `AppId`; data folder
+  `<data>/<provider>/<account>/<game>/` with a migration from today's
+  layout (in `LegacyMigration`); save locations for launchers without a
+  fixed folder from a manifest such as Ludusavi's; the games list grouped
+  by launcher.

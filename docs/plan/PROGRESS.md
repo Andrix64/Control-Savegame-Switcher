@@ -116,6 +116,11 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 Write here anything that didn't match the plan, decisions taken with
 Andrix, and results of the 👤 checks. Newest first, with the date.
 
+- 2026-10-24 — Direction: LSS will support several game launchers after
+  1.0 (Epic Games Launcher and others). Rules and a sketch are in
+  `J-docs-release.md` → J9. The SignPath application describes LSS as a
+  tool for PC games, with Steam as the launcher supported today.
+
 - 2026-10-24 — Decision with Andrix: maintainer of the Linux packages is
   Andrix's GitHub noreply address
   (`44907638+Andrix64@users.noreply.github.com`) in `packaging/linux/nfpm.yaml`.
