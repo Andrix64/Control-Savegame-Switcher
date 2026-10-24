@@ -97,6 +97,50 @@ internal static class SteamLibrary
         }
     }
 
+    /// <summary>
+    /// Icona (32×32) e copertina (300×450) del gioco dalla cache di Steam.
+    /// "" se non ci sono.
+    /// </summary>
+    public static (string Icon, string Cover) FindImages(string steamRoot, string appId)
+    {
+        string cache = Path.Combine(steamRoot, "appcache", "librarycache");
+        string folder = Path.Combine(cache, appId);
+
+        try
+        {
+            string? icon = IconIn(folder) ?? FirstFile(Path.Combine(cache, appId + "_icon.jpg"));
+            string? cover = FirstFile(
+                Path.Combine(folder, "library_600x900.jpg"),
+                Path.Combine(cache, appId + "_library_600x900.jpg"));
+
+            return (icon ?? "", cover ?? "");
+        }
+        catch (Exception)
+        {
+            return ("", "");
+        }
+    }
+
+    /// <summary>
+    /// Icona della cartella: il primo .jpg il cui nome è un hash di 40 caratteri esadecimali.
+    /// </summary>
+    private static string? IconIn(string folder)
+    {
+        if (!Directory.Exists(folder))
+            return null;
+
+        return Directory.GetFiles(folder, "*.jpg")
+            .Where(file => IsHash(Path.GetFileNameWithoutExtension(file)))
+            .OrderBy(file => Path.GetFileName(file), StringComparer.Ordinal)
+            .FirstOrDefault();
+    }
+
+    private static bool IsHash(string name) =>
+        name.Length == 40 && name.All(char.IsAsciiHexDigitLower);
+
+    private static string? FirstFile(params string[] files) =>
+        files.FirstOrDefault(File.Exists);
+
     private static bool Contains(List<string> paths, string path) =>
         paths.Any(existing => string.Equals(NormalizePath(existing), NormalizePath(path), PathComparison));
 

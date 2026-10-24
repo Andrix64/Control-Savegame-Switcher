@@ -101,6 +101,42 @@ public sealed class SteamLibraryTests : IDisposable
     }
 
     [Fact]
+    public void FindImages_NewLayout_FindsIconAndCoverInGameFolder()
+    {
+        string folder = Path.Combine(SteamRoot, "appcache", "librarycache", "870780");
+        string icon = Path.Combine(folder, "858961e95fbf869f136e1770d586e0caefd4cfac.jpg");
+        string cover = Path.Combine(folder, "library_600x900.jpg");
+        TestFolder.Write(icon, "");
+        TestFolder.Write(cover, "");
+        TestFolder.Write(Path.Combine(folder, "header.jpg"), "");
+        TestFolder.Write(Path.Combine(folder, "logo.png"), "");
+
+        var images = SteamLibrary.FindImages(SteamRoot, "870780");
+
+        Assert.Equal(icon, images.Icon);
+        Assert.Equal(cover, images.Cover);
+    }
+
+    [Fact]
+    public void FindImages_OldLayout_FindsFilesInLibraryCache()
+    {
+        string cache = Path.Combine(SteamRoot, "appcache", "librarycache");
+        TestFolder.Write(Path.Combine(cache, "870780_icon.jpg"), "");
+        TestFolder.Write(Path.Combine(cache, "870780_library_600x900.jpg"), "");
+
+        var images = SteamLibrary.FindImages(SteamRoot, "870780");
+
+        Assert.Equal(Path.Combine(cache, "870780_icon.jpg"), images.Icon);
+        Assert.Equal(Path.Combine(cache, "870780_library_600x900.jpg"), images.Cover);
+    }
+
+    [Fact]
+    public void FindImages_NothingInCache_ReturnsEmptyPaths()
+    {
+        Assert.Equal(("", ""), SteamLibrary.FindImages(SteamRoot, "870780"));
+    }
+
+    [Fact]
     public void GetSupport_FilesInRemote_IsSupported()
     {
         TestFolder.Write(folder.SaveFile, "partita");
