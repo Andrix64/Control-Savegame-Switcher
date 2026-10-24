@@ -80,7 +80,7 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 
 ## Phase I — Packages ([I-packaging.md](I-packaging.md))
 
-- [ ] I1 — `--version`
+- [x] I1 — `--version` (4891315)
 - [ ] I2 — Linux desktop files and icons
 - [ ] I3 — `scripts/release.sh`
 - [ ] I4 — `nfpm.yaml` (deb, rpm)
