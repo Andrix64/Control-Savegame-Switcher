@@ -73,7 +73,7 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 - [x] H2 — `registry.vdf` (bdb46ca)
 - [x] H3 — Game processes (5870599)
 - [x] H4 — Launching and single instance (35fd677)
-- [ ] H5 — Case of names
+- [x] H5 — Case of names (34b0517)
 - [ ] H6 — Paths and permissions
 - [ ] H7 — Linux tests required in CI
 - [ ] H8 — 👤 Real Linux check
