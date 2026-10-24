@@ -292,8 +292,8 @@ exe, artifact `unsigned-exe`, SignPath, signature check, zip).
      `.sha256`).
 4. `release` — only on `v*` tags, `needs: [windows, linux]`,
    `runs-on: ubuntu-latest`: download both artifacts
-   (`actions/download-artifact@v4` with `merge-multiple: true` into
-   `dist/`), then `softprops/action-gh-release@v2` with `draft: true`,
+   (`actions/download-artifact@v8` with `merge-multiple: true` into
+   `dist/`), then `softprops/action-gh-release@v3` with `draft: true`,
    `prerelease: ${{ contains(github.ref_name, '-') }}`, all files, and the
    body of the current workflow (signed / not signed) passed from the
    `windows` job as a job output.

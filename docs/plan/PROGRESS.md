@@ -104,6 +104,11 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 Write here anything that didn't match the plan, decisions taken with
 Andrix, and results of the 👤 checks. Newest first, with the date.
 
+- 2026-10-24 — CI on `lss` at `693134f` (end of phase H): all green, Ubuntu
+  required: the seven Linux-only tests of phase H pass. Actions updated to
+  the current majors (checkout v7, setup-dotnet v6, upload-artifact v7,
+  action-gh-release v3; I6 uses download-artifact v8) to remove the
+  "Node.js 20 is deprecated" warnings.
 - 2026-10-24 — G14 (Haiku): WinForms, `spike/` e `ZipFilter` eliminati; `LSS.exe`
   da `src/Lss.App`. Build 0 warning, 176 test verdi, 11 PNG con `tools/UiScreenshots`
   (01-main letto: titolo LSS, v0.9.0), `release.ps1 -AllowDirty -SkipTests` crea
