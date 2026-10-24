@@ -1,5 +1,5 @@
 name: Game report
-description: Tell us whether LSS works with a Steam game.
+description: Tell us whether LSS works with a game.
 title: "[Game] "
 labels: ["game"]
 body:

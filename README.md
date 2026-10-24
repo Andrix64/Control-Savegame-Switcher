@@ -1,17 +1,18 @@
 # LSS — Local Save Switcher
 
-Multiple playthroughs for Steam games (Windows and Linux).
+Multiple playthroughs for your PC games (Windows and Linux).
 
 ![Main window](docs/img/main.png)
 
-LSS keeps several playthroughs of the same game on the same Steam account.
-Pick the one you want to play and LSS loads its saves and starts the game.
-Before every switch it makes a copy, and you can save points for the hard
-parts and go back to them later.
+LSS keeps several playthroughs of the same game apart. Pick the one you want
+to play and LSS loads its saves and starts the game. Before every switch it
+makes a copy, and you can save points for the hard parts and go back to them
+later.
 
-It works with every Steam game that keeps its saves in Steam's `userdata`
-folder. It runs on Windows 10/11 and on Linux, and the interface is in English
-or Italian, following the system language.
+Today LSS works with Steam: every Steam game that keeps its saves in Steam's
+`userdata` folder. Other launchers, such as the Epic Games Launcher, are
+planned. It runs on Windows 10/11 and on Linux, and the interface is in
+English or Italian, following the system language.
 
 ## Which games work
 

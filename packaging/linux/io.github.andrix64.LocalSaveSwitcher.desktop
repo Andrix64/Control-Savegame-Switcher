@@ -2,8 +2,8 @@
 Type=Application
 Name=Local Save Switcher
 GenericName=Save switcher
-Comment=Multiple playthroughs for Steam games
-Comment[it]=Più partite per i giochi Steam
+Comment=Multiple playthroughs for your PC games
+Comment[it]=Più partite per i tuoi giochi PC
 Exec=lss
 Icon=io.github.andrix64.LocalSaveSwitcher
 Terminal=false

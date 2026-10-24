@@ -111,7 +111,7 @@ Phases A (rename) and B (Avalonia test, `spike/`) are already done.
 
 | Topic | Decision |
 |---|---|
-| Name | **LSS — Local Save Switcher**. Subtitle "Multiple playthroughs for Steam games". "Steam" never in the product name (Valve trademark). Disclaimer: *"Steam is a trademark of Valve Corporation. LSS is not affiliated with or endorsed by Valve."* |
+| Name | **LSS — Local Save Switcher**. Subtitle "Multiple playthroughs for your PC games" (generic: other launchers come after 1.0, see J9). "Steam" never in the product name (Valve trademark). Disclaimer: *"Steam is a trademark of Valve Corporation. LSS is not affiliated with or endorsed by Valve."* |
 | Repository | `Andrix64/Local-Save-Switcher` (rename done by Andrix, task J1). |
 | Exe | `LSS.exe` on Windows, `lss` on Linux. Namespace `Lss`. |
 | Versions | `1.0.0-beta.N` for tests, then `1.0.0`. |
