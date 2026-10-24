@@ -29,6 +29,12 @@ if ! command -v nfpm >/dev/null 2>&1; then
     exit 1
 fi
 
+# appimagetool usa il comando file (manca per esempio nell'immagine Docker dell'SDK .NET).
+if ! command -v file >/dev/null 2>&1; then
+    echo "Comando file non trovato: serve ad appimagetool (Debian/Ubuntu: apt install file)." >&2
+    exit 1
+fi
+
 project="src/Lss.App/Lss.App.csproj"
 tests="tests/Lss.Tests"
 publish_dir="bin/publish/linux-x64"
