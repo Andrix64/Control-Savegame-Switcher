@@ -35,7 +35,7 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 ## Phase E — Any game ([E-per-game.md](E-per-game.md))
 
 - [x] E1 — `SaveManager` gets a `GameInfo` (79efd2d)
-- [ ] E2 — Texts with the game name
+- [x] E2 — Texts with the game name (765edb8)
 - [ ] E3 — `LaunchGame`, `IsGameRunning`, `GameStartTime` per game
 - [ ] E4 — Shared files per game
 - [ ] E5 — Accounts and recovery for every game
@@ -103,6 +103,14 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 
 Write here anything that didn't match the plan, decisions taken with
 Andrix, and results of the 👤 checks. Newest first, with the date.
+
+- 2026-10-24 — E2: `AccountIntro` ("…with Control.") names the game too but
+  is not in the table: changed the same way to `{0}`. Its call site
+  (`AccountForm`, no `SaveManager` there) and `SavesNotFound` in `Initialize`
+  pass `"Control"`. Until E3, the static `LaunchGame` also passes `"Control"`
+  to `GameLaunching` and `LaunchFailed`.
+- 2026-10-24 — E1: until E3, the static `LaunchGame` uses
+  `GameInfo.ControlAppId` (it can't use `Game.AppId`: no instance yet).
 
 - 2026-10-24 — CI run on `lss` at `683f447` (end of phase D): on Ubuntu
   only the two known failures of H7; every `SteamLibrary` test passes on
