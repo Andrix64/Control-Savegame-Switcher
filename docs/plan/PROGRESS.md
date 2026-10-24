@@ -52,7 +52,7 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 
 ## Phase G — Avalonia interface ([G-avalonia.md](G-avalonia.md))
 
-- [ ] G1 — Project skeleton
+- [x] G1 — Project skeleton (f1a0faa)
 - [ ] G2 — Theme and texts in XAML
 - [ ] G3 — Services
 - [ ] G4 — `MessageWindow`
