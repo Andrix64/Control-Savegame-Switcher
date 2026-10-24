@@ -54,6 +54,9 @@
         </ItemsControl>
 
         <TextBlock Text="{Binding EmptyText}" Foreground="{StaticResource TextMuted}" Margin="2,8,0,0" />
+
+        <Button Classes="link" Content="{Binding DeletedLinkText}" Command="{Binding ShowDeletedCommand}"
+                IsVisible="{Binding ShowDeletedLink}" FontSize="12" Margin="2,4,0,0" />
       </StackPanel>
     </ScrollViewer>
 

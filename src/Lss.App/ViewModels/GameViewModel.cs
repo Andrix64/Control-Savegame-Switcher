@@ -456,6 +456,19 @@ public partial class GameViewModel : ObservableObject
         await ShowResult(result);
     }
 
+    /// <summary>
+    /// Elenco delle partite eliminate da recuperare. Se qualcosa è cambiato, aggiorna le schede.
+    /// </summary>
+    [RelayCommand]
+    public async Task ShowDeletedAsync()
+    {
+        var deleted = new DeletedViewModel(Manager, dialogs);
+
+        await dialogs.ShowAsync<bool>(new DeletedWindow(deleted));
+
+        if (deleted.Changed)
+            Refresh();
+    }
 
     public async Task ShowHistoryAsync(bool focusSave)
     {

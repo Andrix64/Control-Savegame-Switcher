@@ -84,11 +84,20 @@ public partial class App : Application
         var settings = new AppSettings(Path.Combine(AppData.Root, "lss.ini"));
         settings.Load();
 
-        // Con più account la scelta arriva con AccountWindow (G12): per ora si usa l'ultimo o il primo.
-        SteamAccount account = accounts.FirstOrDefault(a => a.Id == settings.LastAccount) ?? accounts[0];
+        SteamAccount account = accounts[0];
 
         if (accounts.Count > 1)
         {
+            var accountWindow = new AccountWindow(accounts, settings.LastAccount);
+            await ShowStandaloneAsync(accountWindow);
+
+            if (accountWindow.Chosen == null)
+            {
+                desktop.Shutdown();
+                return;
+            }
+
+            account = accountWindow.Chosen;
             settings.LastAccount = account.Id;
             settings.Save();
         }
@@ -104,10 +113,14 @@ public partial class App : Application
         desktop.MainWindow = window;
     }
 
-    // Messaggio senza finestra proprietaria (all'avvio): al centro dello schermo, nella barra delle applicazioni.
-    private static async Task ShowStandaloneAsync(string text, InfoKind kind)
+    // Messaggio senza finestra proprietaria (all'avvio).
+    private static Task ShowStandaloneAsync(string text, InfoKind kind) =>
+        ShowStandaloneAsync(MessageWindow.Inform("", text, kind));
+
+    // Finestra senza proprietario: al centro dello schermo, nella barra delle applicazioni.
+    // Ritorna quando la finestra viene chiusa.
+    private static async Task ShowStandaloneAsync(Window window)
     {
-        MessageWindow window = MessageWindow.Inform("", text, kind);
         window.WindowStartupLocation = WindowStartupLocation.CenterScreen;
         window.ShowInTaskbar = true;
 

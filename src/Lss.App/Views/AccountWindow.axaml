@@ -1,0 +1,43 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="using:Lss.App.Localization"
+        xmlns:vm="using:Lss.App.ViewModels"
+        x:Class="Lss.App.Views.AccountWindow"
+        x:DataType="vm:AccountViewModel"
+        Title="Local Save Switcher"
+        Width="480" Height="400"
+        MinWidth="420" MinHeight="340"
+        WindowStartupLocation="CenterScreen"
+        ShowInTaskbar="True">
+
+  <DockPanel Margin="20,18,20,16">
+
+    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10"
+                Margin="0,16,0,0">
+      <Button Classes="secondary" Content="{Binding ExitText}" IsCancel="True" MinWidth="100"
+              Click="Exit_Click" />
+      <Button Classes="primary" Content="{Binding UseText}" IsDefault="True" IsEnabled="{Binding CanUse}"
+              MinWidth="170" Click="Use_Click" />
+    </StackPanel>
+
+    <TextBlock DockPanel.Dock="Top" Text="{Binding Intro}" TextWrapping="Wrap" Margin="0,0,0,14" />
+    <TextBlock DockPanel.Dock="Top" Classes="caption" Text="{Binding CaptionText}" Margin="2,0,0,8" />
+
+    <Border Background="{StaticResource Surface}" BorderBrush="{StaticResource Border}" BorderThickness="1"
+            CornerRadius="10" Padding="6">
+      <ListBox ItemsSource="{Binding Accounts}" SelectedItem="{Binding SelectedAccount}"
+               Background="Transparent" BorderThickness="0" DoubleTapped="List_DoubleTapped">
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="vm:AccountItemViewModel">
+            <StackPanel Margin="6,4" Spacing="2">
+              <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="15" />
+              <TextBlock Classes="small" Text="{Binding Details}" />
+            </StackPanel>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+    </Border>
+
+  </DockPanel>
+
+</Window>
