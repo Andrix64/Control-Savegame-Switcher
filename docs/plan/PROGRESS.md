@@ -24,7 +24,7 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 
 ## Phase D — Game catalogue ([D-catalog.md](D-catalog.md))
 
-- [ ] D1 — `GameInfo` and `SupportState`
+- [x] D1 — `GameInfo` and `SupportState` (c563816)
 - [ ] D2 — Library folders
 - [ ] D3 — Manifests
 - [ ] D4 — Support state
