@@ -305,7 +305,9 @@ build (`StronglyTypedLanguage` in the `.csproj`), no Visual Studio needed.
 | `src/Lss.App/ViewModels/` | The logic of each window, without controls. |
 | `src/Lss.App/Services/` | Dialogs (`DialogService`), the game monitor (`GameMonitor`). |
 | `src/Lss.App/Styles/Theme.axaml` | Colours and styles of the dark theme. |
+| `src/Lss.App/Assets/app.svg` | Source of the icon (`scripts/make-icons.sh` makes the rest from it). |
 | `src/Lss.App/Assets/app.ico` | Icon of the exe and the windows. |
+| `scripts/make-icons.sh` | Builds `app.ico` and the Linux icons from `app.svg`. |
 | `src/Lss.App/Properties/PublishProfiles/` | Publish profiles `win-x64.pubxml` and `linux-x64.pubxml`. |
 | `scripts\release.ps1` | Builds the release zip (locally and on GitHub Actions). |
 | `.github\workflows\build.yml` | Build, tests, SignPath signing and draft release on GitHub. |
@@ -330,6 +332,11 @@ have to install anything, about 50 MB), in `bin\publish\win-x64\`:
 ```bash
 dotnet publish src/Lss.App/Lss.App.csproj -p:PublishProfile=win-x64
 ```
+
+The icon comes from `src/Lss.App/Assets/app.svg`, the only source. After
+changing it, `bash scripts/make-icons.sh` rebuilds `app.ico` and the Linux
+icons (needs `rsvg-convert` and `icotool`: on Debian/Ubuntu `librsvg2-bin`
+and `icoutils`).
 
 For debugging in VS Code there are `.vscode\launch.json` and
 `.vscode\tasks.json`.

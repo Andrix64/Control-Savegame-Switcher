@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
-  <!-- Sfondo: quadrato arrotondato del tema, bordo sottile -->
-  <rect x="0.5" y="0.5" width="255" height="255" rx="56" fill="#16161A" stroke="#2E2E33" stroke-width="1"/>
-  <!-- Tre slot di salvataggio impilati; quello centrale, rosso, è il soggetto -->
-  <rect x="56" y="52" width="144" height="36" rx="18" fill="#96969C"/>
-  <rect x="40" y="110" width="176" height="36" rx="18" fill="#E0261B"/>
-  <rect x="56" y="168" width="144" height="36" rx="18" fill="#96969C"/>
-</svg>
