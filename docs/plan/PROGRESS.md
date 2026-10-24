@@ -107,7 +107,7 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 - [x] J3 — Other documents (5e5c0ac)
 - [x] J4 — Version `1.0.0-beta.1` (bd813d5; Linux check on lss-ci: 176 tests, six installs report `LSS 1.0.0-beta.1`)
 - [x] J5 — 👤 First beta (2026-10-24: tag `v1.0.0-beta.1` at `4805f83`, all five CI jobs green, published as pre-release with `gh`; Windows exe not signed yet)
-- [ ] J6 — 👤 SignPath
+- [ ] J6 — 👤 SignPath (2026-10-24: application sent by Andrix on signpath.org, describing LSS as a tool for PC games with Steam supported today; waiting for the answer. Then: project, `LSS.exe` artifact configuration, `release-signing` policy, CI user and token, GitHub secret and variables)
 - [ ] J7 — Further betas
 - [ ] J8 — 1.0.0
 
