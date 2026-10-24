@@ -254,13 +254,13 @@ First fix the two tests that failed on Ubuntu in the C7 run (2026-10-24,
 90 passed, 2 failed). Both are differences of the system, not bugs of the
 app:
 
-1. `AppDataTests.Move_LeavesOldFolderIntactWhenItFails` ("Expected:
+1. `LegacyMigrationTests.Move_LeavesOldFolderIntactWhenItFails` ("Expected:
    Failed, Actual: Moved"). The test blocks the move by keeping `log.txt`
    open with `FileShare.None`: on Linux an open file doesn't stop
    `Directory.Move`. Keep the current body for Windows and add, at the top
    of the method, a Linux variant that makes the move fail by putting a
    **file** where the parent of the new folder should be (then
-   `Directory.CreateDirectory` inside `AppData.Move` throws, which is
+   `Directory.CreateDirectory` inside `LegacyMigration.Move` throws, which is
    inside its `try`, so the result is `Failed` on every system):
 
    ```csharp
@@ -274,9 +274,9 @@ app:
        File.WriteAllText(blocker, "");
        string target = Path.Combine(blocker, "LSS");
 
-       (AppData.MoveResult result, string detail) = AppData.Move(Old, target);
+       (LegacyMigration.MoveResult result, string detail) = LegacyMigration.Move(Old, target);
 
-       Assert.Equal(AppData.MoveResult.Failed, result);
+       Assert.Equal(LegacyMigration.MoveResult.Failed, result);
        Assert.NotEqual("", detail);
        Assert.Equal("mario", File.ReadAllText(Path.Combine(Old, "123", "Profili", "Profilo_Mario", "remote", "slot.sav")));
        Assert.False(Directory.Exists(target));
@@ -287,7 +287,7 @@ app:
    Check the names `folder`, `Old` and `WriteOldData` against the test
    class before pasting.
 
-   `AppDataTests.Migrate_StaysInOldRootWhenFirstStepFails` (added in F3)
+   `LegacyMigrationTests.Migrate_StaysInOldRootWhenFirstStepFails` (added in F3)
    uses the same open-file trick: give it the same Linux variant (a file
    named like the parent of `New`, so `Move(Old, New)` fails).
 2. `LocalizationTests.StoredDatesAreShownInTheCurrentCulture` (strings

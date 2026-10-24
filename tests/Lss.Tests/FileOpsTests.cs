@@ -10,6 +10,21 @@ public sealed class FileOpsTests : IDisposable
     public void Dispose() => folder.Dispose();
 
     [Fact]
+    public void CopyAllVerified_CopiesExcludedFoldersToo()
+    {
+        // Lo spostamento tra dischi diversi copia tutto, anche "Backup" e "Profili",
+        // che CopyFolder invece salta.
+        TestFolder.Write(Path.Combine(Source, "123", "Profili", "Profilo_Mario", "remote", "slot.sav"), "mario");
+        TestFolder.Write(Path.Combine(Source, "123", "Backup", "Prima_ripristino_x", "a.sav"), "backup");
+
+        FileOps.CopyAllVerified(Source, Destination);
+
+        Assert.Equal("backup", File.ReadAllText(Path.Combine(Destination, "123", "Backup", "Prima_ripristino_x", "a.sav")));
+        Assert.True(File.Exists(Path.Combine(Destination, "123", "Profili", "Profilo_Mario", "remote", "slot.sav")));
+        Assert.True(Directory.Exists(Source));
+    }
+
+    [Fact]
     public void ReplaceFolder_MakesDestinationEqualAndKeepsSteamCache()
     {
         TestFolder.Write(Path.Combine(Source, "remote", "a.sav"), "nuovo");

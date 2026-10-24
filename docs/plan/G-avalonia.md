@@ -586,9 +586,14 @@ cursor (`Cursor="Wait"` on the root when busy).
 
 1. If `--already-running`: show `MessageWindow` with
    `Strings.AppAlreadyRunning` (no owner) and shut down.
-2. `AppData.MigrateToLss()`, `Log.Write("Avvio versione " + version)`,
-   report the outcome as the WinForms `Program.ReportDataMove` does (read
-   it and port it).
+2. `LegacyMigration.Run()`, then `Log.Write("Avvio versione " + version)`,
+   then, if `LegacyMigration.Notice(result, detail)` is not null, show its
+   text in a `MessageWindow` (warning or info by `IsWarning`), as the
+   WinForms `Program.cs` does. Keep these lines together under the comment
+   `// Compatibilità con Control Save Manager (vedi LegacyMigration).` and
+   put no other Control Save Manager code anywhere in `Lss.App`: it must be
+   removable by deleting these lines (see `docs/DEVELOPMENT.md`,
+   "Compatibility with Control Save Manager").
 3. Steam root: `Platform.Current.FindSteamRoots()`; none →
    `Strings.SteamNotFound` and exit. `userdata` missing →
    `Strings.UserDataNotFound`.

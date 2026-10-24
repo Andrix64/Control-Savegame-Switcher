@@ -183,8 +183,9 @@ public sealed class WindowsPlatform : IPlatform
     public IDisposable? AcquireSingleInstance()
     {
         // Il mutex di Control Save Manager impedisce di aprire la sua vecchia
-        // versione mentre LSS è aperto; quello di LSS impedisce due LSS insieme.
-        var legacy = new Mutex(true, @"Local\ControlSaveManager", out bool legacyFree);
+        // versione mentre LSS è aperto (vedi LegacyMigration); quello di LSS
+        // impedisce due LSS insieme.
+        var legacy = new Mutex(true, LegacyMigration.MutexName, out bool legacyFree);
 
         if (!legacyFree)
         {

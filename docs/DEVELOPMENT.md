@@ -24,24 +24,66 @@ in the cloud ("files on demand") and creates "conflict" copies: all things
 that make copies fail or mix up playthroughs in a save folder. `Local` rather
 than `Roaming` because backups can be large.
 
-Control Save Manager kept its data in `%LOCALAPPDATA%\ControlSaveManager`, and
-earlier development versions used `Documents\ControlSaves`. At startup
-`AppData.MigrateToLss` moves them to `LSS` in two steps: `Documents\ControlSaves`
-to `ControlSaveManager`, then `ControlSaveManager` to `LSS`. Each step goes
-through `AppData.Move`: on the same drive a single `Directory.Move`; across
-drives a copy into `<destination>.spostamento`, verifying every file, and only
-then deleting the original. If a step fails, the old folder stays in use and
-nothing else is touched. If the destination already has data, it is left as
-it is. Then `AppData.RestructureAccounts` moves each account's Control data from
-`<AccountID>\` into `<AccountID>\870780\`, skipping whatever is already there,
-and turns `account.txt` into `lss.ini`. The restructuring runs at every start
-and can be repeated safely. The outcome goes to the log, and the user is told
-when data was moved.
+Data of Control Save Manager is moved here at startup: see
+[Compatibility with Control Save Manager](#compatibility-with-control-save-manager).
 
-Single instance: `WindowsPlatform.AcquireSingleInstance` takes two named
-mutexes, `Local\ControlSaveManager` (so an old Control Save Manager still
-installed cannot run next to LSS) and `Local\LSS`. If either is taken, the
-app does not start.
+Single instance: `WindowsPlatform.AcquireSingleInstance` takes the named
+mutex `Local\LSS` and, for compatibility, the old one of Control Save
+Manager. If either is taken, the app does not start.
+
+## Compatibility with Control Save Manager
+
+LSS started as Control Save Manager (0.9.0, Control only). Everything that
+exists only to take over its data is in **`src/Lss.Core/LegacyMigration.cs`**
+and its tests in **`tests/Lss.Tests/LegacyMigrationTests.cs`**, so it can be
+removed in one go once nobody needs it.
+
+What it does:
+
+- **Data folder.** Control Save Manager kept its data in
+  `%LOCALAPPDATA%\ControlSaveManager`, and earlier development versions used
+  `Documents\ControlSaves`. At startup `LegacyMigration.Run` moves them to
+  `LSS` in two steps: `Documents\ControlSaves` to `ControlSaveManager`, then
+  `ControlSaveManager` to `LSS`. Each step goes through
+  `LegacyMigration.Move`: on the same drive a single `Directory.Move`; across
+  drives a copy into `<destination>.spostamento` (`FileOps.CopyAllVerified`),
+  verifying every file, and only then deleting the original. If the
+  destination already has data, nothing is moved (`BothExist`).
+- **Layout.** `LegacyMigration.RestructureAccounts` moves each account's
+  Control data from `<AccountID>\` into `<AccountID>\870780\`, skipping
+  whatever is already there, and turns `account.txt` into `lss.ini`. It runs
+  at every start, also on the old folder when a move fails (so the app finds
+  the playthroughs there), and can be repeated safely.
+- **Message.** `LegacyMigration.Notice` writes the outcome to the log and
+  returns the text shown once to the user (`DataMoved`, `DataMovedOldLeft`,
+  `DataBothExist`, `DataMoveFailed`).
+- **Mutex.** `LegacyMigration.MutexName` (`Local\ControlSaveManager`): LSS
+  also holds it, so an old Control Save Manager can't run next to it.
+- **Exports.** `LegacyMigration.ExportedGame` reads a zip of format 1
+  (Control Save Manager, no `AppId`) as Control.
+
+To remove it:
+
+1. Delete `src/Lss.Core/LegacyMigration.cs` and
+   `tests/Lss.Tests/LegacyMigrationTests.cs`.
+2. Startup (`Program.cs` of the app): remove the call to
+   `LegacyMigration.Run()` and the message from `LegacyMigration.Notice`.
+   `AppData.Root` stays `AppData.DefaultRoot`.
+3. `WindowsPlatform.AcquireSingleInstance`: take only `Local\LSS`; remove
+   `InstanceLock` if it holds a single mutex.
+4. `SaveManager.ImportProfileCore`: read `AppId` and `Gioco` from
+   `partita.ini` directly and refuse zips without `AppId` with
+   `Strings.ImportInvalid`. Delete the test `Import_Format1IsControl` in
+   `PlaythroughTests.cs`.
+5. Texts: delete `DataMoved`, `DataMovedOldLeft`, `DataBothExist`,
+   `DataMoveFailed` from both resx files; in `ImportInvalid` remove "or
+   Control Save Manager".
+6. `FileOps.CopyAllVerified` and `CopyAll`: delete them (and their test in
+   `FileOpsTests.cs`) if nothing else uses them.
+7. Docs: this section, the "Coming from Control Save Manager" part of the
+   README, and the CHANGELOG line about the migration in the next version.
+8. `grep -rn "LegacyMigration\|ControlSaveManager\|account.txt" src tests`
+   must print nothing.
 
 The Steam folder is read from the registry
 (`HKCU\Software\Valve\Steam\SteamPath`), falling back to the standard paths in
@@ -208,7 +250,8 @@ leave the folder, and playthroughs of another game (`ImportOtherGame`).
 Zip entries always use `/`, so the same zip imports on Windows and Linux.
 
 Format 1 (written by Control Save Manager) has no `AppId`: it is read as
-Control (`870780`). Format 2 is the only one written now.
+Control (`870780`) by `LegacyMigration.ExportedGame`. Format 2 is the only
+one written now.
 
 ### Steam Cloud
 
@@ -244,7 +287,8 @@ build (`StronglyTypedLanguage` in the `.csproj`), no Visual Studio needed.
 | `IniFile.cs` | Safe reading and writing of `.ini` files. |
 | `FileOps.cs` | Copying, verifying and replacing folders. |
 | `AppState.cs` | Reading and writing `stato.ini`. |
-| `AppData.cs` | App data folder and migration from older folders. |
+| `AppData.cs` | App data folder. |
+| `src/Lss.Core/LegacyMigration.cs` | Everything for Control Save Manager: data migration, its mutex, format 1 exports (removable, see above). |
 | `Vdf.cs` | Reader for Steam configuration files. |
 | `src/Lss.Core/SteamLibrary.cs` | Steam libraries, manifests, support state, images and the list of an account's games. |
 | `src/Lss.Core/GameInfo.cs` | `GameInfo` record and `SupportState`. |

@@ -1,6 +1,6 @@
 namespace Lss.Tests;
 
-public sealed class AppDataTests : IDisposable
+public sealed class LegacyMigrationTests : IDisposable
 {
     private readonly TestFolder folder = new();
 
@@ -22,9 +22,9 @@ public sealed class AppDataTests : IDisposable
     {
         WriteOldData();
 
-        (AppData.MoveResult result, string detail) = AppData.Move(Old, New);
+        (LegacyMigration.MoveResult result, string detail) = LegacyMigration.Move(Old, New);
 
-        Assert.Equal(AppData.MoveResult.Moved, result);
+        Assert.Equal(LegacyMigration.MoveResult.Moved, result);
         Assert.Equal("", detail);
         Assert.False(Directory.Exists(Old));
         Assert.Equal("mario", File.ReadAllText(Path.Combine(New, "123", "Profili", "Profilo_Mario", "remote", "slot.sav")));
@@ -37,7 +37,7 @@ public sealed class AppDataTests : IDisposable
         WriteOldData();
         Directory.CreateDirectory(New);
 
-        Assert.Equal(AppData.MoveResult.Moved, AppData.Move(Old, New).Result);
+        Assert.Equal(LegacyMigration.MoveResult.Moved, LegacyMigration.Move(Old, New).Result);
         Assert.True(File.Exists(Path.Combine(New, "123", "stato.ini")));
     }
 
@@ -47,7 +47,7 @@ public sealed class AppDataTests : IDisposable
         WriteOldData();
         TestFolder.Write(Path.Combine(New, "log.txt"), "nuovo");
 
-        Assert.Equal(AppData.MoveResult.BothExist, AppData.Move(Old, New).Result);
+        Assert.Equal(LegacyMigration.MoveResult.BothExist, LegacyMigration.Move(Old, New).Result);
         Assert.Equal("registro", File.ReadAllText(Path.Combine(Old, "log.txt")));
         Assert.Equal("nuovo", File.ReadAllText(Path.Combine(New, "log.txt")));
     }
@@ -55,7 +55,7 @@ public sealed class AppDataTests : IDisposable
     [Fact]
     public void Move_DoesNothingWithoutOldFolder()
     {
-        Assert.Equal(AppData.MoveResult.NothingToMove, AppData.Move(Old, New).Result);
+        Assert.Equal(LegacyMigration.MoveResult.NothingToMove, LegacyMigration.Move(Old, New).Result);
         Assert.False(Directory.Exists(New));
     }
 
@@ -67,29 +67,14 @@ public sealed class AppDataTests : IDisposable
         // Un file aperto impedisce di spostare la cartella.
         using (new FileStream(Path.Combine(Old, "log.txt"), FileMode.Open, FileAccess.Read, FileShare.None))
         {
-            (AppData.MoveResult result, string detail) = AppData.Move(Old, New);
+            (LegacyMigration.MoveResult result, string detail) = LegacyMigration.Move(Old, New);
 
-            Assert.Equal(AppData.MoveResult.Failed, result);
+            Assert.Equal(LegacyMigration.MoveResult.Failed, result);
             Assert.NotEqual("", detail);
         }
 
         Assert.Equal("mario", File.ReadAllText(Path.Combine(Old, "123", "Profili", "Profilo_Mario", "remote", "slot.sav")));
         Assert.False(Directory.Exists(New));
-    }
-
-    [Fact]
-    public void CopyAllVerified_CopiesExcludedFoldersToo()
-    {
-        // Lo spostamento tra dischi diversi copia tutto, anche "Backup" e "Profili",
-        // che CopyFolder invece salta.
-        WriteOldData();
-        TestFolder.Write(Path.Combine(Old, "123", "Backup", "Prima_ripristino_x", "a.sav"), "backup");
-
-        FileOps.CopyAllVerified(Old, New);
-
-        Assert.Equal("backup", File.ReadAllText(Path.Combine(New, "123", "Backup", "Prima_ripristino_x", "a.sav")));
-        Assert.True(File.Exists(Path.Combine(New, "123", "Profili", "Profilo_Mario", "remote", "slot.sav")));
-        Assert.True(Directory.Exists(Old));
     }
 
     [Fact]
@@ -101,9 +86,9 @@ public sealed class AppDataTests : IDisposable
         TestFolder.Write(Path.Combine(New, "111", "Backup", "x", "a"), "backup");
         TestFolder.Write(Path.Combine(New, "log.txt"), "registro");
 
-        (AppData.MoveResult result, string _, string root, string source) = AppData.MigrateToLss(Old, New, Lss);
+        (LegacyMigration.MoveResult result, string _, string root, string source) = LegacyMigration.MigrateToLss(Old, New, Lss);
 
-        Assert.Equal(AppData.MoveResult.Moved, result);
+        Assert.Equal(LegacyMigration.MoveResult.Moved, result);
         Assert.Equal(Lss, root);
         Assert.Equal(New, source);
         Assert.Equal("mario", File.ReadAllText(Path.Combine(Lss, "111", "870780", "Profili", "Profilo_Mario", "remote", "a.sav")));
@@ -122,9 +107,9 @@ public sealed class AppDataTests : IDisposable
     {
         WriteOldData();
 
-        (AppData.MoveResult result, string _, string root, string source) = AppData.MigrateToLss(Old, New, Lss);
+        (LegacyMigration.MoveResult result, string _, string root, string source) = LegacyMigration.MigrateToLss(Old, New, Lss);
 
-        Assert.Equal(AppData.MoveResult.Moved, result);
+        Assert.Equal(LegacyMigration.MoveResult.Moved, result);
         Assert.Equal(Lss, root);
         Assert.Equal(New, source);
         Assert.False(Directory.Exists(Old));
@@ -140,9 +125,9 @@ public sealed class AppDataTests : IDisposable
         TestFolder.Write(Path.Combine(New, "log.txt"), "vecchio");
         TestFolder.Write(Path.Combine(Lss, "log.txt"), "nuovo");
 
-        (AppData.MoveResult result, string _, string root, _) = AppData.MigrateToLss(Old, New, Lss);
+        (LegacyMigration.MoveResult result, string _, string root, _) = LegacyMigration.MigrateToLss(Old, New, Lss);
 
-        Assert.Equal(AppData.MoveResult.BothExist, result);
+        Assert.Equal(LegacyMigration.MoveResult.BothExist, result);
         Assert.Equal(Lss, root);
         Assert.Equal("vecchio", File.ReadAllText(Path.Combine(New, "log.txt")));
         Assert.Equal("vecchio", File.ReadAllText(Path.Combine(New, "111", "stato.ini")));
@@ -157,9 +142,9 @@ public sealed class AppDataTests : IDisposable
 
         using (new FileStream(Path.Combine(Old, "log.txt"), FileMode.Open, FileAccess.Read, FileShare.None))
         {
-            (AppData.MoveResult result, string _, string root, string source) = AppData.MigrateToLss(Old, New, Lss);
+            (LegacyMigration.MoveResult result, string _, string root, string source) = LegacyMigration.MigrateToLss(Old, New, Lss);
 
-            Assert.Equal(AppData.MoveResult.Failed, result);
+            Assert.Equal(LegacyMigration.MoveResult.Failed, result);
             Assert.Equal(Old, root);
             Assert.Equal(Old, source);
         }
@@ -177,9 +162,9 @@ public sealed class AppDataTests : IDisposable
         WriteOldData();
         TestFolder.Write(Path.Combine(Lss, "log.txt"), "nuovo");
 
-        (AppData.MoveResult result, string _, string root, _) = AppData.MigrateToLss(Old, New, Lss);
+        (LegacyMigration.MoveResult result, string _, string root, _) = LegacyMigration.MigrateToLss(Old, New, Lss);
 
-        Assert.Equal(AppData.MoveResult.BothExist, result);
+        Assert.Equal(LegacyMigration.MoveResult.BothExist, result);
         Assert.Equal(Lss, root);
         Assert.True(File.Exists(Path.Combine(New, "123", "stato.ini")));
         Assert.Equal("nuovo", File.ReadAllText(Path.Combine(Lss, "log.txt")));
@@ -191,8 +176,8 @@ public sealed class AppDataTests : IDisposable
         TestFolder.Write(Path.Combine(Lss, "111", "Profili", "Profilo_A", "a"), "a");
         TestFolder.Write(Path.Combine(Lss, "111", "870780", "Profili", "Profilo_B", "b"), "b");
 
-        AppData.RestructureAccounts(Lss);
-        AppData.RestructureAccounts(Lss);
+        LegacyMigration.RestructureAccounts(Lss);
+        LegacyMigration.RestructureAccounts(Lss);
 
         // Profili già presente nella cartella del gioco: quello dell'account resta dov'è.
         Assert.Equal("a", File.ReadAllText(Path.Combine(Lss, "111", "Profili", "Profilo_A", "a")));
@@ -206,7 +191,7 @@ public sealed class AppDataTests : IDisposable
         TestFolder.Write(Path.Combine(Lss, "abc", "Profili", "Profilo_X", "a"), "a");
         TestFolder.Write(Path.Combine(Lss, "abc", "stato.ini"), "x");
 
-        AppData.RestructureAccounts(Lss);
+        LegacyMigration.RestructureAccounts(Lss);
 
         Assert.Equal("q", File.ReadAllText(Path.Combine(Lss, "logs", "Backup", "q")));
         Assert.Equal("a", File.ReadAllText(Path.Combine(Lss, "abc", "Profili", "Profilo_X", "a")));

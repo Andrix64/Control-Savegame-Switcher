@@ -92,6 +92,13 @@ Phases A (rename) and B (Avalonia test, `spike/`) are already done.
   C3) for anything that would touch the registry, processes or Steam.
 - Never `DllImport` / `LibraryImport` (Smart App Control, see
   `docs/DEVELOPMENT.md`).
+- **Compatibility with Control Save Manager only in `LegacyMigration`.**
+  Anything that exists only to take over Control Save Manager's data,
+  files or behaviour goes in `src/Lss.Core/LegacyMigration.cs` (tests in
+  `LegacyMigrationTests.cs`) and is called from one place, so it can be
+  deleted later with the checklist in `docs/DEVELOPMENT.md`
+  ("Compatibility with Control Save Manager"). If a task needs more of it,
+  add it there and add a line to that checklist.
 - No new NuGet packages except those named in a task, with the exact
   version given.
 

@@ -104,6 +104,13 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 Write here anything that didn't match the plan, decisions taken with
 Andrix, and results of the 👤 checks. Newest first, with the date.
 
+- 2026-10-24 — Decision with Andrix: nobody has used Control Save Manager
+  yet, so everything for its compatibility (data migration, its mutex,
+  format 1 exports, the "data moved" message) is now in
+  `src/Lss.Core/LegacyMigration.cs`, tests in `LegacyMigrationTests.cs`
+  (was `AppDataTests.cs`), removable with the checklist in
+  `docs/DEVELOPMENT.md` → "Compatibility with Control Save Manager". Rule
+  added to README.md.
 - 2026-10-24 — F3 review (Opus): (b) fixed: when ControlSaveManager → LSS
   finds LSS already with data the result is `BothExist`, even if Documents
   → ControlSaveManager moved first. (c)+(d): when a move fails the app stays

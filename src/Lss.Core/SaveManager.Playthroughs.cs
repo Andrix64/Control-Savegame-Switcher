@@ -636,9 +636,7 @@ public sealed partial class SaveManager
 
             Dictionary<string, string> values = IniFile.Read(Path.Combine(temp, ExportInfoFile));
 
-            // Le partite esportate da Control Save Manager (formato 1) non hanno AppId: sono di Control.
-            string appId = values.GetValueOrDefault("AppId", GameInfo.ControlAppId);
-            string gameName = values.GetValueOrDefault("Gioco", "Control");
+            (string appId, string gameName) = LegacyMigration.ExportedGame(values);
 
             if (appId != Game.AppId)
                 return Result<string>.Fail(Loc.F(Strings.ImportOtherGame, gameName, Game.Name));
