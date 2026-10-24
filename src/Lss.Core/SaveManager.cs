@@ -148,11 +148,16 @@ public sealed partial class SaveManager
         {
             string savePath = Path.Combine(account.Folder, GameInfo.ControlAppId);
 
+            // Dalle librerie di Steam, se Control è installato: con la cartella
+            // di installazione il gioco aperto si riconosce anche dai processi.
+            GameInfo game = SteamLibrary.FindGames(steam, account.Folder)
+                .FirstOrDefault(g => g.AppId == GameInfo.ControlAppId) ?? GameInfo.Control(savePath);
+
             return Result<SaveManager>.Ok(new SaveManager(
                 savePath,
                 Path.Combine(appData, account.Id),
                 account.Name,
-                GameInfo.Control(savePath)));
+                game));
         }
         catch (Exception ex)
         {
