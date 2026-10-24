@@ -104,6 +104,11 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 Write here anything that didn't match the plan, decisions taken with
 Andrix, and results of the 👤 checks. Newest first, with the date.
 
+- 2026-10-24 — Phase G review (Opus): the main window was never shown
+  (assigned to `desktop.MainWindow` after startup without `Show()`), and an
+  exception in `StartAsync` was lost; both fixed in `01344b5`, with texts
+  using `MaxWidth` left-aligned. Window seen with real data: games list
+  (Control Ultimate Edition, Terraria), cards and buttons OK.
 - 2026-10-24 — Fase G (G1–G12, Haiku): visual checks not done (no window was looked at).
   Andrix's G13 list: the dialogs' button order (see the G4 note below), hover colours of
   `Button.primary` (`/template/ ContentPresenter`, may not show with the Fluent template),
