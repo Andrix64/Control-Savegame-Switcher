@@ -83,7 +83,7 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 - [x] I1 — `--version` (4891315)
 - [x] I2 — Linux desktop files and icons (9158360)
 - [x] I3 — `scripts/release.sh` (88519f5)
-- [ ] I4 — `nfpm.yaml` (deb, rpm)
+- [x] I4 — `nfpm.yaml` (deb, rpm) (b88596e)
 - [ ] I5 — AppImage
 - [ ] I6 — Workflow
 - [ ] I7 — 👤 First CI run
@@ -103,6 +103,23 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 
 Write here anything that didn't match the plan, decisions taken with
 Andrix, and results of the 👤 checks. Newest first, with the date.
+
+- 2026-10-24 — I1–I4 (Haiku). Da decidere con Andrix: `MAINTAINER_EMAIL` in
+  `packaging/linux/nfpm.yaml` è ancora il segnaposto (I4). Scelte fuori piano:
+  - I2: `Icon.ToBitmap()` fallisce sulle voci PNG di `app.ico`. Le sei voci
+    (16–256) sono PNG: estratte direttamente dai byte dell'`.ico`, dimensioni
+    verificate. Nessuna ricampionatura.
+  - I2: nuovo `.gitattributes`: `*.sh`, `packaging/linux/*.desktop|xml|yaml` con
+    fine riga LF (su questo PC `core.autocrlf=true` metterebbe CRLF negli script),
+    `*.png` binari.
+  - I4: nfpm `v2.47.0`: `v2.48.0` è uscita il 2026-10-12, meno di due settimane fa.
+  - I3/I4: deb e rpm con nome esplicito (`--target dist/lss_<v>_amd64.deb`, come
+    da tabella di I-packaging) invece di `--target dist/`, così il nome è noto
+    per `.sha256`. `release.sh` controlla che `nfpm` esista prima di pubblicare.
+  - Non eseguiti su questo PC (niente nfpm, Docker, WSL): `release.sh` provato su
+    Git Bash con `--skip-tests --allow-dirty` (publish `linux-x64`, tar.gz, `install.sh`
+    in una HOME temporanea, disinstallazione) e con un `nfpm` finto nel PATH.
+    Il pacchetto vero e la sua installazione vanno provati in CI (I6/I7).
 
 - 2026-10-24 — CI on `lss` at `693134f` (end of phase H): all green, Ubuntu
   required: the seven Linux-only tests of phase H pass. Actions updated to
