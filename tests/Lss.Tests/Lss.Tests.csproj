@@ -21,6 +21,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Lss.Core\Lss.Core.csproj" />
     <ProjectReference Include="..\..\src\Lss.Platform\Lss.Platform.csproj" />
+    <ProjectReference Include="..\..\src\Lss.App\Lss.App.csproj" />
   </ItemGroup>
 
   <ItemGroup>

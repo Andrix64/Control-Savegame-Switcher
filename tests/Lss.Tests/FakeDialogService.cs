@@ -1,0 +1,59 @@
+using Avalonia.Controls;
+using Lss.App.Services;
+
+namespace Lss.Tests;
+
+/// <summary>
+/// Finestre di dialogo finte: registra le chiamate e risponde con i valori
+/// impostati dal test.
+/// </summary>
+public sealed class FakeDialogService : IDialogService
+{
+    public List<string> Calls { get; } = [];
+
+    public bool ConfirmAnswer { get; set; }
+
+    public bool InformAnswer { get; set; }
+
+    public string? ZipToSave { get; set; }
+
+    public string? ZipToOpen { get; set; }
+
+    public object? ShowResult { get; set; }
+
+    public Task<bool> InformAsync(string heading, string text, InfoKind kind, string? actionText = null)
+    {
+        Calls.Add("Inform: " + heading);
+        return Task.FromResult(InformAnswer);
+    }
+
+    public Task<bool> ConfirmAsync(string heading, string text, string verb, bool destructive = false, InfoKind kind = InfoKind.Warning)
+    {
+        Calls.Add("Confirm: " + heading);
+        return Task.FromResult(ConfirmAnswer);
+    }
+
+    public Task<T?> ShowAsync<T>(Window dialog)
+    {
+        Calls.Add("Show: " + typeof(T).Name);
+        return Task.FromResult((T?)ShowResult);
+    }
+
+    public Task<string?> PickZipToSaveAsync(string title, string suggestedName, string filterName)
+    {
+        Calls.Add("Save: " + suggestedName);
+        return Task.FromResult(ZipToSave);
+    }
+
+    public Task<string?> PickZipToOpenAsync(string title, string filterName)
+    {
+        Calls.Add("Open");
+        return Task.FromResult(ZipToOpen);
+    }
+
+    public Task<bool> OpenFolderAsync(string path)
+    {
+        Calls.Add("Folder: " + path);
+        return Task.FromResult(true);
+    }
+}
