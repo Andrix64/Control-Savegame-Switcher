@@ -8,15 +8,15 @@ notes are `docs/DEVELOPMENT.md`.
 ## J1 — 👤 Rename the repository (Andrix)
 
 1. GitHub: *Settings → General → Repository name* → `Local-Save-Switcher`.
-   GitHub redirects the old links.
-2. Forgejo: same name.
-3. Locally:
+   GitHub redirects the old links. GitHub is the only repository of LSS
+   (Forgejo at most as a backup copy, not part of this plan).
+2. Locally:
 
    ```bash
    git remote set-url origin https://github.com/Andrix64/Local-Save-Switcher.git
    ```
 
-4. GitHub *About*: description "Multiple playthroughs for Steam games
+3. GitHub *About*: description "Multiple playthroughs for Steam games
    (Windows and Linux)", topics `steam`, `savegame`, `save-manager`,
    `windows`, `linux`, `steam-deck`, `avalonia`.
 

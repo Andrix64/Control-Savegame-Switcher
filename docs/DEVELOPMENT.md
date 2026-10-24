@@ -458,7 +458,7 @@ against their documentation when setting it up.
 4. On GitHub, in **Releases**, check the draft (it must say the exe is signed
    by SignPath Foundation) and publish it.
 
-For Forgejo, or without GitHub, the zip can also be built locally (unsigned):
+Without GitHub, the zip can also be built locally (unsigned):
 
 ```bash
 powershell -ExecutionPolicy Bypass -File scripts/release.ps1
