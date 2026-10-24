@@ -22,9 +22,29 @@ permissions:
   actions: read     # SignPath downloads the exe to sign from the artifacts
 
 jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    # Linux: some tests may fail until phase H is done.
+    continue-on-error: ${{ matrix.os == 'ubuntu-latest' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Test
+        run: dotnet test tests/Lss.Tests -c Release
+
   build:
     # WinForms and the Windows registry: needs a Windows runner.
     runs-on: windows-latest
+    needs: test
 
     env:
       SIGNPATH_API_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
