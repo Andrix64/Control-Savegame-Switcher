@@ -116,6 +116,11 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 Write here anything that didn't match the plan, decisions taken with
 Andrix, and results of the 👤 checks. Newest first, with the date.
 
+- 2026-10-24 — Decision with Andrix: maintainer of the Linux packages is
+  Andrix's GitHub noreply address
+  (`44907638+Andrix64@users.noreply.github.com`) in `packaging/linux/nfpm.yaml`.
+  The I4 question below is closed.
+
 - 2026-10-24 — I5–I6 (Haiku). Scelte fuori piano:
   - I5: appimagetool fissato a `1.9.1` con l'impronta SHA-256 dell'asset di GitHub
     (`ed4ce84f…`, verificata scaricandolo), controllata dallo script dopo il download.
