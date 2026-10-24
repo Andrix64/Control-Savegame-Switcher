@@ -61,7 +61,7 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 - [x] G7 — Playthrough card (d5560fa)
 - [x] G8 — Main window, games and monitor (21a0d0e)
 - [x] G9 — New playthrough, rename, note (2741435)
-- [ ] G10 — History
+- [x] G10 — History (f74f110)
 - [ ] G11 — Settings and first start
 - [ ] G12 — Accounts and deleted playthroughs
 - [ ] G13 — 👤 Full manual check
