@@ -17,7 +17,7 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 - [x] C3 — Card texts out of the WinForms control (b80bb70)
 - [x] C4 — Projects `Lss.Core` and `Lss.Platform` (af1f6f1)
 - [x] C5 — Tests on plain `net10.0` (98d083e)
-- [ ] C6 — Tests on Linux in GitHub Actions
+- [x] C6 — Tests on Linux in GitHub Actions (79683d9)
 - [ ] C7 — 👤 Check the WinForms app, push, note failing Linux tests
 
 ## Phase D — Game catalogue ([D-catalog.md](D-catalog.md))
