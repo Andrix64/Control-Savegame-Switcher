@@ -75,6 +75,28 @@ internal static class SteamLibrary
         return null;
     }
 
+    /// <summary>
+    /// Se LSS può gestire la cartella dei salvataggi di un gioco. Conta ogni
+    /// file a qualsiasi profondità, tranne remotecache.vdf al primo livello
+    /// (come FileOps.HasNoSaveFiles).
+    /// </summary>
+    public static SupportState GetSupport(string saveFolder)
+    {
+        try
+        {
+            if (!FileOps.HasNoSaveFiles(saveFolder))
+                return SupportState.Supported;
+
+            bool hasCache = File.Exists(Path.Combine(saveFolder, "remotecache.vdf"));
+            return hasCache ? SupportState.SavesElsewhere : SupportState.NoSaves;
+        }
+        catch (Exception ex)
+        {
+            Log.Write("Cartella non leggibile: " + saveFolder, ex);
+            return SupportState.NoSaves;
+        }
+    }
+
     private static bool Contains(List<string> paths, string path) =>
         paths.Any(existing => string.Equals(NormalizePath(existing), NormalizePath(path), PathComparison));
 

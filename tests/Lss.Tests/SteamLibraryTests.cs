@@ -99,4 +99,43 @@ public sealed class SteamLibraryTests : IDisposable
         Assert.NotNull(manifest);
         Assert.Equal(second, manifest.Value.Library);
     }
+
+    [Fact]
+    public void GetSupport_FilesInRemote_IsSupported()
+    {
+        TestFolder.Write(folder.SaveFile, "partita");
+        TestFolder.Write(folder.CacheFile, "cache");
+
+        Assert.Equal(SupportState.Supported, SteamLibrary.GetSupport(folder.Game));
+    }
+
+    [Fact]
+    public void GetSupport_OnlyRemoteCache_IsSavesElsewhere()
+    {
+        TestFolder.Write(folder.CacheFile, "cache");
+
+        Assert.Equal(SupportState.SavesElsewhere, SteamLibrary.GetSupport(folder.Game));
+    }
+
+    [Fact]
+    public void GetSupport_EmptyFolder_IsNoSaves()
+    {
+        Directory.CreateDirectory(folder.Game);
+
+        Assert.Equal(SupportState.NoSaves, SteamLibrary.GetSupport(folder.Game));
+    }
+
+    [Fact]
+    public void GetSupport_MissingFolder_IsNoSaves()
+    {
+        Assert.Equal(SupportState.NoSaves, SteamLibrary.GetSupport(folder.Game));
+    }
+
+    [Fact]
+    public void GetSupport_NestedRemoteCache_IsSupported()
+    {
+        TestFolder.Write(Path.Combine(folder.Game, "remote", "remotecache.vdf"), "cache");
+
+        Assert.Equal(SupportState.Supported, SteamLibrary.GetSupport(folder.Game));
+    }
 }
