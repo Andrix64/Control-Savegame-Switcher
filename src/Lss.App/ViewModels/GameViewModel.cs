@@ -339,6 +339,13 @@ public partial class GameViewModel : ObservableObject
         await ShowResult(result);
     }
 
+    // Finestre delle fasi G9 e G10: fino ad allora le azioni non fanno ancora nulla.
+    public Task RenameAsync(string profile) => throw new NotImplementedException("Finestra di rinomina: G9.");
+
+    public Task EditNoteAsync(string profile) => throw new NotImplementedException("Finestra della nota: G9.");
+
+    public Task ShowHistoryAsync(bool focusSave) => throw new NotImplementedException("Cronologia: G10.");
+
     [RelayCommand]
     public async Task CloudHelpAsync()
     {
