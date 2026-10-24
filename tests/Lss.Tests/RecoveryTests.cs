@@ -19,14 +19,14 @@ public sealed class RecoveryTests : IDisposable
         TestFolder.Write(Path.Combine(Game + ".vecchio", "remote", "slot"), "prima");
         TestFolder.Write(Path.Combine(Game + ".nuovo", "remote", "slot"), "dopo");
 
-        Assert.Empty(SaveManager.FindAccounts(UserData));
+        Assert.Empty(SaveManager.FindAccounts(UserData, "870780"));
 
-        SaveManager.RecoverGameFolders(UserData);
+        SaveManager.RecoverGameFolders(UserData, "870780");
 
         Assert.Equal("prima", File.ReadAllText(Path.Combine(Game, "remote", "slot")));
         Assert.False(Directory.Exists(Game + ".vecchio"));
         Assert.False(Directory.Exists(Game + ".nuovo"));
-        Assert.Single(SaveManager.FindAccounts(UserData));
+        Assert.Single(SaveManager.FindAccounts(UserData, "870780"));
     }
 
     [Fact]
@@ -36,7 +36,7 @@ public sealed class RecoveryTests : IDisposable
         TestFolder.Write(Path.Combine(Game, "remote", "slot"), "dopo");
         TestFolder.Write(Path.Combine(Game + ".vecchio", "remote", "slot"), "prima");
 
-        SaveManager.RecoverGameFolders(UserData);
+        SaveManager.RecoverGameFolders(UserData, "870780");
 
         Assert.Equal("dopo", File.ReadAllText(Path.Combine(Game, "remote", "slot")));
         Assert.False(Directory.Exists(Game + ".vecchio"));
@@ -97,7 +97,7 @@ public sealed class RecoveryTests : IDisposable
         Assert.True(manager.ActivateProfile("Profilo_Manuale").Success);
         Assert.False(Directory.Exists(Path.Combine(Game, "remote")));
 
-        SteamAccount account = Assert.Single(SaveManager.FindAccounts(UserData));
+        SteamAccount account = Assert.Single(SaveManager.FindAccounts(UserData, "870780"));
         Assert.Equal("111", account.Id);
         Assert.Null(account.LastSaved);
     }
@@ -107,6 +107,6 @@ public sealed class RecoveryTests : IDisposable
     {
         TestFolder.Write(Path.Combine(Game, "remotecache.vdf"), "cache");
 
-        Assert.Null(Assert.Single(SaveManager.FindAccounts(UserData)).LastSaved);
+        Assert.Null(Assert.Single(SaveManager.FindAccounts(UserData, "870780")).LastSaved);
     }
 }

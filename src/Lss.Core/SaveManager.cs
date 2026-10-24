@@ -47,7 +47,6 @@ public sealed record SteamAccount(string Id, string Name, string Folder, DateTim
 /// </summary>
 public sealed partial class SaveManager
 {
-    private const string AppId = "870780";
     private const string ProfilePrefix = "Profilo_";
     private const string DateFormat = "dd/MM/yyyy HH:mm:ss";
     private const string BackupDateFormat = "yyyy-MM-dd_HH-mm-ss-fff";
@@ -63,6 +62,7 @@ public sealed partial class SaveManager
     private const string RenameSuffix = ".rinomina";
 
     public string SavePath { get; }
+    public GameInfo Game { get; }
     public string ProfilesPath { get; }
     public string BackupPath { get; }
     public string SavestatePath { get; }
@@ -75,8 +75,10 @@ public sealed partial class SaveManager
 
     /// <param name="savePath">Cartella dei salvataggi del gioco (…\870780).</param>
     /// <param name="basePath">Cartella dei dati dell'account (…\ControlSaveManager\IDAccount).</param>
-    internal SaveManager(string savePath, string basePath, string accountName = "")
+    /// <param name="game">Gioco gestito; se manca è Control con savePath.</param>
+    internal SaveManager(string savePath, string basePath, string accountName = "", GameInfo? game = null)
     {
+        Game = game ?? GameInfo.Control(savePath);
         SavePath = savePath;
         AccountName = accountName;
         ProfilesPath = Path.Combine(basePath, "Profili");
@@ -117,9 +119,9 @@ public sealed partial class SaveManager
 
         // Prima di cercare gli account: una cartella del gioco rimasta come
         // 870780.vecchio farebbe sparire l'account.
-        RecoverGameFolders(userData);
+        RecoverGameFolders(userData, GameInfo.ControlAppId);
 
-        IReadOnlyList<SteamAccount> accounts = FindAccounts(userData);
+        IReadOnlyList<SteamAccount> accounts = FindAccounts(userData, GameInfo.ControlAppId);
 
         if (accounts.Count == 0)
         {
@@ -144,10 +146,13 @@ public sealed partial class SaveManager
 
         try
         {
+            string savePath = Path.Combine(account.Folder, GameInfo.ControlAppId);
+
             return Result<SaveManager>.Ok(new SaveManager(
-                Path.Combine(account.Folder, AppId),
+                savePath,
                 Path.Combine(appData, account.Id),
-                account.Name));
+                account.Name,
+                GameInfo.Control(savePath)));
         }
         catch (Exception ex)
         {
@@ -159,11 +164,11 @@ public sealed partial class SaveManager
     /// Rimette a posto la cartella del gioco di ogni account dopo una
     /// sostituzione interrotta (vedi FileOps.RecoverInterruptedReplace).
     /// </summary>
-    internal static void RecoverGameFolders(string userData)
+    internal static void RecoverGameFolders(string userData, string appId)
     {
         foreach (string dir in Directory.GetDirectories(userData))
         {
-            string game = Path.Combine(dir, AppId);
+            string game = Path.Combine(dir, appId);
 
             if (!Directory.Exists(game + FileOps.OldSuffix) && !Directory.Exists(game + FileOps.TempSuffix))
                 continue;
@@ -226,13 +231,13 @@ public sealed partial class SaveManager
     /// creato a mano può mancare la sottocartella remote, e l'account non deve
     /// sparire per questo.
     /// </summary>
-    internal static IReadOnlyList<SteamAccount> FindAccounts(string userData)
+    internal static IReadOnlyList<SteamAccount> FindAccounts(string userData, string appId)
     {
         var accounts = new List<SteamAccount>();
 
         foreach (string dir in Directory.GetDirectories(userData))
         {
-            string game = Path.Combine(dir, AppId);
+            string game = Path.Combine(dir, appId);
 
             if (!Directory.Exists(game))
                 continue;
@@ -349,7 +354,7 @@ public sealed partial class SaveManager
             if (!File.Exists(config))
                 return CloudState.Enabled;
 
-            string? value = Vdf.Find(Vdf.Parse(File.ReadAllText(config)), "apps", AppId, "cloudenabled");
+            string? value = Vdf.Find(Vdf.Parse(File.ReadAllText(config)), "apps", Game.AppId, "cloudenabled");
 
             return value == "0" ? CloudState.Disabled : CloudState.Enabled;
         }

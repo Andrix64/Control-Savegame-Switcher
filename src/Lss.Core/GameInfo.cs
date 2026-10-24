@@ -45,4 +45,11 @@ public sealed record GameInfo(
     public string InstallPath => IsInstalled
         ? Path.Combine(LibraryPath, "steamapps", "common", InstallDir)
         : "";
+
+    /// <summary>
+    /// Control con la cartella dei salvataggi data: usato finché l'interfaccia
+    /// WinForms apre solo Control, e dai test.
+    /// </summary>
+    public static GameInfo Control(string saveFolder) =>
+        new(ControlAppId, "Control", "", "", saveFolder, SupportState.Supported);
 }
