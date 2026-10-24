@@ -12,7 +12,7 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 
 ## Phase C — Core library ([C-core.md](C-core.md))
 
-- [ ] C1 — Solution file
+- [x] C1 — Solution file (bafaacf)
 - [ ] C2 — `IPlatform`, still inside the WinForms project
 - [ ] C3 — Card texts out of the WinForms control
 - [ ] C4 — Projects `Lss.Core` and `Lss.Platform`
