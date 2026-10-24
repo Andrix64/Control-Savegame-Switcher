@@ -247,7 +247,43 @@ public sealed class LinuxPlatform : IPlatform
         return processes.Length > 0;
     }
 
-    public void OpenSteamUri(string uri) => throw new NotImplementedException("Fase H, H4.");
+    /// <summary>
+    /// xdg-open passa i link steam:// al Steam nativo o Flatpak. Steam si apre
+    /// da solo se è chiuso.
+    /// </summary>
+    public void OpenSteamUri(string uri)
+    {
+        Process.Start(new ProcessStartInfo("xdg-open", uri) { UseShellExecute = false })?.Dispose();
+    }
 
-    public IDisposable? AcquireSingleInstance() => throw new NotImplementedException("Fase H, H4.");
+    /// <summary>
+    /// Un file di lock nella cartella di runtime dell'utente: il sistema lo
+    /// libera quando il processo finisce, anche se si chiude male.
+    /// </summary>
+    public IDisposable? AcquireSingleInstance()
+    {
+        string folder = Environment.GetEnvironmentVariable("XDG_RUNTIME_DIR") is { Length: > 0 } runtime
+            ? runtime
+            : Path.GetTempPath();
+
+        return Lock(Path.Combine(folder, "lss.lock"));
+    }
+
+    /// <summary>
+    /// Prende un lock esclusivo sul file. null se un altro processo lo tiene;
+    /// altrimenti il lock, da tenere fino alla chiusura.
+    /// </summary>
+    internal static IDisposable? Lock(string path)
+    {
+        try
+        {
+            // FileShare.None su Linux prende un lock esclusivo (flock): una
+            // seconda istanza non riesce ad aprirlo.
+            return new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+        }
+        catch (IOException)
+        {
+            return null;
+        }
+    }
 }

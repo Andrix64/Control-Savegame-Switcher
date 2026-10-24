@@ -103,6 +103,23 @@ public sealed class LinuxPlatformTests : IDisposable
     }
 
     [Fact]
+    public void SecondLockFailsUntilTheFirstIsReleased()
+    {
+        if (!OperatingSystem.IsLinux()) return;
+
+        string path = Path.Combine(folder.Root, "lss.lock");
+        IDisposable? first = LinuxPlatform.Lock(path);
+
+        Assert.NotNull(first);
+        Assert.Null(LinuxPlatform.Lock(path));
+
+        first.Dispose();
+
+        using IDisposable? third = LinuxPlatform.Lock(path);
+        Assert.NotNull(third);
+    }
+
+    [Fact]
     public void EnvironWithSteamAppId()
     {
         byte[] environ = Encoding.UTF8.GetBytes("PATH=/usr/bin\0SteamAppId=870780\0HOME=/home/a\0");

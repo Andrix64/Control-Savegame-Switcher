@@ -11,9 +11,9 @@ internal static class Program
     [STAThread]
     public static int Main(string[] args)
     {
-        Platform.Current = OperatingSystem.IsWindows()
-            ? new WindowsPlatform()
-            : throw new PlatformNotSupportedException();   // Linux: fase H
+        Platform.Current = OperatingSystem.IsWindows() ? new WindowsPlatform()
+            : OperatingSystem.IsLinux() ? new LinuxPlatform()
+            : throw new PlatformNotSupportedException();
 
         AppDomain.CurrentDomain.UnhandledException += (_, e) =>
             Log.Write("Errore imprevisto (chiusura)", (Exception)e.ExceptionObject);
