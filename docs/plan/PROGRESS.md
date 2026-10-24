@@ -62,7 +62,7 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 - [x] G8 — Main window, games and monitor (21a0d0e)
 - [x] G9 — New playthrough, rename, note (2741435)
 - [x] G10 — History (f74f110)
-- [ ] G11 — Settings and first start
+- [x] G11 — Settings and first start (39c8f98)
 - [ ] G12 — Accounts and deleted playthroughs
 - [ ] G13 — 👤 Full manual check
 - [ ] G14 — Remove WinForms, `Lss.App` becomes `LSS`
