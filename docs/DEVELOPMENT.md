@@ -51,6 +51,28 @@ copied or deleted. Everything else is copied and verified at any depth: there
 are no other exclusions (a file with that name further down is a save like
 any other).
 
+## Steam libraries and games
+
+Steam keeps games in the Steam folder and in the other libraries listed in
+`steamapps\libraryfolders.vdf`. `SteamLibrary` reads that file (paths are
+written with `\\`, which `Vdf` already handles), keeps only the folders that
+exist, and looks for each game's `steamapps\appmanifest_<AppID>.acf` in all
+of them to get its name, install folder and library. A game without a
+manifest keeps its name from a short list (Control) or is shown as `App <AppID>`.
+
+A game is *supported* when its folder `userdata\<AccountID>\<AppID>\` has a file
+other than the top-level `remotecache.vdf`. If only `remotecache.vdf` is there,
+the game saves elsewhere (Steam Auto-Cloud): *saves elsewhere*. An empty folder
+is *no saves*. Supported games come first in the list.
+
+Skipped folders: `7`, `760` and `241100` (Steam settings, screenshots,
+controller settings) and any name that is not a number. Manifests of Proton
+and of the Steam runtimes are not games.
+
+The images are in `appcache\librarycache`: the 32×32 icon is the `.jpg` named
+with 40 hexadecimal characters in `<AppID>\` (or `<AppID>_icon.jpg` in older
+versions), the cover is `library_600x900.jpg` (or `<AppID>_library_600x900.jpg`).
+
 ## Copy safety
 
 - Every backup and every copy is compared byte by byte with the original.
@@ -208,6 +230,8 @@ build (`StronglyTypedLanguage` in the `.csproj`), no Visual Studio needed.
 | `AppState.cs` | Reading and writing `stato.ini`. |
 | `AppData.cs` | App data folder and move from Documents. |
 | `Vdf.cs` | Reader for Steam configuration files. |
+| `src/Lss.Core/SteamLibrary.cs` | Steam libraries, manifests, support state, images and the list of an account's games. |
+| `src/Lss.Core/GameInfo.cs` | `GameInfo` record and `SupportState`. |
 | `Log.cs` | Log of operations and unexpected errors. |
 | `Result.cs` | Outcome of operations (message, backup created, serious error). |
 | `Loc.cs`, `Strings.resx`, `Strings.it.resx` | Texts in English and Italian. |
