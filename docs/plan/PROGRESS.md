@@ -44,7 +44,7 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 ## Phase F — Data folder ([F-data.md](F-data.md))
 
 - [x] F1 — `AppSettings` (`lss.ini`) (eaedc98)
-- [ ] F2 — `SaveManager.Open`
+- [x] F2 — `SaveManager.Open` (9ecef98)
 - [ ] F3 — Migration from Control Save Manager
 - [ ] F4 — 👤 Migration with real data
 - [ ] F5 — Export format 2
