@@ -64,7 +64,7 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 - [x] G10 — History (f74f110)
 - [x] G11 — Settings and first start (39c8f98)
 - [x] G12 — Accounts and deleted playthroughs (396633a)
-- [ ] G13 — 👤 Full manual check
+- [x] G13 — 👤 Full manual check (2026-10-24, Andrix: done; first round of visual fixes in `617b509`)
 - [ ] G14 — Remove WinForms, `Lss.App` becomes `LSS`
 
 ## Phase H — Linux ([H-linux.md](H-linux.md))
