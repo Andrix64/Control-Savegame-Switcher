@@ -85,7 +85,7 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 - [x] I3 — `scripts/release.sh` (88519f5)
 - [x] I4 — `nfpm.yaml` (deb, rpm) (b88596e)
 - [x] I5 — AppImage (e5e9f9e)
-- [ ] I6 — Workflow
+- [x] I6 — Workflow (951350d)
 - [ ] I7 — 👤 First CI run
 
 ## Phase J — Docs and release ([J-docs-release.md](J-docs-release.md))
@@ -104,6 +104,20 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 Write here anything that didn't match the plan, decisions taken with
 Andrix, and results of the 👤 checks. Newest first, with the date.
 
+- 2026-10-24 — I5–I6 (Haiku). Scelte fuori piano:
+  - I5: appimagetool fissato a `1.9.1` con l'impronta SHA-256 dell'asset di GitHub
+    (`ed4ce84f…`, verificata scaricandolo), controllata dallo script dopo il download.
+    AppImage provato solo fino alla chiamata di appimagetool: su Windows
+    `Exec format error`, come previsto.
+  - I6: il trasferimento dei test Windows (`.trx`) è un artifact a parte,
+    `test-results-windows`, così `lss-windows` contiene solo zip e impronta.
+    Il download in `release` prende `lss-*` (solo `lss-windows` e `lss-linux`).
+    nfpm `2.47.0` è verificato con `checksums.txt` di quella release.
+  - I6: il file del workflow è stato letto con `js-yaml` (Node): struttura e
+    `needs` corretti; i nomi dei passi con `: ` vanno tra virgolette.
+  - Da controllare in CI (I7): il profilo `linux-x64` ha `PublishDir` con `\`; su
+    Windows funziona, su Ubuntu non è stato provato. `release.sh` su Ubuntu
+    deve trovare `nfpm` (installato dal passo `Install nfpm`).
 - 2026-10-24 — I1–I4 (Haiku). Da decidere con Andrix: `MAINTAINER_EMAIL` in
   `packaging/linux/nfpm.yaml` è ancora il segnaposto (I4). Scelte fuori piano:
   - I2: `Icon.ToBitmap()` fallisce sulle voci PNG di `app.ico`. Le sei voci
