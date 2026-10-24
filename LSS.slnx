@@ -10,5 +10,4 @@
   <Folder Name="/tools/">
     <Project Path="tools/UiScreenshots/UiScreenshots.csproj" />
   </Folder>
-  <Project Path="LSS.csproj" />
 </Solution>

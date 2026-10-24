@@ -40,7 +40,7 @@ jobs:
         run: dotnet test tests/Lss.Tests -c Release
 
   build:
-    # WinForms and the Windows registry: needs a Windows runner.
+    # Steam's registry key on Windows: needs a Windows runner.
     runs-on: windows-latest
     needs: test
 
@@ -59,7 +59,7 @@ jobs:
         if: env.IS_RELEASE == 'true'
         shell: pwsh
         run: |
-          $version = (dotnet msbuild LSS.csproj -getProperty:Version).Trim()
+          $version = (dotnet msbuild src/Lss.App/Lss.App.csproj -getProperty:Version).Trim()
           if ("v$version" -ne "${{ github.ref_name }}") {
             throw "Tag ${{ github.ref_name }} does not match <Version>$version</Version> in the .csproj."
           }
@@ -68,7 +68,7 @@ jobs:
         run: dotnet test tests/Lss.Tests -c Release --logger "trx;LogFileName=results.trx"
 
       - name: Single exe
-        run: dotnet publish LSS.csproj -p:PublishProfile=win-x64 --nologo
+        run: dotnet publish src/Lss.App/Lss.App.csproj -p:PublishProfile=win-x64 --nologo
 
       - name: Exe to sign
         id: unsigned

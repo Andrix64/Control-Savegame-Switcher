@@ -6,7 +6,7 @@
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build",
-      "program": "${workspaceFolder}/bin/Debug/net10.0-windows/LSS.dll",
+      "program": "${workspaceFolder}/src/Lss.App/bin/Debug/net10.0/LSS.dll",
       "args": [],
       "cwd": "${workspaceFolder}",
       "console": "internalConsole",

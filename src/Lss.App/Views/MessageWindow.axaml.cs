@@ -24,7 +24,7 @@ public partial class MessageWindow : Window
     {
         InitializeComponent();
 
-        Icon = new WindowIcon(AssetLoader.Open(new Uri("avares://Lss.App/Assets/app.ico")));
+        Icon = new WindowIcon(AssetLoader.Open(new Uri("avares://LSS/Assets/app.ico")));
 
         copyText = (heading != "" ? heading + Environment.NewLine + Environment.NewLine : "") + text;
 

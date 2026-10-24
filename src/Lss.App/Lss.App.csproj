@@ -6,15 +6,26 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>Lss.App</RootNamespace>
-    <!-- Diventa LSS quando l'app WinForms viene eliminata (G14). -->
-    <AssemblyName>Lss.App</AssemblyName>
-    <ApplicationIcon>..\..\app.ico</ApplicationIcon>
+    <AssemblyName>LSS</AssemblyName>
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <!-- Dati del prodotto: compaiono nelle proprietà dell'exe. Version è l'unica da cambiare a ogni rilascio. -->
     <Version>0.9.0</Version>
     <Product>Local Save Switcher</Product>
+    <AssemblyTitle>Local Save Switcher</AssemblyTitle>
+    <Description>Più partite per i giochi Steam (per ora solo Control).</Description>
     <Company>Andrix64</Company>
     <Authors>Andrix64</Authors>
     <Copyright>© 2026 Andrix64</Copyright>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <!--
+      Smart App Control giudica ogni dll non firmata in base al suo hash e a
+      volte blocca una build. Con una build non deterministica ogni compilazione
+      produce un file diverso: se una viene bloccata, basta ricompilare.
+    -->
+    <Deterministic>false</Deterministic>
   </PropertyGroup>
 
   <ItemGroup>

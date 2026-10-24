@@ -3,7 +3,7 @@
     Crea lo zip di rilascio: test, exe singolo, zip e impronta SHA-256 in dist\.
 
 .DESCRIPTION
-    La versione si legge da <Version> in LSS.csproj.
+    La versione si legge da <Version> in src\Lss.App\Lss.App.csproj.
     Funziona con Windows PowerShell 5.1 e con PowerShell 7.
 
 .PARAMETER SkipTests
@@ -31,7 +31,7 @@ param(
 $ErrorActionPreference = 'Stop'
 
 $root = Split-Path -Parent $PSScriptRoot
-$project = Join-Path $root 'LSS.csproj'
+$project = Join-Path $root 'src\Lss.App\Lss.App.csproj'
 $tests = Join-Path $root 'tests\Lss.Tests'
 $publishDir = Join-Path $root 'bin\publish\win-x64'
 $dist = Join-Path $root 'dist'

@@ -19,7 +19,7 @@
 
   <Application.Styles>
     <FluentTheme />
-    <StyleInclude Source="avares://Lss.App/Styles/Theme.axaml" />
+    <StyleInclude Source="avares://LSS/Styles/Theme.axaml" />
   </Application.Styles>
 
 </Application>

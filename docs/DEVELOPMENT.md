@@ -282,52 +282,53 @@ build (`StronglyTypedLanguage` in the `.csproj`), no Visual Studio needed.
 
 | File | Contents |
 |---|---|
-| `SaveManager.cs` | Core logic: finding Steam and accounts, playthroughs, activation, saving, saved points, automatic copies, Steam Cloud. |
-| `SaveManager.Playthroughs.cs` | Note and play time, copy owner, deleted playthroughs, first start, settings, shared options, export, import, starting the game. |
-| `IniFile.cs` | Safe reading and writing of `.ini` files. |
-| `FileOps.cs` | Copying, verifying and replacing folders. |
-| `AppState.cs` | Reading and writing `stato.ini`. |
-| `AppData.cs` | App data folder. |
+| `src/Lss.Core/SaveManager.cs` | Core logic: finding Steam and accounts, playthroughs, activation, saving, saved points, automatic copies, Steam Cloud. |
+| `src/Lss.Core/SaveManager.Playthroughs.cs` | Note and play time, copy owner, deleted playthroughs, first start, settings, shared options, export, import, starting the game. |
+| `src/Lss.Core/SessionTracker.cs` | Game sessions: when the game starts and stops, and the play time. |
+| `src/Lss.Core/IPlatform.cs`, `Platform.cs` | What depends on the system (Steam folders, processes, starting the game, single instance), and the implementation in use. |
+| `src/Lss.Core/IniFile.cs` | Safe reading and writing of `.ini` files. |
+| `src/Lss.Core/FileOps.cs` | Copying, verifying and replacing folders. |
+| `src/Lss.Core/AppState.cs` | Reading and writing `stato.ini`. |
+| `src/Lss.Core/AppData.cs`, `AppSettings.cs` | App data folder and `lss.ini`. |
 | `src/Lss.Core/LegacyMigration.cs` | Everything for Control Save Manager: data migration, its mutex, format 1 exports (removable, see above). |
-| `Vdf.cs` | Reader for Steam configuration files. |
+| `src/Lss.Core/Vdf.cs` | Reader for Steam configuration files. |
 | `src/Lss.Core/SteamLibrary.cs` | Steam libraries, manifests, support state, images and the list of an account's games. |
 | `src/Lss.Core/GameInfo.cs` | `GameInfo` record and `SupportState`. |
-| `Log.cs` | Log of operations and unexpected errors. |
-| `Result.cs` | Outcome of operations (message, backup created, serious error). |
-| `Loc.cs`, `Strings.resx`, `Strings.it.resx` | Texts in English and Italian. |
-| `MainForm.cs` | Main window: playthrough cards, bars, notices, play sessions. |
-| `PlaythroughControls.cs` | Info bar (`InfoBar`), pill and playthrough card. |
-| `HistoryForm.cs` | A playthrough's History: saved points and automatic copies. |
-| `PromptForms.cs` | Note, Settings and First start windows. |
-| `NewProfileForm.cs` | "New playthrough" window, also used to rename. |
-| `AccountForm.cs` | Steam account choice at startup. |
-| `SnapshotForms.cs` | Themed list, base of the list windows and the deleted playthroughs window. |
-| `MessageDialog.cs` | Themed message boxes; `Confirm` uses verbs on the buttons. |
-| `Theme.cs` | Colours, fonts and icon of the dark theme. |
-| `ThemedControls.cs` | Hand-drawn controls: buttons, cards, header, menus. |
-| `app.ico` | Icon of the exe and the windows. |
-| `Program.cs` | Application startup and version. |
-| `Properties\PublishProfiles\win-x64.pubxml` | Publish profile for the single exe. |
+| `src/Lss.Core/Log.cs` | Log of operations and unexpected errors. |
+| `src/Lss.Core/Result.cs` | Outcome of operations (message, backup created, serious error). |
+| `src/Lss.Core/Loc.cs`, `Strings.resx`, `Strings.it.resx` | Texts in English and Italian. |
+| `src/Lss.Platform/WindowsPlatform.cs` | Windows: Steam path from the registry, processes, the single-instance mutex. |
+| `src/Lss.Platform/LinuxPlatform.cs` | Linux: Steam folders, `registry.vdf`, processes through `/proc`. |
+| `src/Lss.App/` | The Avalonia app, exe `LSS.exe` (`AssemblyName` `LSS`, so resources are `avares://LSS/...`). |
+| `src/Lss.App/Program.cs`, `App.axaml(.cs)` | Startup, single instance, the application. |
+| `src/Lss.App/Views/` | Windows and the playthrough card (`MainWindow`, `HistoryWindow`, `MessageWindow`...). |
+| `src/Lss.App/ViewModels/` | The logic of each window, without controls. |
+| `src/Lss.App/Services/` | Dialogs (`DialogService`), the game monitor (`GameMonitor`). |
+| `src/Lss.App/Styles/Theme.axaml` | Colours and styles of the dark theme. |
+| `src/Lss.App/Assets/app.ico` | Icon of the exe and the windows. |
+| `src/Lss.App/Properties/PublishProfiles/` | Publish profiles `win-x64.pubxml` and `linux-x64.pubxml`. |
 | `scripts\release.ps1` | Builds the release zip (locally and on GitHub Actions). |
 | `.github\workflows\build.yml` | Build, tests, SignPath signing and draft release on GitHub. |
 | `CODE_SIGNING.md` | Signing policy required by SignPath. |
-| `tests\Lss.Tests\` | xUnit tests. |
+| `tests\Lss.Tests\` | xUnit tests (run on Windows and Linux). |
+| `tools\UiScreenshots\` | Pictures of every window with fake data (see below). |
 
-The old console version is in the git history (commit `17cd279`).
+The WinForms version was removed in G14 (see git history before that commit).
 
 ## Building
 
-Requires the .NET 10 SDK.
+Requires the .NET 10 SDK. The solution has all the projects (app, core,
+platform, tests and tools):
 
 ```bash
-dotnet build LSS.csproj -c Release
+dotnet build LSS.slnx -c Release
 ```
 
 Single exe for 64-bit Windows, with the .NET runtime included (users don't
 have to install anything, about 50 MB), in `bin\publish\win-x64\`:
 
 ```bash
-dotnet publish LSS.csproj -p:PublishProfile=win-x64
+dotnet publish src/Lss.App/Lss.App.csproj -p:PublishProfile=win-x64
 ```
 
 For debugging in VS Code there are `.vscode\launch.json` and
@@ -382,7 +383,7 @@ demand (*Run workflow*):
    waits for the signature (to be approved manually on SignPath) and checks
    that it's valid;
 5. builds the zip with `scripts/release.ps1 -Exe <exe>` and uploads it as the
-   `control-save-manager` artifact, with the test results;
+   `lss` artifact, with the test results;
 6. on tags it prepares a **draft** release with the zip and `.sha256`, saying
    whether the exe is signed or not.
 
@@ -419,7 +420,7 @@ against their documentation when setting it up.
 
 ## Release
 
-1. Update `<Version>` in `LSS.csproj` and the
+1. Update `<Version>` in `src/Lss.App/Lss.App.csproj` and the
    [CHANGELOG](../CHANGELOG.md), then commit. The version shows in the window
    header, in the exe properties and in the log.
 2. Create the version tag and push it to GitHub:

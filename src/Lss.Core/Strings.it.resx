@@ -303,7 +303,6 @@ La barra sparisce appena l&apos;impostazione è spenta.</value></data>
   <data name="StartingWith" xml:space="preserve"><value>Avvio {0} con «{1}»...</value></data>
   <data name="Undo" xml:space="preserve"><value>Annulla</value></data>
   <data name="YourPlaythroughs" xml:space="preserve"><value>Le tue partite</value></data>
-  <data name="ZipFilter" xml:space="preserve"><value>Partita di {0} (*.zip)|*.zip</value></data>
   <data name="ZipFileType" xml:space="preserve"><value>Partita di {0}</value></data>
   <data name="UnknownGameName" xml:space="preserve"><value>App {0}</value></data>
   <data name="GameNotSupported" xml:space="preserve"><value>{0} non tiene i salvataggi nella cartella userdata di Steam: LSS non può gestirlo.</value></data>
