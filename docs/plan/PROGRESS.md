@@ -104,6 +104,46 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 Write here anything that didn't match the plan, decisions taken with
 Andrix, and results of the 👤 checks. Newest first, with the date.
 
+- 2026-10-24 — Fase G (G1–G12, Haiku): visual checks not done (no window was looked at).
+  Andrix's G13 list: the dialogs' button order (see the G4 note below), hover colours of
+  `Button.primary` (`/template/ ContentPresenter`, may not show with the Fluent template),
+  the Italian texts (`!Key` would show a missing key), the game-card buttons, the Settings
+  header button, the deleted-playthroughs link, the wait cursor while busy, the toast colours.
+  The app was started only for 10 s after G1 (empty window): it was never run with real
+  data, because the startup calls `LegacyMigration.Run()` on the real folders.
+- G4/G3 — Deviation from the plan (kept WinForms): in confirmations the default button is
+  **Cancel** (Enter and Esc cancel), the verb is secondary or danger. The plan said verb
+  primary and Enter = verb; for deletions the WinForms choice is safer. `DialogService.Inform`
+  / `Confirm` were a placeholder in G3 and became real in G4 (same commit series).
+  WinForms' sound of the message box (`SystemSounds`) is not ported.
+- G6 — Test setup deviation: `Avalonia.Headless.XUnit` 12.1.4 brings xunit.v3 and conflicts
+  with xunit 2.9.2 of the test project (CS0433 on every `[Fact]`). Used `Avalonia.Headless`
+  12.1.4 with `TestApp.Ensure()` (`SetupWithoutStarting`) in the constructor of the tests that
+  need the dispatcher, and plain `[Fact]` instead of `[AvaloniaFact]`. That counts as the
+  one failure the plan allows for the headless setup; the workaround passed on its first run.
+- G6/G7 — `PlaythroughViewModel` is written in G6 (GameViewModel needs its type); G7 holds
+  the card view and its tests. The commands Rename, Edit note, Save a point and History were
+  placeholders in G7 (`NotImplementedException`) and are real since G9/G10.
+- G8 — The header Settings button, the New playthrough button and the deleted link were
+  added in G9, G11 and G12 (the plan puts them there). `OfferFirstRunAsync` and the list of
+  ignored folders run when the window opens (first game) or at the first selection of each game
+  after that (`MainWindowViewModel.OnOpenedAsync`).
+- G8/G12 — Several accounts: G8 used the last one or the first one; G12 added AccountWindow
+  and the startup now shows it when there is more than one account.
+- Keys added that the plan did not list: `AppSubtitle` (the WinForms header wrote
+  "LOCAL SAVE SWITCHER" as a literal), `AccountIntroAny` (the plan's `AccountIntro` names
+  Control; the account window must not), `SharedFilesCaption`, `AddSharedFile`,
+  `RemoveSharedFile`, `SharedFileOutside` (G11 list), `GamesCaption` etc. (G8 list).
+- G3/G11 — `IDialogService.PickFileAsync` added for the shared-files picker (G11); the plan
+  did not list it.
+- G12 — The "Open folder" button in the deleted-playthroughs window is there because the
+  plan lists it; the WinForms `DeletedForm` has no such button. Check with Andrix.
+- G4–G12 — `CannotOpenFolder` receives the folder path, not the exception message (the
+  `DialogService.OpenFolderAsync` returns only true/false).
+- G2 — Colours not in the plan's table (`ErrorBack`, `ErrorBorder`, `DangerBorder`,
+  `DangerText`) were added as the plan allows. Font: Inter (`WithInterFont`), not Segoe UI.
+- G9 — Name box: the WinForms rule kept as is (rename with the same name in other case is
+  allowed, the same name exactly is not).
 - 2026-10-24 — Decision with Andrix: nobody has used Control Save Manager
   yet, so everything for its compatibility (data migration, its mutex,
   format 1 exports, the "data moved" message) is now in
