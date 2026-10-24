@@ -36,7 +36,7 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 
 - [x] E1 — `SaveManager` gets a `GameInfo` (79efd2d)
 - [x] E2 — Texts with the game name (765edb8)
-- [ ] E3 — `LaunchGame`, `IsGameRunning`, `GameStartTime` per game
+- [x] E3 — `LaunchGame`, `IsGameRunning`, `GameStartTime` per game (e5f65bc)
 - [ ] E4 — Shared files per game
 - [ ] E5 — Accounts and recovery for every game
 - [ ] E6 — 👤 Check with Control
@@ -104,6 +104,13 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 Write here anything that didn't match the plan, decisions taken with
 Andrix, and results of the 👤 checks. Newest first, with the date.
 
+- 2026-10-24 — E3: the check `grep -rn "870780\|Control_DX\|\"Control\""
+  src/` lists, besides `GameInfo.cs` and `SteamLibrary.cs`, the literal
+  `"Control"` of `SavesNotFound` in `SaveManager.Initialize` (E2 keeps it on
+  purpose: that entry point is Control-only until phase G). `AccountForm.cs`
+  (outside `src/`) has the same literal. `MinorBugTests.GameLauncherIsRecognized`
+  is deleted with `IsGameLauncher` (its 5 cases: 110 → 106 tests, plus
+  `LaunchGame_UsesTheGameAppId`).
 - 2026-10-24 — E2: `AccountIntro` ("…with Control.") names the game too but
   is not in the table: changed the same way to `{0}`. Its call site
   (`AccountForm`, no `SaveManager` there) and `SavesNotFound` in `Initialize`
