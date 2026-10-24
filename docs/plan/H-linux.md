@@ -250,10 +250,59 @@ Commit: `Linux: paths and file permissions`
 
 ## H7 — Linux tests required in CI
 
-In `.github/workflows/build.yml`, job `test`: remove the
-`continue-on-error` line and its comment. If you know from Notes (C7) that
-some test still fails on Ubuntu, fix it first (it is usually a path with
-`\` in the test itself: use `Path.Combine`).
+First fix the two tests that failed on Ubuntu in the C7 run (2026-10-24,
+90 passed, 2 failed). Both are differences of the system, not bugs of the
+app:
+
+1. `AppDataTests.Move_LeavesOldFolderIntactWhenItFails` ("Expected:
+   Failed, Actual: Moved"). The test blocks the move by keeping `log.txt`
+   open with `FileShare.None`: on Linux an open file doesn't stop
+   `Directory.Move`. Keep the current body for Windows and add, at the top
+   of the method, a Linux variant that makes the move fail by putting a
+   **file** where the parent of the new folder should be (then
+   `Directory.CreateDirectory` inside `AppData.Move` throws, which is
+   inside its `try`, so the result is `Failed` on every system):
+
+   ```csharp
+   if (!OperatingSystem.IsWindows())
+   {
+       WriteOldData();
+
+       // Su Linux un file aperto non blocca lo spostamento: al posto della
+       // cartella che deve contenere quella nuova c'è un file.
+       string blocker = Path.Combine(folder.Root, "bloccata");
+       File.WriteAllText(blocker, "");
+       string target = Path.Combine(blocker, "LSS");
+
+       (AppData.MoveResult result, string detail) = AppData.Move(Old, target);
+
+       Assert.Equal(AppData.MoveResult.Failed, result);
+       Assert.NotEqual("", detail);
+       Assert.Equal("mario", File.ReadAllText(Path.Combine(Old, "123", "Profili", "Profilo_Mario", "remote", "slot.sav")));
+       Assert.False(Directory.Exists(target));
+       return;
+   }
+   ```
+
+   Check the names `folder`, `Old` and `WriteOldData` against the test
+   class before pasting.
+2. `LocalizationTests.StoredDatesAreShownInTheCurrentCulture` (strings
+   differ at position 18). On Linux .NET formats dates with ICU, which puts
+   a narrow no-break space (U+202F) before `PM`. In the English assertion
+   compare after normalising spaces:
+
+   ```csharp
+   // Su Linux (ICU) prima di AM/PM c'è uno spazio stretto U+202F.
+   Assert.Equal("10/22/2026 6:30:00 PM",
+       SaveManager.FormatStoredDate("22/10/2026 18:30:00").Replace(' ', ' '));
+   ```
+
+   Leave the app code as it is: the narrow space is correct output.
+
+Then, in `.github/workflows/build.yml`, job `test`: remove the
+`continue-on-error` line and its comment. If other tests fail on Ubuntu
+by then, fix them the same way (often a path with `\` in the test itself:
+use `Path.Combine`).
 
 Commit: `CI: Linux tests required`
 

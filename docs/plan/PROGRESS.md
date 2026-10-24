@@ -18,9 +18,9 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 - [x] C4 — Projects `Lss.Core` and `Lss.Platform` (af1f6f1)
 - [x] C5 — Tests on plain `net10.0` (98d083e)
 - [x] C6 — Tests on Linux in GitHub Actions (79683d9)
-- [ ] C7 — 👤 Check the WinForms app, push, note failing Linux tests
-  (app checked by Andrix on 2026-10-24: works; push and Linux results
-  still to do)
+- [x] C7 — 👤 Check the WinForms app, push, note failing Linux tests
+  (2026-10-24: app works; CI run on `lss` by hand: Windows 92/92, Ubuntu
+  90/92, the two failures are planned in H7)
 
 ## Phase D — Game catalogue ([D-catalog.md](D-catalog.md))
 
@@ -104,6 +104,13 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 Write here anything that didn't match the plan, decisions taken with
 Andrix, and results of the 👤 checks. Newest first, with the date.
 
+- 2026-10-24 — CI is triggered automatically only by pushes to `main` and
+  `v*` tags: on `lss` Andrix starts it by hand (*Actions → Build → Run
+  workflow*). `lss` is merged into `main` only at the end.
+- 2026-10-24 — C7, Ubuntu: `AppDataTests.Move_LeavesOldFolderIntactWhenItFails`
+  (an open file doesn't block a move on Linux) and
+  `LocalizationTests.StoredDatesAreShownInTheCurrentCulture` (ICU puts
+  U+202F before PM). Fixes written in H7.
 - 2026-10-24 — C4: the check "grep for Microsoft.Win32 / System.Windows.Forms /
   Process.Start in src/Lss.Core" also matches the standard resx header lines
   (`ResXResourceReader, System.Windows.Forms`) in `Strings.resx` and
