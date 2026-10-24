@@ -82,14 +82,22 @@ internal static class Program
         var control = new GameInfo(GameInfo.ControlAppId, "Control Ultimate Edition", "", "", controlSaves, SupportState.Supported);
         var sekiro = new GameInfo("814380", "Sekiro™: Shadows Die Twice", "", "", Path.Combine(account, "814380"), SupportState.SavesElsewhere);
 
+        // Dati finti nella lingua delle immagini: quelle in inglese finiscono nel README.
+        bool english = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "en";
+        string second = english ? "Second run" : "Seconda partita";
+        string first = english ? "Main story" : "Storia principale";
+        string removed = english ? "Old test" : "Prova vecchia";
+        string note = english ? "Polaris mission, before Ahti" : "Missione Polaris, prima di Ahti";
+        string error = english ? "The file is in use by another program." : "Il file è in uso da un altro programma.";
+
         SaveManager manager = SaveManager.Open(AppData.Root, steamAccount, control).Value!;
-        manager.CreateProfile("Con Clara", true);
-        manager.SetNote("Profilo_Con Clara", "Missione Polaris, prima di Ahti");
-        manager.CreateProfile("Privato", true);
-        manager.CreateProfile("Da cancellare", false);
-        manager.ActivateProfile("Profilo_Privato");
-        manager.CreateSavestate("Prima del boss");
-        manager.DeleteProfile("Profilo_Da cancellare");
+        manager.CreateProfile(second, true);
+        manager.SetNote(SaveManager.ProfileFolderName(second), note);
+        manager.CreateProfile(first, true);
+        manager.CreateProfile(removed, false);
+        manager.ActivateProfile(SaveManager.ProfileFolderName(first));
+        manager.CreateSavestate(english ? "Before the boss" : "Prima del boss");
+        manager.DeleteProfile(SaveManager.ProfileFolderName(removed));
 
         var dialogs = new NoDialogs();
         var settings = new AppSettings(Path.Combine(AppData.Root, "lss.ini"));
@@ -103,18 +111,18 @@ internal static class Program
         Shot(main, "01-main");
 
         Shot(MessageWindow.Confirm(
-            Loc.F(Strings.ConfirmDeleteHeading, "Con Clara"),
+            Loc.F(Strings.ConfirmDeleteHeading, second),
             Loc.F(Strings.ConfirmDeleteText, Loc.F(Strings.ConfirmDeleteKeepN, 20)),
             Strings.DeletePlaythrough, destructive: true, InfoKind.Warning), "02-confirm-delete");
 
-        Shot(MessageWindow.Inform(Strings.TitleOperationFailed, "Il file è in uso da un altro programma.",
+        Shot(MessageWindow.Inform(Strings.TitleOperationFailed, error,
             InfoKind.Warning, Strings.OpenBackup), "03-inform-error");
 
         Shot(new NewPlaythroughWindow(new NewPlaythroughViewModel(_ => false)), "04-new-playthrough");
-        Shot(new NewPlaythroughWindow(new NewPlaythroughViewModel(_ => false, "Privato")), "05-rename");
+        Shot(new NewPlaythroughWindow(new NewPlaythroughViewModel(_ => false, first)), "05-rename");
 
         Shot(new TextPromptWindow(new TextPromptViewModel(Strings.NoteTitle,
-            Loc.F(Strings.NoteCaption, "Privato").ToUpperInvariant(), "Missione Polaris", Strings.NoteHint,
+            Loc.F(Strings.NoteCaption, first).ToUpperInvariant(), english ? "Polaris mission" : "Missione Polaris", Strings.NoteHint,
             SaveManager.MaxNoteLength, Strings.SaveButton)), "06-note");
 
         Shot(new HistoryWindow(new HistoryViewModel(manager, dialogs,
