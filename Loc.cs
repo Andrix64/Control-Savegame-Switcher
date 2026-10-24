@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace ControlSaveManager;
+namespace Lss;
 
 /// <summary>
 /// Testi tradotti: Strings.resx (inglese) e Strings.it.resx (italiano).

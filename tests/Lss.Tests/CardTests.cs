@@ -1,4 +1,4 @@
-namespace ControlSaveManager.Tests;
+namespace Lss.Tests;
 
 /// <summary>
 /// Testi delle schede nella finestra principale (in italiano, vedi TestSetup).

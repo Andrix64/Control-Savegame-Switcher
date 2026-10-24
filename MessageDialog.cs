@@ -1,7 +1,7 @@
 using System.Drawing.Drawing2D;
 using System.Media;
 
-namespace ControlSaveManager;
+namespace Lss;
 
 /// <summary>
 /// Finestra di messaggio a tema scuro, al posto di MessageBox.

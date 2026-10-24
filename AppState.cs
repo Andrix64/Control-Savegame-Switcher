@@ -1,4 +1,4 @@
-namespace ControlSaveManager;
+namespace Lss;
 
 /// <summary>
 /// Stato dell'applicazione, salvato in stato.ini.

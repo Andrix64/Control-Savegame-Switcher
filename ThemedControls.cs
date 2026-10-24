@@ -1,6 +1,6 @@
 using System.Drawing.Drawing2D;
 
-namespace ControlSaveManager;
+namespace Lss;
 
 internal enum ButtonKind
 {

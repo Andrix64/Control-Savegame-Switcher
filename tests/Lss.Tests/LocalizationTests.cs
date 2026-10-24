@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Resources;
 using System.Text.RegularExpressions;
 
-namespace ControlSaveManager.Tests;
+namespace Lss.Tests;
 
 public sealed class LocalizationTests
 {

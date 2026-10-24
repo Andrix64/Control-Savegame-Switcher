@@ -1,8 +1,8 @@
-﻿namespace ControlSaveManager;
+﻿namespace Lss;
 
 internal static class Program
 {
-    private const string Title = "Control Save Manager";
+    private const string Title = "Local Save Switcher";
 
     /// <summary>
     /// Versione dell'app (es. "0.9.0"), dal tag Version del .csproj.
@@ -21,7 +21,9 @@ internal static class Program
 
         ApplicationConfiguration.Initialize();
 
-        // Due finestre aperte lavorerebbero sugli stessi file.
+        // Due finestre aperte lavorerebbero sugli stessi file. Il nome resta
+        // quello di Control Save Manager finché i dati sono nella sua cartella:
+        // così la vecchia versione e LSS non possono essere aperte insieme.
         using Mutex mutex = new(true, @"Local\ControlSaveManager", out bool firstInstance);
 
         if (!firstInstance)

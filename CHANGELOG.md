@@ -3,6 +3,15 @@
 All notable changes, newest first. Versions follow
 [Semantic Versioning](https://semver.org/).
 
+## Unreleased
+
+### Changed
+
+- Control Save Manager is now **LSS — Local Save Switcher**: the exe is
+  `LSS.exe` and the release zip `LSS-<version>-win-x64.zip`. Data stays in
+  `%LOCALAPPDATA%\ControlSaveManager` for now, so nothing has to be moved.
+- Playthroughs exported by Control Save Manager can still be imported.
+
 ## 0.9.0 — 2026-10-23
 
 First public release.

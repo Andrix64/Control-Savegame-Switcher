@@ -7,7 +7,7 @@
       "command": "dotnet",
       "args": [
         "build",
-        "${workspaceFolder}/ControlSaveManager.csproj",
+        "${workspaceFolder}/LSS.csproj",
         "-c",
         "Debug",
         "/property:GenerateFullPaths=true",
@@ -26,7 +26,7 @@
       "command": "dotnet",
       "args": [
         "build",
-        "${workspaceFolder}/ControlSaveManager.csproj",
+        "${workspaceFolder}/LSS.csproj",
         "-c",
         "Debug",
         "--no-incremental",

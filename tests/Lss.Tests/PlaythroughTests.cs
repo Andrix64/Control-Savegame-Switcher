@@ -1,6 +1,6 @@
 using System.IO.Compression;
 
-namespace ControlSaveManager.Tests;
+namespace Lss.Tests;
 
 /// <summary>
 /// Funzioni della nuova interfaccia: informazioni della partita, cronologia,

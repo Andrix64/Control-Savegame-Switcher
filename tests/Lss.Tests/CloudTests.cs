@@ -1,4 +1,4 @@
-namespace ControlSaveManager.Tests;
+namespace Lss.Tests;
 
 public sealed class CloudTests : IDisposable
 {

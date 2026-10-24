@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\ControlSaveManager.csproj" />
+    <ProjectReference Include="..\..\LSS.csproj" />
   </ItemGroup>
 
   <ItemGroup>

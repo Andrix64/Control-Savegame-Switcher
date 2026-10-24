@@ -227,7 +227,7 @@ build (`StronglyTypedLanguage` in the `.csproj`), no Visual Studio needed.
 | `scripts\release.ps1` | Builds the release zip (locally and on GitHub Actions). |
 | `.github\workflows\build.yml` | Build, tests, SignPath signing and draft release on GitHub. |
 | `CODE_SIGNING.md` | Signing policy required by SignPath. |
-| `tests\ControlSaveManager.Tests\` | xUnit tests. |
+| `tests\Lss.Tests\` | xUnit tests. |
 
 The old console version is in the git history (commit `17cd279`).
 
@@ -236,14 +236,14 @@ The old console version is in the git history (commit `17cd279`).
 Requires the .NET 10 SDK.
 
 ```bash
-dotnet build ControlSaveManager.csproj -c Release
+dotnet build LSS.csproj -c Release
 ```
 
 Single exe for 64-bit Windows, with the .NET runtime included (users don't
 have to install anything, about 50 MB), in `bin\publish\win-x64\`:
 
 ```bash
-dotnet publish ControlSaveManager.csproj -p:PublishProfile=win-x64
+dotnet publish LSS.csproj -p:PublishProfile=win-x64
 ```
 
 For debugging in VS Code there are `.vscode\launch.json` and
@@ -251,7 +251,7 @@ For debugging in VS Code there are `.vscode\launch.json` and
 
 ## Tests
 
-xUnit tests in `tests/ControlSaveManager.Tests`: they work on fake folders in
+xUnit tests in `tests/Lss.Tests`: they work on fake folders in
 `%TEMP%` (they don't touch Steam or the app's real data) and cover copying and
 swapping folders, playthroughs, saved points, automatic copies and their
 owner, note and play time, deleted playthroughs, export and import, shared
@@ -261,7 +261,7 @@ translated texts and card lines. The tests' log goes to
 `%TEMP%\csm_test_log.txt`. Tests run in Italian whatever the Windows language.
 
 ```bash
-dotnet test tests/ControlSaveManager.Tests
+dotnet test tests/Lss.Tests
 ```
 
 The windows aren't covered by tests. On GitHub the tests run on every push and
@@ -302,7 +302,7 @@ One-time setup:
    [signpath.org](https://signpath.org/), pointing to the repository and the
    [CODE_SIGNING.md](../CODE_SIGNING.md) page.
 2. On SignPath: create the project linked to the GitHub repository, with an
-   *artifact configuration* that signs `ControlSaveManager.exe` (Authenticode)
+   *artifact configuration* that signs `LSS.exe` (Authenticode)
    and the `release-signing` *signing policy*; create a CI user and its token.
 3. On GitHub, in *Settings → Secrets and variables → Actions*:
    - secret `SIGNPATH_API_TOKEN`: the CI user's token;
@@ -318,7 +318,7 @@ against their documentation when setting it up.
 
 ## Release
 
-1. Update `<Version>` in `ControlSaveManager.csproj` and the
+1. Update `<Version>` in `LSS.csproj` and the
    [CHANGELOG](../CHANGELOG.md), then commit. The version shows in the window
    header, in the exe properties and in the log.
 2. Create the version tag and push it to GitHub:
@@ -342,7 +342,7 @@ powershell -ExecutionPolicy Bypass -File scripts/release.ps1
 ```
 
 The script refuses to run with uncommitted changes, runs the tests, publishes
-the exe and creates in `dist\` the zip `ControlSaveManager-<version>-win-x64.zip`
+the exe and creates in `dist\` the zip `LSS-<version>-win-x64.zip`
 (exe, README, CHANGELOG and LICENSE) with its `.sha256` file. With
 `-Exe <path>` it uses a ready exe instead of publishing one.
 

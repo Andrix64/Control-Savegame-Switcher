@@ -1,4 +1,4 @@
-namespace ControlSaveManager;
+namespace Lss;
 
 /// <summary>
 /// Finestra con una casella di testo, per la nota di una partita.

@@ -5,7 +5,7 @@ certificate by [SignPath Foundation](https://signpath.org/).
 
 ## What is signed
 
-Only `ControlSaveManager.exe` from the release zips published on the
+Only `LSS.exe` from the release zips published on the
 [Releases page](https://github.com/Andrix64/Control-Savegame-Switcher/releases)
 of this repository. The executable is built by GitHub Actions
 ([`.github/workflows/build.yml`](.github/workflows/build.yml)) directly from

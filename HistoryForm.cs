@@ -1,4 +1,4 @@
-namespace ControlSaveManager;
+namespace Lss;
 
 /// <summary>
 /// Cronologia della partita nel gioco: i punti salvati dall'utente (prima di

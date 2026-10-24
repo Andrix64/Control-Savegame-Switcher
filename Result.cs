@@ -1,4 +1,4 @@
-namespace ControlSaveManager;
+namespace Lss;
 
 /// <summary>
 /// Esito di un'operazione: l'interfaccia decide come mostrarlo.

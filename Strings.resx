@@ -3,7 +3,7 @@
   <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
-  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>  <data name="AppAlreadyRunning" xml:space="preserve"><value>Control Save Manager is already running.</value></data>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>  <data name="AppAlreadyRunning" xml:space="preserve"><value>Local Save Switcher is already running.</value></data>
   <data name="UnexpectedErrorWithLog" xml:space="preserve"><value>An unexpected error occurred:
 {0}
 
@@ -165,12 +165,12 @@ The app keeps using the old folder. Nothing has been lost.</value></data>
   <data name="Adopted" xml:space="preserve"><value>Playthrough “{0}” saved.</value></data>
   <data name="ExportFailed" xml:space="preserve"><value>We couldn&apos;t export the playthrough: {0}</value></data>
   <data name="Exported" xml:space="preserve"><value>“{0}” exported to {1}.</value></data>
-  <data name="ImportInvalid" xml:space="preserve"><value>This file isn&apos;t a playthrough exported by Control Save Manager.</value></data>
+  <data name="ImportInvalid" xml:space="preserve"><value>This file isn&apos;t a playthrough exported by Local Save Switcher or Control Save Manager.</value></data>
   <data name="ImportFailed" xml:space="preserve"><value>We couldn&apos;t import the playthrough: {0}</value></data>
   <data name="GameLaunching" xml:space="preserve"><value>Starting Control...</value></data>
   <data name="LaunchFailed" xml:space="preserve"><value>We couldn&apos;t start Control through Steam: {0}
 Start it from Steam yourself: the playthrough is already loaded.</value></data>
-  <data name="AppTitle" xml:space="preserve"><value>Control Save Manager</value></data>
+  <data name="AppTitle" xml:space="preserve"><value>Local Save Switcher</value></data>
   <data name="PlaythroughNameHint" xml:space="preserve"><value>Letters, digits, spaces, _ and -. You can change it whenever you like.</value></data>
   <data name="AddNote" xml:space="preserve"><value>Add a note</value></data>
   <data name="BusyCreating" xml:space="preserve"><value>Creating the playthrough...</value></data>

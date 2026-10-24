@@ -1,7 +1,7 @@
 using System.Globalization;
 using System.Runtime.CompilerServices;
 
-namespace ControlSaveManager.Tests;
+namespace Lss.Tests;
 
 /// <summary>
 /// Cartella temporanea con una finta cartella del gioco (…\870780) e una

@@ -3,7 +3,7 @@
   <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
-  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>  <data name="AppAlreadyRunning" xml:space="preserve"><value>Control Save Manager è già aperto.</value></data>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>  <data name="AppAlreadyRunning" xml:space="preserve"><value>Local Save Switcher è già aperto.</value></data>
   <data name="UnexpectedErrorWithLog" xml:space="preserve"><value>Si è verificato un errore imprevisto:
 {0}
 
@@ -165,12 +165,12 @@ L&apos;app continua a usare la vecchia cartella. Non è andato perso nulla.</val
   <data name="Adopted" xml:space="preserve"><value>Partita «{0}» salvata.</value></data>
   <data name="ExportFailed" xml:space="preserve"><value>Non siamo riusciti a esportare la partita: {0}</value></data>
   <data name="Exported" xml:space="preserve"><value>«{0}» esportata in {1}.</value></data>
-  <data name="ImportInvalid" xml:space="preserve"><value>Questo file non è una partita esportata da Control Save Manager.</value></data>
+  <data name="ImportInvalid" xml:space="preserve"><value>Questo file non è una partita esportata da Local Save Switcher o da Control Save Manager.</value></data>
   <data name="ImportFailed" xml:space="preserve"><value>Non siamo riusciti a importare la partita: {0}</value></data>
   <data name="GameLaunching" xml:space="preserve"><value>Avvio di Control...</value></data>
   <data name="LaunchFailed" xml:space="preserve"><value>Non siamo riusciti ad avviare Control tramite Steam: {0}
 Avvialo tu da Steam: la partita è già caricata.</value></data>
-  <data name="AppTitle" xml:space="preserve"><value>Control Save Manager</value></data>
+  <data name="AppTitle" xml:space="preserve"><value>Local Save Switcher</value></data>
   <data name="PlaythroughNameHint" xml:space="preserve"><value>Lettere, cifre, spazi, _ e -. Potrai cambiarlo quando vuoi.</value></data>
   <data name="AddNote" xml:space="preserve"><value>Aggiungi una nota</value></data>
   <data name="BusyCreating" xml:space="preserve"><value>Creo la partita...</value></data>

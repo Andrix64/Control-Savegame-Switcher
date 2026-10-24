@@ -1,4 +1,4 @@
-namespace ControlSaveManager;
+namespace Lss;
 
 /// <summary>
 /// Finestra per creare un nuovo profilo o rinominarne uno.

@@ -2,11 +2,11 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Control Save Manager (Debug)",
+      "name": "Local Save Switcher (Debug)",
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build",
-      "program": "${workspaceFolder}/bin/Debug/net10.0-windows/ControlSaveManager.dll",
+      "program": "${workspaceFolder}/bin/Debug/net10.0-windows/LSS.dll",
       "args": [],
       "cwd": "${workspaceFolder}",
       "console": "internalConsole",
@@ -17,7 +17,7 @@
       "name": "Collega a processo",
       "type": "coreclr",
       "request": "attach",
-      "processName": "ControlSaveManager.exe"
+      "processName": "LSS.exe"
     }
   ]
 }

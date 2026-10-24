@@ -3,7 +3,7 @@
 # Signing setup (Settings → Secrets and variables → Actions):
 #   secret   SIGNPATH_API_TOKEN            token of the SignPath CI user
 #   variable SIGNPATH_ORGANIZATION_ID      SignPath organization ID
-#   variable SIGNPATH_PROJECT_SLUG         project slug (e.g. control-savegame-switcher)
+#   variable SIGNPATH_PROJECT_SLUG         project slug (e.g. local-save-switcher)
 #   variable SIGNPATH_SIGNING_POLICY_SLUG  optional, "release-signing" by default
 # Without SIGNPATH_API_TOKEN the build still works and the zip is not signed.
 # See docs/DEVELOPMENT.md, section "Code signing".
@@ -41,23 +41,23 @@ jobs:
         if: env.IS_RELEASE == 'true'
         shell: pwsh
         run: |
-          $version = (dotnet msbuild ControlSaveManager.csproj -getProperty:Version).Trim()
+          $version = (dotnet msbuild LSS.csproj -getProperty:Version).Trim()
           if ("v$version" -ne "${{ github.ref_name }}") {
             throw "Tag ${{ github.ref_name }} does not match <Version>$version</Version> in the .csproj."
           }
 
       - name: Test
-        run: dotnet test tests/ControlSaveManager.Tests -c Release --logger "trx;LogFileName=results.trx"
+        run: dotnet test tests/Lss.Tests -c Release --logger "trx;LogFileName=results.trx"
 
       - name: Single exe
-        run: dotnet publish ControlSaveManager.csproj -p:PublishProfile=win-x64 --nologo
+        run: dotnet publish LSS.csproj -p:PublishProfile=win-x64 --nologo
 
       - name: Exe to sign
         id: unsigned
         uses: actions/upload-artifact@v4
         with:
           name: unsigned-exe
-          path: bin/publish/win-x64/ControlSaveManager.exe
+          path: bin/publish/win-x64/LSS.exe
           if-no-files-found: error
 
       # Releases only: every signing request must be approved on SignPath.
@@ -77,7 +77,7 @@ jobs:
         if: env.IS_RELEASE == 'true' && env.SIGNPATH_API_TOKEN != ''
         shell: pwsh
         run: |
-          $signature = Get-AuthenticodeSignature bin/signed/ControlSaveManager.exe
+          $signature = Get-AuthenticodeSignature bin/signed/LSS.exe
           "Signature: $($signature.Status) - $($signature.SignerCertificate.Subject)"
           if ($signature.Status -ne 'Valid') { throw "The signed exe does not have a valid signature." }
 
@@ -85,7 +85,7 @@ jobs:
         id: zip
         shell: pwsh
         run: |
-          $exe = if (Test-Path bin/signed/ControlSaveManager.exe) { 'bin/signed/ControlSaveManager.exe' } else { 'bin/publish/win-x64/ControlSaveManager.exe' }
+          $exe = if (Test-Path bin/signed/LSS.exe) { 'bin/signed/LSS.exe' } else { 'bin/publish/win-x64/LSS.exe' }
           ./scripts/release.ps1 -SkipTests -Exe $exe
           $signed = if ($exe -like 'bin/signed/*') { 'true' } else { 'false' }
           "signed=$signed" >> $env:GITHUB_OUTPUT
@@ -94,11 +94,11 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: control-save-manager
+          name: lss
           path: |
             dist/*.zip
             dist/*.zip.sha256
-            tests/ControlSaveManager.Tests/TestResults/*.trx
+            tests/Lss.Tests/TestResults/*.trx
 
       - name: Draft release
         if: env.IS_RELEASE == 'true'

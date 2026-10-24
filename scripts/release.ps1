@@ -3,7 +3,7 @@
     Crea lo zip di rilascio: test, exe singolo, zip e impronta SHA-256 in dist\.
 
 .DESCRIPTION
-    La versione si legge da <Version> in ControlSaveManager.csproj.
+    La versione si legge da <Version> in LSS.csproj.
     Funziona con Windows PowerShell 5.1 e con PowerShell 7.
 
 .PARAMETER SkipTests
@@ -20,7 +20,7 @@
     powershell -ExecutionPolicy Bypass -File scripts\release.ps1
 
 .EXAMPLE
-    pwsh scripts/release.ps1 -SkipTests -Exe signed/ControlSaveManager.exe
+    pwsh scripts/release.ps1 -SkipTests -Exe signed/LSS.exe
 #>
 param(
     [switch]$SkipTests,
@@ -31,8 +31,8 @@ param(
 $ErrorActionPreference = 'Stop'
 
 $root = Split-Path -Parent $PSScriptRoot
-$project = Join-Path $root 'ControlSaveManager.csproj'
-$tests = Join-Path $root 'tests\ControlSaveManager.Tests'
+$project = Join-Path $root 'LSS.csproj'
+$tests = Join-Path $root 'tests\Lss.Tests'
 $publishDir = Join-Path $root 'bin\publish\win-x64'
 $dist = Join-Path $root 'dist'
 
@@ -51,7 +51,7 @@ if (-not $AllowDirty) {
 $version = (dotnet msbuild $project -getProperty:Version).Trim()
 if (-not $version) { throw "Versione non trovata nel .csproj." }
 
-$name = "ControlSaveManager-$version-win-x64"
+$name = "LSS-$version-win-x64"
 Write-Host "Rilascio $name" -ForegroundColor Green
 
 if (-not $SkipTests) {
@@ -65,7 +65,7 @@ if ($Exe) {
 else {
     if (Test-Path $publishDir) { Remove-Item $publishDir -Recurse -Force }
     Invoke-Checked 'Pubblicazione' { dotnet publish $project -p:PublishProfile=win-x64 --nologo }
-    $exe = Join-Path $publishDir 'ControlSaveManager.exe'
+    $exe = Join-Path $publishDir 'LSS.exe'
 }
 
 if (-not (Test-Path $exe)) { throw "Exe non trovato: $exe" }

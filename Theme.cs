@@ -1,6 +1,6 @@
 using System.Drawing.Drawing2D;
 
-namespace ControlSaveManager;
+namespace Lss;
 
 /// <summary>
 /// Colori, caratteri e utility grafiche. Tema scuro con accento rosso,
@@ -72,7 +72,7 @@ internal static class Theme
                 return appIcon;
 
             using Stream? stream = typeof(Theme).Assembly
-                .GetManifestResourceStream("ControlSaveManager.app.ico");
+                .GetManifestResourceStream("Lss.app.ico");
 
             if (stream != null)
                 appIcon = new Icon(stream);

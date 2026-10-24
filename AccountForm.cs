@@ -1,4 +1,4 @@
-namespace ControlSaveManager;
+namespace Lss;
 
 /// <summary>
 /// Scelta dell'account Steam all'avvio, quando più account hanno i salvataggi di Control.
@@ -30,7 +30,7 @@ internal sealed class AccountForm : Form
 
     private AccountForm(IReadOnlyList<SteamAccount> accounts, string? lastId)
     {
-        Text = "Control Save Manager";
+        Text = "Local Save Switcher";
         Icon = Theme.AppIcon;
         FormBorderStyle = FormBorderStyle.FixedDialog;
         StartPosition = FormStartPosition.CenterScreen;

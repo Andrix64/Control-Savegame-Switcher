@@ -2,7 +2,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO.Compression;
 
-namespace ControlSaveManager;
+namespace Lss;
 
 /// <summary>
 /// Operazione che ha creato un backup: scritta nel file .ini accanto al

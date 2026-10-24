@@ -1,4 +1,4 @@
-namespace ControlSaveManager;
+namespace Lss;
 
 /// <summary>
 /// File di testo "Chiave=Valore", come stato.ini. La scrittura passa da un

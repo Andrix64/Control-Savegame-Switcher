@@ -1,4 +1,4 @@
-namespace ControlSaveManager;
+namespace Lss;
 
 /// <summary>
 /// Lettore minimo del formato testuale VDF di Steam ("chiave" "valore" e

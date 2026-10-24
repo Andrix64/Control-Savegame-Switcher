@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
-namespace ControlSaveManager;
+namespace Lss;
 
 /// <summary>
 /// Copia dei salvataggi in una cartella con data: un backup o un savestate.

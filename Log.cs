@@ -1,4 +1,4 @@
-namespace ControlSaveManager;
+namespace Lss;
 
 /// <summary>
 /// Registro delle operazioni in log.txt nella cartella dei dati dell'app.

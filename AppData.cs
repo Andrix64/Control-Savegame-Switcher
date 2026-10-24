@@ -1,4 +1,4 @@
-namespace ControlSaveManager;
+namespace Lss;
 
 /// <summary>
 /// Cartella dei dati dell'app (profili, backup, savestate, registro):

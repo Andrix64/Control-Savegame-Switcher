@@ -1,4 +1,4 @@
-namespace ControlSaveManager.Tests;
+namespace Lss.Tests;
 
 /// <summary>
 /// Operazioni interrotte (bug 1) e account senza cartella remote (bug 2).

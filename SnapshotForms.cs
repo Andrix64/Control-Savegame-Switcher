@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Drawing.Drawing2D;
 
-namespace ControlSaveManager;
+namespace Lss;
 
 /// <summary>
 /// Lista a tema (savestate, backup, account): titolo e dettagli su due righe.

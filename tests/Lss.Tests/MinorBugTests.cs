@@ -1,4 +1,4 @@
-namespace ControlSaveManager.Tests;
+namespace Lss.Tests;
 
 /// <summary>
 /// Bug a priorità bassa trovati nella revisione della 0.9.0.

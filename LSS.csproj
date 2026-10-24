@@ -8,16 +8,18 @@
     <ApplicationIcon>app.ico</ApplicationIcon>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <!-- I test hanno il loro progetto. -->
-    <DefaultItemExcludes>$(DefaultItemExcludes);tests/**;dist/**;scripts/**</DefaultItemExcludes>
+    <AssemblyName>LSS</AssemblyName>
+    <RootNamespace>Lss</RootNamespace>
+    <!-- I test e la prova di Avalonia hanno il loro progetto. -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);tests/**;dist/**;scripts/**;spike/**</DefaultItemExcludes>
   </PropertyGroup>
 
   <PropertyGroup>
     <!-- Dati del prodotto: compaiono nelle proprietà dell'exe. Version è l'unica da cambiare a ogni rilascio. -->
     <Version>0.9.0</Version>
-    <Product>Control Save Manager</Product>
-    <AssemblyTitle>Control Save Manager</AssemblyTitle>
-    <Description>Gestione di più profili di salvataggio per Control (Steam).</Description>
+    <Product>Local Save Switcher</Product>
+    <AssemblyTitle>Local Save Switcher</AssemblyTitle>
+    <Description>Più partite per i giochi Steam (per ora solo Control).</Description>
     <Company>Andrix64</Company>
     <Authors>Andrix64</Authors>
     <Copyright>© 2026 Andrix64</Copyright>
@@ -36,18 +38,18 @@
 
   <ItemGroup>
     <!-- Icona delle finestre (Theme.AppIcon). -->
-    <EmbeddedResource Include="app.ico" LogicalName="ControlSaveManager.app.ico" />
+    <EmbeddedResource Include="app.ico" LogicalName="Lss.app.ico" />
 
     <!-- Genera la classe Strings dai testi, senza bisogno di Visual Studio. -->
     <EmbeddedResource Update="Strings.resx"
                       StronglyTypedLanguage="CSharp"
                       StronglyTypedClassName="Strings"
-                      StronglyTypedNamespace="ControlSaveManager"
+                      StronglyTypedNamespace="Lss"
                       StronglyTypedFileName="$(IntermediateOutputPath)Strings.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="ControlSaveManager.Tests" />
+    <InternalsVisibleTo Include="Lss.Tests" />
   </ItemGroup>
 
 </Project>

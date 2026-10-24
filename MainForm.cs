@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace ControlSaveManager;
+namespace Lss;
 
 /// <summary>
 /// Finestra principale: una scheda per partita, con le sue azioni visibili,
