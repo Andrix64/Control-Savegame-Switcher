@@ -104,6 +104,9 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 Write here anything that didn't match the plan, decisions taken with
 Andrix, and results of the 👤 checks. Newest first, with the date.
 
+- 2026-10-24 — CI run on `lss` at `683f447` (end of phase D): on Ubuntu
+  only the two known failures of H7; every `SteamLibrary` test passes on
+  Linux too.
 - 2026-10-24 — CI is triggered automatically only by pushes to `main` and
   `v*` tags: on `lss` Andrix starts it by hand (*Actions → Build → Run
   workflow*). `lss` is merged into `main` only at the end.
