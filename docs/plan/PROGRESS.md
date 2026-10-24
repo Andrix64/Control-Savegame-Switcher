@@ -57,7 +57,7 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 - [x] G3 — Services (db28682)
 - [x] G4 — `MessageWindow` (3e4f19a)
 - [x] G5 — `SessionTracker` (a4ce61a)
-- [ ] G6 — `GameViewModel`
+- [x] G6 — `GameViewModel` (36c5ebd)
 - [ ] G7 — Playthrough card
 - [ ] G8 — Main window, games and monitor
 - [ ] G9 — New playthrough, rename, note
