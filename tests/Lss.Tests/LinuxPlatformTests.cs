@@ -1,8 +1,10 @@
+using System.Text;
+
 namespace Lss.Tests;
 
 /// <summary>
-/// Funzioni di LinuxPlatform. I test girano solo su Linux: collegamenti
-/// simbolici e percorsi di Steam sono diversi sugli altri sistemi.
+/// Funzioni di LinuxPlatform. Le funzioni pure girano su ogni sistema; quelle
+/// che toccano il disco con collegamenti simbolici girano solo su Linux.
 /// </summary>
 public sealed class LinuxPlatformTests : IDisposable
 {
@@ -98,6 +100,36 @@ public sealed class LinuxPlatformTests : IDisposable
         Assert.Equal(
             new[] { Path.Combine(home, ".steam", "registry.vdf"), Path.Combine(home, "snap", "steam", "common", ".steam", "registry.vdf") },
             files);
+    }
+
+    [Fact]
+    public void EnvironWithSteamAppId()
+    {
+        byte[] environ = Encoding.UTF8.GetBytes("PATH=/usr/bin\0SteamAppId=870780\0HOME=/home/a\0");
+
+        Assert.True(LinuxPlatform.EnvironMatches(environ, "870780"));
+    }
+
+    [Fact]
+    public void EnvironWithSteamGameId()
+    {
+        byte[] environ = Encoding.UTF8.GetBytes("SteamGameId=870780\0");
+
+        Assert.True(LinuxPlatform.EnvironMatches(environ, "870780"));
+    }
+
+    [Fact]
+    public void EnvironWithSimilarIdDoesNotMatch()
+    {
+        byte[] environ = Encoding.UTF8.GetBytes("SteamAppId=1056001\0SteamGameId=1056001\0");
+
+        Assert.False(LinuxPlatform.EnvironMatches(environ, "105600"));
+    }
+
+    [Fact]
+    public void EmptyEnvironDoesNotMatch()
+    {
+        Assert.False(LinuxPlatform.EnvironMatches(ReadOnlySpan<byte>.Empty, "870780"));
     }
 
     /// <summary>registry.vdf con il gioco 105600 e un RunningAppID dato.</summary>

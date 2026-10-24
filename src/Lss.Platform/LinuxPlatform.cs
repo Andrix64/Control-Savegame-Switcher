@@ -1,3 +1,6 @@
+using System.Diagnostics;
+using System.Text;
+
 namespace Lss;
 
 /// <summary>
@@ -51,12 +54,127 @@ public sealed class LinuxPlatform : IPlatform
         return roots;
     }
 
+    // Processi già visti: per ognuno si legge /proc una volta sola (il
+    // controllo gira ogni 2 secondi). Come processPaths in WindowsPlatform.
+    private readonly Dictionary<int, bool> processMatches = [];
+    private readonly object processLock = new();
+
     /// <summary>
-    /// true se un registry.vdf di Steam segna il gioco come aperto. Il
-    /// controllo sui processi si aggiunge in H3.
+    /// true se un registry.vdf di Steam segna il gioco come aperto, o se un
+    /// processo gioca con quel gioco (vedi FindGameProcesses).
     /// </summary>
     public bool IsGameRunning(GameInfo game) =>
-        RegistryFiles(Home).Any(file => RegistryFileSaysRunning(file, game.AppId));
+        RegistryFiles(Home).Any(file => RegistryFileSaysRunning(file, game.AppId))
+        || FindGameProcesses(game).Count > 0;
+
+    /// <summary>
+    /// Processi del gioco: quelli avviati da Steam (SteamAppId o SteamGameId
+    /// nell'ambiente, native e Proton) e quelli che girano dalla cartella di
+    /// installazione. Con data di avvio se si legge.
+    /// </summary>
+    private List<(int Id, DateTime? Start)> FindGameProcesses(GameInfo game)
+    {
+        var found = new List<(int Id, DateTime? Start)>();
+
+        // Con il "/" finale: "Control" non deve trovare "Control Ultimate".
+        string installPrefix = game.InstallPath == "" ? "" : Path.GetFullPath(game.InstallPath) + "/";
+
+        lock (processLock)
+        {
+            var seen = new HashSet<int>();
+
+            foreach (string entry in Directory.GetDirectories("/proc"))
+            {
+                string name = Path.GetFileName(entry);
+
+                if (!int.TryParse(name, out int pid) || pid <= 0 || pid == Environment.ProcessId)
+                    continue;
+
+                seen.Add(pid);
+
+                if (!processMatches.TryGetValue(pid, out bool matches))
+                {
+                    matches = IsGameProcess(pid, game.AppId, installPrefix);
+                    processMatches[pid] = matches;
+                }
+
+                if (matches)
+                    found.Add((pid, TryStartTime(pid)));
+            }
+
+            // Processi chiusi nel frattempo: via dalla cache.
+            foreach (int pid in processMatches.Keys.Where(pid => !seen.Contains(pid)).ToList())
+                processMatches.Remove(pid);
+        }
+
+        return found;
+    }
+
+    /// <summary>
+    /// true se il processo ha SteamAppId/SteamGameId del gioco, o se il suo
+    /// eseguibile sta nella cartella del gioco. Ogni lettura che fallisce
+    /// (processo finito, altro utente) vuol dire "non è del gioco".
+    /// </summary>
+    private static bool IsGameProcess(int pid, string appId, string installPrefix)
+    {
+        try
+        {
+            if (EnvironMatches(File.ReadAllBytes($"/proc/{pid}/environ"), appId))
+                return true;
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            // Nessun ambiente leggibile: si prova con l'eseguibile.
+        }
+
+        if (installPrefix == "")
+            return false;
+
+        try
+        {
+            string? exe = new FileInfo($"/proc/{pid}/exe").LinkTarget;
+
+            return exe != null && exe.StartsWith(installPrefix, StringComparison.Ordinal);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// true se l'ambiente del processo (contenuto di /proc/PID/environ) è di quel gioco.
+    /// </summary>
+    internal static bool EnvironMatches(ReadOnlySpan<byte> environ, string appId)
+    {
+        // Le variabili sono separate da un byte 0. Il confronto è esatto:
+        // SteamAppId=1056001 non è SteamAppId=105600.
+        string[] wanted = [$"SteamAppId={appId}", $"SteamGameId={appId}"];
+
+        foreach (Range range in environ.Split((byte)0))
+        {
+            string entry = Encoding.UTF8.GetString(environ[range]);
+
+            if (wanted.Contains(entry, StringComparer.Ordinal))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static DateTime? TryStartTime(int pid)
+    {
+        try
+        {
+            using Process process = Process.GetProcessById(pid);
+            return process.StartTime;
+        }
+        catch
+        {
+            // Processo già chiuso o non leggibile.
+            return null;
+        }
+    }
 
     /// <summary>
     /// registry.vdf delle installazioni di Steam sotto <paramref name="home"/>
@@ -107,9 +225,27 @@ public sealed class LinuxPlatform : IPlatform
         }
     }
 
-    public DateTime? GameStartTime(GameInfo game) => throw new NotImplementedException("Fase H, H3.");
+    /// <summary>
+    /// Quando è partito il gioco in esecuzione, se si riesce a leggerlo.
+    /// </summary>
+    public DateTime? GameStartTime(GameInfo game) =>
+        FindGameProcesses(game).Select(p => p.Start).Min();
 
-    public bool IsSteamRunning() => throw new NotImplementedException("Fase H, H3.");
+    /// <summary>
+    /// Con Steam aperto, Steam Cloud può risincronizzare i salvataggi.
+    /// </summary>
+    public bool IsSteamRunning() =>
+        IsProcessRunning("steam") || IsProcessRunning("steamwebhelper");
+
+    private static bool IsProcessRunning(string name)
+    {
+        Process[] processes = Process.GetProcessesByName(name);
+
+        foreach (Process process in processes)
+            process.Dispose();
+
+        return processes.Length > 0;
+    }
 
     public void OpenSteamUri(string uri) => throw new NotImplementedException("Fase H, H4.");
 
