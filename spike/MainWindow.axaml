@@ -1,0 +1,85 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:LssSpike"
+        x:Class="LssSpike.MainWindow"
+        x:DataType="local:MainViewModel"
+        Title="Local Save Switcher — Avalonia test"
+        Width="900" Height="640" MinWidth="560" MinHeight="420"
+        Background="{StaticResource Background}">
+
+  <DockPanel>
+
+    <!-- Intestazione -->
+    <Border DockPanel.Dock="Top" Background="{StaticResource Header}" Padding="20,14">
+      <DockPanel>
+        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8">
+          <Button Content="Pick a folder..." Click="PickFolder_Click" />
+          <Button Content="Open temp folder" Click="OpenFolder_Click" />
+        </StackPanel>
+        <StackPanel>
+          <TextBlock Text="Local Save Switcher" FontSize="20" FontWeight="SemiBold" />
+          <TextBlock Classes="dim" Text="{Binding SystemInfo}" />
+        </StackPanel>
+      </DockPanel>
+    </Border>
+
+    <!-- Barra di avviso, come quella di Steam Cloud -->
+    <Border DockPanel.Dock="Top" Margin="20,12,20,0" Padding="12,8" CornerRadius="6"
+            Background="{StaticResource WarningBack}" BorderBrush="{StaticResource WarningBorder}" BorderThickness="1">
+      <TextBlock TextWrapping="Wrap"
+                 Text="Steam Cloud is on for this game: Steam may put back saves from another playthrough." />
+    </Border>
+
+    <!-- Stato in fondo -->
+    <Border DockPanel.Dock="Bottom" Background="{StaticResource Header}" Padding="20,8">
+      <TextBlock Classes="dim" Text="{Binding Status}" />
+    </Border>
+
+    <!-- Schede delle partite -->
+    <ScrollViewer Padding="20,12">
+      <ItemsControl ItemsSource="{Binding Playthroughs}">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <StackPanel Spacing="10" />
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="local:PlaythroughViewModel">
+            <Border Classes="card" Classes.active="{Binding IsActive}">
+              <DockPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                  <Button Classes="primary" Content="Play this"
+                          Command="{ReflectionBinding $parent[ItemsControl].DataContext.PlayCommand}"
+                          CommandParameter="{Binding}" />
+                  <Button Content="⋯" AutomationProperties.Name="More actions">
+                    <Button.Flyout>
+                      <MenuFlyout>
+                        <MenuItem Header="Load without starting" />
+                        <MenuItem Header="Rename..." />
+                        <MenuItem Header="Edit note..." />
+                        <Separator />
+                        <MenuItem Header="Delete playthrough..." Click="Delete_Click" />
+                      </MenuFlyout>
+                    </Button.Flyout>
+                  </Button>
+                </StackPanel>
+                <StackPanel Spacing="4">
+                  <StackPanel Orientation="Horizontal" Spacing="10">
+                    <TextBlock Text="{Binding Name}" FontSize="16" FontWeight="SemiBold" />
+                    <Border IsVisible="{Binding IsActive}" Background="{StaticResource Accent}"
+                            CornerRadius="10" Padding="8,1" VerticalAlignment="Center">
+                      <TextBlock Text="IN THE GAME NOW" FontSize="11" FontWeight="Bold" Foreground="White" />
+                    </Border>
+                  </StackPanel>
+                  <TextBlock Text="{Binding Note}" TextWrapping="Wrap" />
+                  <TextBlock Classes="dim" Text="{Binding PlayTime}" />
+                </StackPanel>
+              </DockPanel>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+
+  </DockPanel>
+</Window>
