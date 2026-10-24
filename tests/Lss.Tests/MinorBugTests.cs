@@ -68,22 +68,6 @@ public sealed class MinorBugTests : IDisposable
         Assert.False(FileOps.HasNoSaveFiles(Source));
     }
 
-    [Theory]
-    [InlineData(@"C:\Windows\System32\control.exe", false)]
-    [InlineData(@"C:\WINDOWS\system32\control.exe", false)]
-    [InlineData(@"D:\Steam\steamapps\common\Control\Control.exe", true)]
-    [InlineData(@"C:\WindowsApps\Control.exe", true)]
-    [InlineData(null, true)]
-    public void GameLauncherIsRecognized(string? file, bool expected)
-    {
-        if (!OperatingSystem.IsWindows()) return;
-
-        // null = percorso non leggibile (processo avviato come amministratore):
-        // nel dubbio conta come gioco aperto.
-        Assert.Equal(expected, WindowsPlatform.IsGameLauncher(file, @"C:\Windows"));
-        Assert.Equal(expected, WindowsPlatform.IsGameLauncher(file, @"C:\Windows\"));
-    }
-
     [Fact]
     public void IgnoredProfileFoldersAreListed()
     {

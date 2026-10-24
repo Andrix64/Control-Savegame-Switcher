@@ -440,7 +440,7 @@ internal sealed class HistoryForm : Form
 
         try
         {
-            bool running = await Task.Run(SaveManager.IsGameRunning);
+            bool running = await Task.Run(manager.IsGameRunning);
 
             if (running == gameRunning || IsDisposed)
                 return;

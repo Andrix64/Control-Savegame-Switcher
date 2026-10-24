@@ -13,8 +13,8 @@ public sealed class FakePlatform : IPlatform
     public List<string> OpenedUris { get; } = [];
 
     public IReadOnlyList<string> FindSteamRoots() => SteamRoots;
-    public bool IsGameRunning() => GameRunning;
-    public DateTime? GameStartTime() => StartTime;
+    public bool IsGameRunning(GameInfo game) => GameRunning;
+    public DateTime? GameStartTime(GameInfo game) => StartTime;
     public bool IsSteamRunning() => SteamRunning;
     public void OpenSteamUri(string uri) => OpenedUris.Add(uri);
     public IDisposable? AcquireSingleInstance() => new MemoryStream();

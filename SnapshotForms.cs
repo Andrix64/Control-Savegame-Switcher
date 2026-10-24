@@ -276,7 +276,7 @@ internal abstract class ListDialog : Form
 
         try
         {
-            bool running = await Task.Run(SaveManager.IsGameRunning);
+            bool running = await Task.Run(Manager.IsGameRunning);
 
             if (running == GameRunning || IsDisposed)
                 return;

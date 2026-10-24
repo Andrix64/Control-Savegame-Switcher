@@ -14,10 +14,10 @@ public interface IPlatform
     IReadOnlyList<string> FindSteamRoots();
 
     /// <summary>true se il gioco è aperto (nel dubbio true).</summary>
-    bool IsGameRunning();
+    bool IsGameRunning(GameInfo game);
 
     /// <summary>Quando è partito il gioco aperto, se si riesce a leggerlo.</summary>
-    DateTime? GameStartTime();
+    DateTime? GameStartTime(GameInfo game);
 
     bool IsSteamRunning();
 

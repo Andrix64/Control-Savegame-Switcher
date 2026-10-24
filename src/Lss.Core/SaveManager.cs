@@ -1190,7 +1190,7 @@ public sealed partial class SaveManager
 
     // CONTROLLI
 
-    public static bool IsGameRunning() => Platform.Current.IsGameRunning();
+    public bool IsGameRunning() => Platform.Current.IsGameRunning(Game);
 
     public static bool IsSteamRunning() => Platform.Current.IsSteamRunning();
 

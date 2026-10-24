@@ -344,7 +344,7 @@ internal sealed class MainForm : Form
 
         try
         {
-            bool running = await Task.Run(SaveManager.IsGameRunning);
+            bool running = await Task.Run(manager.IsGameRunning);
 
             if (running == gameRunning)
             {
@@ -359,7 +359,7 @@ internal sealed class MainForm : Form
 
             if (running)
             {
-                sessionStart = await Task.Run(SaveManager.GameStartTime) ?? DateTime.Now;
+                sessionStart = await Task.Run(manager.GameStartTime) ?? DateTime.Now;
                 sessionProfile = manager.State.ActiveProfile;
                 HideToast();
                 UpdateControls();
@@ -513,7 +513,7 @@ internal sealed class MainForm : Form
 
         if (launch)
         {
-            Result launched = SaveManager.LaunchGame();
+            Result launched = manager.LaunchGame();
 
             if (launched.Success)
                 ShowToast(InfoKind.Info, Loc.F(Strings.StartingWith, manager.Game.Name, name));
@@ -542,7 +542,7 @@ internal sealed class MainForm : Form
         if (busy || gameRunning || !ConfirmCloud(launching: true))
             return;
 
-        Result launched = SaveManager.LaunchGame();
+        Result launched = manager.LaunchGame();
 
         if (launched.Success)
             ShowToast(InfoKind.Info, Loc.F(Strings.StartingWith, manager.Game.Name,

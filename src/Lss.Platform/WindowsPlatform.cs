@@ -10,6 +10,11 @@ namespace Lss;
 [System.Runtime.Versioning.SupportedOSPlatform("windows")]
 public sealed class WindowsPlatform : IPlatform
 {
+    // Percorso dell'eseguibile per ogni processo già visto: leggerlo è lento e
+    // il controllo gira ogni 2 secondi. null = percorso non leggibile.
+    private readonly Dictionary<int, string?> processPaths = [];
+    private readonly object processLock = new();
+
     /// <summary>
     /// Cartella di Steam dal registro o dai percorsi standard. Lista vuota se
     /// Steam non è installato.
@@ -39,72 +44,117 @@ public sealed class WindowsPlatform : IPlatform
         return paths.Where(Directory.Exists).Take(1).ToList();
     }
 
-    public bool IsGameRunning()
+    /// <summary>
+    /// true se Steam segna il gioco come aperto, o se un processo gira dalla
+    /// cartella di installazione. I processi di cui non si legge il percorso
+    /// (per esempio avviati come amministratore) sono ignorati: per quelli
+    /// Steam segna comunque il gioco come aperto.
+    /// </summary>
+    public bool IsGameRunning(GameInfo game) =>
+        SteamSaysRunning(game.AppId) || FindGameProcesses(game).Count > 0;
+
+    /// <summary>
+    /// Steam scrive nel registro quale gioco è in esecuzione: RunningAppID per
+    /// quello in primo piano, Apps\ID\Running per tutti. Un errore di lettura
+    /// vuol dire "non aperto".
+    /// </summary>
+    private static bool SteamSaysRunning(string appId)
     {
-        return IsProcessRunning("Control_DX12") ||
-               IsProcessRunning("Control_DX11") ||
-               IsGameLauncherRunning();
+        try
+        {
+            using RegistryKey? steam = Registry.CurrentUser.OpenSubKey(@"Software\Valve\Steam");
+
+            if (steam?.GetValue("RunningAppID") is int running && running.ToString() == appId)
+                return true;
+
+            using RegistryKey? app = steam?.OpenSubKey(@"Apps\" + appId);
+
+            return app?.GetValue("Running") is int value && value == 1;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     /// <summary>
-    /// Il launcher del gioco si chiama Control.exe, come il Pannello di
-    /// controllo di Windows: si scartano gli eseguibili nella cartella di Windows.
+    /// Processi che girano dalla cartella di installazione del gioco, con la
+    /// data di avvio se si legge. Nessun processo se il gioco non è installato.
     /// </summary>
-    private static bool IsGameLauncherRunning()
+    private List<(int Id, DateTime? Start)> FindGameProcesses(GameInfo game)
     {
-        string windows = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
-        bool found = false;
+        var found = new List<(int Id, DateTime? Start)>();
 
-        foreach (Process process in Process.GetProcessesByName("Control"))
+        if (game.InstallPath == "")
+            return found;
+
+        string prefix = Path.GetFullPath(game.InstallPath).TrimEnd('\\') + "\\";
+
+        lock (processLock)
         {
-            try
+            Process[] all = Process.GetProcesses();
+            var seen = new HashSet<int>();
+
+            foreach (Process process in all)
             {
-                if (IsGameLauncher(process.MainModule?.FileName, windows))
-                    found = true;
+                try
+                {
+                    seen.Add(process.Id);
+
+                    if (!processPaths.TryGetValue(process.Id, out string? path))
+                    {
+                        path = ReadProcessPath(process);
+                        processPaths[process.Id] = path;
+                    }
+
+                    if (path != null && path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                        found.Add((process.Id, TryStartTime(process)));
+                }
+                finally
+                {
+                    process.Dispose();
+                }
             }
-            catch (Exception) when (!HasExited(process))
-            {
-                // Percorso non leggibile, per esempio perché il processo è avviato
-                // come amministratore: nel dubbio si considera il gioco aperto.
-                found = true;
-            }
-            catch
-            {
-                // Processo già chiuso.
-            }
-            finally
-            {
-                process.Dispose();
-            }
+
+            // Processi chiusi nel frattempo: via dalla cache.
+            foreach (int id in processPaths.Keys.Where(id => !seen.Contains(id)).ToList())
+                processPaths.Remove(id);
         }
 
         return found;
     }
 
-    /// <summary>
-    /// true se l'eseguibile non è nella cartella di Windows. Un percorso
-    /// sconosciuto (null) conta come gioco: meglio bloccare per errore che
-    /// cambiare profilo con il gioco aperto.
-    /// </summary>
-    internal static bool IsGameLauncher(string? file, string windowsFolder)
-    {
-        return file == null ||
-               !file.StartsWith(windowsFolder.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar,
-                   StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static bool HasExited(Process process)
+    private static string? ReadProcessPath(Process process)
     {
         try
         {
-            return process.HasExited;
+            return process.MainModule?.FileName;
         }
         catch
         {
-            // Nemmeno lo stato è leggibile: il processo esiste ancora.
-            return false;
+            // Percorso non leggibile: il processo non viene contato.
+            return null;
         }
     }
+
+    private static DateTime? TryStartTime(Process process)
+    {
+        try
+        {
+            return process.StartTime;
+        }
+        catch
+        {
+            // Processo già chiuso o non leggibile.
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Quando è partito il gioco in esecuzione, se si riesce a leggerlo.
+    /// </summary>
+    public DateTime? GameStartTime(GameInfo game) =>
+        FindGameProcesses(game).Select(p => p.Start).Min();
 
     /// <summary>
     /// Con Steam aperto, Steam Cloud può risincronizzare i salvataggi
@@ -123,39 +173,6 @@ public sealed class WindowsPlatform : IPlatform
             process.Dispose();
 
         return processes.Length > 0;
-    }
-
-    /// <summary>
-    /// Quando è partito il gioco in esecuzione, se si riesce a leggerlo.
-    /// </summary>
-    public DateTime? GameStartTime()
-    {
-        foreach (string name in new[] { "Control_DX12", "Control_DX11" })
-        {
-            Process[] processes = Process.GetProcessesByName(name);
-
-            try
-            {
-                foreach (Process process in processes)
-                {
-                    try
-                    {
-                        return process.StartTime;
-                    }
-                    catch
-                    {
-                        // Processo non leggibile: si prova il prossimo.
-                    }
-                }
-            }
-            finally
-            {
-                foreach (Process process in processes)
-                    process.Dispose();
-            }
-        }
-
-        return null;
     }
 
     public void OpenSteamUri(string uri)

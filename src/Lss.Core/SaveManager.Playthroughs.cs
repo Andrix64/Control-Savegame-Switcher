@@ -629,24 +629,24 @@ public sealed partial class SaveManager
     // AVVIO DEL GIOCO
 
     /// <summary>
-    /// Avvia Control tramite Steam (che si apre da solo se è chiuso).
+    /// Avvia il gioco tramite Steam (che si apre da solo se è chiuso).
     /// </summary>
-    public static Result LaunchGame()
+    public Result LaunchGame()
     {
         try
         {
-            Platform.Current.OpenSteamUri("steam://rungameid/" + GameInfo.ControlAppId);
-            Log.Write("Avvio di Control tramite Steam");
-            return Result.Ok(Loc.F(Strings.GameLaunching, "Control"));
+            Platform.Current.OpenSteamUri("steam://rungameid/" + Game.AppId);
+            Log.Write("Avvio di " + Game.Name + " tramite Steam");
+            return Result.Ok(Loc.F(Strings.GameLaunching, Game.Name));
         }
         catch (Exception ex)
         {
-            return Log.Write("Avvio di Control", Result.Fail(Loc.F(Strings.LaunchFailed, "Control", ex.Message)));
+            return Log.Write("Avvio di " + Game.Name, Result.Fail(Loc.F(Strings.LaunchFailed, Game.Name, ex.Message)));
         }
     }
 
     /// <summary>
     /// Quando è partito il gioco in esecuzione, se si riesce a leggerlo.
     /// </summary>
-    public static DateTime? GameStartTime() => Platform.Current.GameStartTime();
+    public DateTime? GameStartTime() => Platform.Current.GameStartTime(Game);
 }
