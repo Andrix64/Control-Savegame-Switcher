@@ -3,17 +3,19 @@ namespace Lss;
 /// <summary>
 /// IPlatform per Linux: cartelle di Steam (installazione normale, Flatpak,
 /// Snap), registry.vdf, processi da /proc, xdg-open e istanza unica tramite
-/// file di lock.
+/// file di lock. Niente attributo SupportedOSPlatform: le funzioni pure
+/// vanno testate su ogni sistema (CA1416 nei test); la classe si crea solo
+/// su Linux, in Program.
 /// </summary>
-[System.Runtime.Versioning.SupportedOSPlatform("linux")]
 public sealed class LinuxPlatform : IPlatform
 {
     /// <summary>
     /// Cartelle di Steam trovate nella cartella personale, la principale per
     /// prima. Lista vuota se Steam non è installato.
     /// </summary>
-    public IReadOnlyList<string> FindSteamRoots() =>
-        FindSteamRoots(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
+    public IReadOnlyList<string> FindSteamRoots() => FindSteamRoots(Home);
+
+    private static string Home => Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
     /// <summary>
     /// Cartelle di Steam sotto <paramref name="home"/>, in ordine: normale,
@@ -49,7 +51,61 @@ public sealed class LinuxPlatform : IPlatform
         return roots;
     }
 
-    public bool IsGameRunning(GameInfo game) => throw new NotImplementedException("Fase H, H2–H3.");
+    /// <summary>
+    /// true se un registry.vdf di Steam segna il gioco come aperto. Il
+    /// controllo sui processi si aggiunge in H3.
+    /// </summary>
+    public bool IsGameRunning(GameInfo game) =>
+        RegistryFiles(Home).Any(file => RegistryFileSaysRunning(file, game.AppId));
+
+    /// <summary>
+    /// registry.vdf delle installazioni di Steam sotto <paramref name="home"/>
+    /// (normale, Flatpak, Snap) che esistono.
+    /// </summary>
+    internal static IReadOnlyList<string> RegistryFiles(string home)
+    {
+        string[] paths =
+        {
+            Path.Combine(home, ".steam", "registry.vdf"),
+            Path.Combine(home, ".var", "app", "com.valvesoftware.Steam", ".steam", "registry.vdf"),
+            Path.Combine(home, "snap", "steam", "common", ".steam", "registry.vdf")
+        };
+
+        return paths.Where(File.Exists).ToList();
+    }
+
+    /// <summary>
+    /// true se il registry.vdf dice che il gioco è aperto: RunningAppID per
+    /// quello in primo piano, Apps\ID\Running per tutti. Steam lo scrive
+    /// mentre gira, quindi un errore di lettura vuol dire "non aperto".
+    /// </summary>
+    internal static bool RegistrySaysRunning(string registryText, string appId)
+    {
+        try
+        {
+            Vdf.Node node = Vdf.Parse(registryText);
+
+            return Vdf.Find(node, "Registry", "HKCU", "Software", "Valve", "Steam", "RunningAppID") == appId
+                || Vdf.Find(node, "Registry", "HKCU", "Software", "Valve", "Steam", "Apps", appId, "Running") == "1";
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static bool RegistryFileSaysRunning(string file, string appId)
+    {
+        try
+        {
+            // Steam può starlo scrivendo nello stesso momento.
+            return RegistrySaysRunning(File.ReadAllText(file), appId);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            return false;
+        }
+    }
 
     public DateTime? GameStartTime(GameInfo game) => throw new NotImplementedException("Fase H, H3.");
 
