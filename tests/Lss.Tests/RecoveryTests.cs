@@ -109,4 +109,28 @@ public sealed class RecoveryTests : IDisposable
 
         Assert.Null(Assert.Single(SaveManager.FindAccounts(UserData, "870780")).LastSaved);
     }
+
+    [Fact]
+    public void FindAccountsWithGames_SkipsAccountsWithoutSupportedGames()
+    {
+        TestFolder.Write(Path.Combine(UserData, "111", "105600", "remote", "x"), "x");
+        TestFolder.Write(Path.Combine(UserData, "222", "7", "remote", "sharedconfig.vdf"), "x");
+        TestFolder.Write(Path.Combine(UserData, "222", "814380", "remotecache.vdf"), "x");
+
+        SteamAccount account = Assert.Single(SaveManager.FindAccountsWithGames(UserData));
+        Assert.Equal("111", account.Id);
+    }
+
+    [Fact]
+    public void RecoverAllGameFolders_RestoresAnyGame()
+    {
+        // Sostituzione interrotta di un gioco qualsiasi, non solo di Control.
+        string game = Path.Combine(UserData, "111", "105600");
+        TestFolder.Write(Path.Combine(game + ".vecchio", "remote", "slot"), "prima");
+
+        SaveManager.RecoverAllGameFolders(UserData);
+
+        Assert.Equal("prima", File.ReadAllText(Path.Combine(game, "remote", "slot")));
+        Assert.False(Directory.Exists(game + ".vecchio"));
+    }
 }

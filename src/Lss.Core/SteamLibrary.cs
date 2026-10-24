@@ -9,7 +9,7 @@ internal static class SteamLibrary
         OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
 
     // Cartelle di userdata che non sono giochi.
-    private static readonly HashSet<string> SystemApps = ["7", "760", "241100"];
+    internal static readonly HashSet<string> SystemApps = ["7", "760", "241100"];
 
     // Nomi dei manifest che non sono giochi (runtime di Steam e di Proton).
     private static readonly string[] SystemNamePrefixes =

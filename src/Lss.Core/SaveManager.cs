@@ -186,6 +186,45 @@ public sealed partial class SaveManager
     }
 
     /// <summary>
+    /// Rimette a posto le cartelle dei giochi di ogni account lasciate a metà
+    /// da una sostituzione interrotta, per qualsiasi gioco (non solo Control).
+    /// </summary>
+    internal static void RecoverAllGameFolders(string userData)
+    {
+        var targets = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (string account in Directory.GetDirectories(userData).Where(a => IsNumeric(Path.GetFileName(a))))
+        {
+            foreach (string sub in Directory.GetDirectories(account))
+            {
+                string name = Path.GetFileName(sub);
+
+                foreach (string suffix in new[] { FileOps.OldSuffix, FileOps.TempSuffix })
+                {
+                    if (name.EndsWith(suffix, StringComparison.OrdinalIgnoreCase) &&
+                        IsNumeric(name[..^suffix.Length]))
+                    {
+                        targets.Add(Path.Combine(account, name[..^suffix.Length]));
+                    }
+                }
+            }
+        }
+
+        foreach (string target in targets)
+        {
+            try
+            {
+                if (FileOps.RecoverInterruptedReplace(target))
+                    Log.Write("Recuperata una sostituzione interrotta: " + target);
+            }
+            catch (Exception ex)
+            {
+                Log.Write("Recupero di " + target, ex);
+            }
+        }
+    }
+
+    /// <summary>
     /// Rimette a posto le cartelle di root (profili o savestate) lasciate a
     /// metà da una sostituzione o da una rinomina interrotta.
     /// </summary>
@@ -268,6 +307,68 @@ public sealed partial class SaveManager
 
         return accounts.OrderByDescending(a => a.LastSaved ?? DateTime.MinValue).ToList();
     }
+
+    /// <summary>
+    /// Account in userdata che hanno almeno un gioco con salvataggi in
+    /// userdata (SupportState.Supported), dal più usato di recente.
+    /// </summary>
+    internal static IReadOnlyList<SteamAccount> FindAccountsWithGames(string userData)
+    {
+        var accounts = new List<SteamAccount>();
+
+        foreach (string dir in Directory.GetDirectories(userData))
+        {
+            if (!IsNumeric(Path.GetFileName(dir)))
+                continue;
+
+            List<string> games = Directory.GetDirectories(dir)
+                .Where(game => IsNumeric(Path.GetFileName(game)) &&
+                               !SteamLibrary.SystemApps.Contains(Path.GetFileName(game)))
+                .Where(game => SteamLibrary.GetSupport(game) == SupportState.Supported)
+                .ToList();
+
+            if (games.Count == 0)
+                continue;
+
+            DateTime? lastSaved = null;
+
+            try
+            {
+                foreach (string file in games.SelectMany(SaveFilesOf))
+                {
+                    DateTime time = File.GetLastWriteTime(file);
+
+                    if (lastSaved == null || time > lastSaved)
+                        lastSaved = time;
+                }
+            }
+            catch
+            {
+                // Cartella non leggibile: nessuna data.
+            }
+
+            accounts.Add(new SteamAccount(Path.GetFileName(dir), ReadPersonaName(dir), dir, lastSaved));
+        }
+
+        return accounts.OrderByDescending(a => a.LastSaved ?? DateTime.MinValue).ToList();
+    }
+
+    /// <summary>
+    /// I file di salvataggio di una cartella di gioco: tutti tranne
+    /// remotecache.vdf al primo livello (il file di Steam Cloud).
+    /// </summary>
+    private static IEnumerable<string> SaveFilesOf(string game)
+    {
+        string cache = Path.Combine(game, "remotecache.vdf");
+
+        return Directory.EnumerateFiles(game, "*", SearchOption.AllDirectories)
+            .Where(file => !file.Equals(cache, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>
+    /// true se il nome è fatto solo di cifre, come le cartelle degli account e dei giochi.
+    /// </summary>
+    private static bool IsNumeric(string name) => name.Length > 0 && name.All(char.IsAsciiDigit);
 
     /// <summary>
     /// Nome Steam dell'account, letto da config\localconfig.vdf.
