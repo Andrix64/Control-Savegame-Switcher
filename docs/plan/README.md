@@ -31,7 +31,10 @@ Phases A (rename) and B (Avalonia test, `spike/`) are already done.
 1. **One task at a time, in order.** Open `PROGRESS.md`, take the first task
    not ticked, open its phase file and do exactly what it says. Don't start
    the next task until the current one is committed.
-2. **Branch `lss`.** Work only on the `lss` branch. Never commit on `main`.
+2. **One branch per piece of work.** The `lss` branch (phases A–J5) is
+   merged into `main` and closed. For new work, create a branch from
+   `main` named after it (for example `beta-2` or `fix-history-scroll`)
+   unless the session brief names one. Never commit on `main`.
    **Never push**, never create tags, never create releases: Andrix does
    that.
 3. **Before every commit** run, from the repository root:
