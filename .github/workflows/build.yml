@@ -28,8 +28,6 @@ jobs:
       matrix:
         os: [windows-latest, ubuntu-latest]
     runs-on: ${{ matrix.os }}
-    # Linux: some tests may fail until phase H is done.
-    continue-on-error: ${{ matrix.os == 'ubuntu-latest' }}
 
     steps:
       - uses: actions/checkout@v4

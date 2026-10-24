@@ -73,7 +73,8 @@ public sealed class LocalizationTests
         try
         {
             CultureInfo.CurrentCulture = English;
-            Assert.Equal("10/22/2026 6:30:00 PM", SaveManager.FormatStoredDate("22/10/2026 18:30:00"));
+            // Su Linux (ICU) prima di AM/PM c'è uno spazio stretto U+202F.
+            Assert.Equal("10/22/2026 6:30:00 PM", SaveManager.FormatStoredDate("22/10/2026 18:30:00").Replace(' ', ' '));
 
             CultureInfo.CurrentCulture = Italian;
             Assert.Equal("22/10/2026 18:30:00", SaveManager.FormatStoredDate("22/10/2026 18:30:00"));

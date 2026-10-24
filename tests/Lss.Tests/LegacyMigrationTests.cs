@@ -62,6 +62,25 @@ public sealed class LegacyMigrationTests : IDisposable
     [Fact]
     public void Move_LeavesOldFolderIntactWhenItFails()
     {
+        if (!OperatingSystem.IsWindows())
+        {
+            WriteOldData();
+
+            // Su Linux un file aperto non blocca lo spostamento: al posto della
+            // cartella che deve contenere quella nuova c'è un file.
+            string blocker = Path.Combine(folder.Root, "bloccata");
+            File.WriteAllText(blocker, "");
+            string target = Path.Combine(blocker, "LSS");
+
+            (LegacyMigration.MoveResult result, string detail) = LegacyMigration.Move(Old, target);
+
+            Assert.Equal(LegacyMigration.MoveResult.Failed, result);
+            Assert.NotEqual("", detail);
+            Assert.Equal("mario", File.ReadAllText(Path.Combine(Old, "123", "Profili", "Profilo_Mario", "remote", "slot.sav")));
+            Assert.False(Directory.Exists(target));
+            return;
+        }
+
         WriteOldData();
 
         // Un file aperto impedisce di spostare la cartella.
@@ -138,6 +157,25 @@ public sealed class LegacyMigrationTests : IDisposable
     [Fact]
     public void Migrate_StaysInOldRootWhenFirstStepFails()
     {
+        if (!OperatingSystem.IsWindows())
+        {
+            WriteOldData();
+
+            // Su Linux un file aperto non blocca lo spostamento: al posto della
+            // cartella che deve contenere la nuova c'è un file.
+            TestFolder.Write(Path.GetDirectoryName(New)!, "");
+
+            (LegacyMigration.MoveResult result, string _, string root, string source) = LegacyMigration.MigrateToLss(Old, New, Lss);
+
+            Assert.Equal(LegacyMigration.MoveResult.Failed, result);
+            Assert.Equal(Old, root);
+            Assert.Equal(Old, source);
+            Assert.True(File.Exists(Path.Combine(Old, "123", "870780", "stato.ini")));
+            Assert.Equal("mario", File.ReadAllText(Path.Combine(Old, "123", "870780", "Profili", "Profilo_Mario", "remote", "slot.sav")));
+            Assert.False(Directory.Exists(Lss));
+            return;
+        }
+
         WriteOldData();
 
         using (new FileStream(Path.Combine(Old, "log.txt"), FileMode.Open, FileAccess.Read, FileShare.None))
