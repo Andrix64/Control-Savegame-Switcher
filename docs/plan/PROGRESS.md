@@ -105,7 +105,7 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 - [x] J1c — New icon in the app and the packages (8c9d40c)
 - [x] J2 — Links and README (f1ec978)
 - [x] J3 — Other documents (5e5c0ac)
-- [ ] J4 — Version `1.0.0-beta.1`
+- [x] J4 — Version `1.0.0-beta.1` (bd813d5; Linux check on lss-ci: 176 tests, six installs report `LSS 1.0.0-beta.1`)
 - [ ] J5 — 👤 First beta
 - [ ] J6 — 👤 SignPath
 - [ ] J7 — Further betas
