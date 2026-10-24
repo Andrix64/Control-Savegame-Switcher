@@ -108,4 +108,23 @@ public sealed class FileOpsTests : IDisposable
 
         Assert.True(FileOps.HasNoSaveFiles(Source));
     }
+
+    [Fact]
+    public void CopyKeepsUnixPermissions()
+    {
+        if (!OperatingSystem.IsLinux()) return;
+
+        // Un file eseguibile (mode 0o755) resta eseguibile nella copia.
+        const UnixFileMode mode = UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute
+            | UnixFileMode.GroupRead | UnixFileMode.GroupExecute
+            | UnixFileMode.OtherRead | UnixFileMode.OtherExecute;
+
+        string file = Path.Combine(Source, "remote", "avvia.sh");
+        TestFolder.Write(file, "#!/bin/sh");
+        File.SetUnixFileMode(file, mode);
+
+        FileOps.CopyFolderVerified(Source, Destination);
+
+        Assert.Equal(mode, File.GetUnixFileMode(Path.Combine(Destination, "remote", "avvia.sh")));
+    }
 }
