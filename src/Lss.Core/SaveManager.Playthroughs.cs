@@ -637,11 +637,11 @@ public sealed partial class SaveManager
         {
             Platform.Current.OpenSteamUri("steam://rungameid/" + GameInfo.ControlAppId);
             Log.Write("Avvio di Control tramite Steam");
-            return Result.Ok(Strings.GameLaunching);
+            return Result.Ok(Loc.F(Strings.GameLaunching, "Control"));
         }
         catch (Exception ex)
         {
-            return Log.Write("Avvio di Control", Result.Fail(Loc.F(Strings.LaunchFailed, ex.Message)));
+            return Log.Write("Avvio di Control", Result.Fail(Loc.F(Strings.LaunchFailed, "Control", ex.Message)));
         }
     }
 

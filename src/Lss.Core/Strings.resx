@@ -14,7 +14,7 @@ Details are in the log:
 {1}</value></data>
   <data name="SteamNotFound" xml:space="preserve"><value>Steam not found.</value></data>
   <data name="UserDataNotFound" xml:space="preserve"><value>Steam&apos;s userdata folder not found.</value></data>
-  <data name="SavesNotFound" xml:space="preserve"><value>Control saves not found.
+  <data name="SavesNotFound" xml:space="preserve"><value>{0} saves not found.
 Start the game at least once.</value></data>
   <data name="InitError" xml:space="preserve"><value>Initialization error: {0}</value></data>
   <data name="InvalidName" xml:space="preserve"><value>Invalid name.</value></data>
@@ -40,7 +40,7 @@ Load another playthrough first.</value></data>
 They are in:
 {1}</value></data>
   <data name="ProfileDeleted" xml:space="preserve"><value>Playthrough deleted. You can recover it from “Deleted playthroughs”.</value></data>
-  <data name="CloseControlFirst" xml:space="preserve"><value>Close Control before continuing.</value></data>
+  <data name="CloseGameFirst" xml:space="preserve"><value>Close {0} before continuing.</value></data>
   <data name="ActivatedStateNotSaved" xml:space="preserve"><value>Playthrough loaded, but the state was not saved: {0}</value></data>
   <data name="ProfileActivated" xml:space="preserve"><value>Playthrough loaded.</value></data>
   <data name="NoValidActiveProfile" xml:space="preserve"><value>No playthrough is loaded in the game.</value></data>
@@ -89,7 +89,7 @@ DO NOT start the game. The backup is in:
   <data name="ActiveSuffix" xml:space="preserve"><value>, active</value></data>
   <data name="CannotReadState" xml:space="preserve"><value>Can&apos;t read the state: {0}</value></data>
   <data name="CannotReadProfiles" xml:space="preserve"><value>Can&apos;t read the profiles: {0}</value></data>
-  <data name="GameRunning" xml:space="preserve"><value>Control is running: close it to switch or save.</value></data>
+  <data name="GameRunning" xml:space="preserve"><value>{0} is running: close it to switch or save.</value></data>
   <data name="SwitchSaveFailed" xml:space="preserve"><value>Nothing changed: we couldn&apos;t save the progress of “{0}”.
 {1}</value></data>
   <data name="TitleSeriousError" xml:space="preserve"><value>Serious error</value></data>
@@ -109,7 +109,7 @@ DO NOT start the game. The backup is in:
   <data name="InvalidNameHint" xml:space="preserve"><value>Invalid name. {0}</value></data>
   <data name="UseThisAccount" xml:space="preserve"><value>Use this account</value></data>
   <data name="Exit" xml:space="preserve"><value>Exit</value></data>
-  <data name="AccountIntro" xml:space="preserve"><value>This PC has more than one Steam account with Control.
+  <data name="AccountIntro" xml:space="preserve"><value>This PC has more than one Steam account with {0}.
 Which one do you want to use? Each account has its own playthroughs.</value></data>
   <data name="CaptionSteamAccount" xml:space="preserve"><value>STEAM ACCOUNT</value></data>
   <data name="AccountNoSaves" xml:space="preserve"><value>no saves</value></data>
@@ -167,8 +167,8 @@ The app keeps using the old folder. Nothing has been lost.</value></data>
   <data name="Exported" xml:space="preserve"><value>“{0}” exported to {1}.</value></data>
   <data name="ImportInvalid" xml:space="preserve"><value>This file isn&apos;t a playthrough exported by Local Save Switcher or Control Save Manager.</value></data>
   <data name="ImportFailed" xml:space="preserve"><value>We couldn&apos;t import the playthrough: {0}</value></data>
-  <data name="GameLaunching" xml:space="preserve"><value>Starting Control...</value></data>
-  <data name="LaunchFailed" xml:space="preserve"><value>We couldn&apos;t start Control through Steam: {0}
+  <data name="GameLaunching" xml:space="preserve"><value>Starting {0}...</value></data>
+  <data name="LaunchFailed" xml:space="preserve"><value>We couldn&apos;t start {0} through Steam: {1}
 Start it from Steam yourself: the playthrough is already loaded.</value></data>
   <data name="AppTitle" xml:space="preserve"><value>Local Save Switcher</value></data>
   <data name="PlaythroughNameHint" xml:space="preserve"><value>Letters, digits, spaces, _ and -. You can change it whenever you like.</value></data>
@@ -194,18 +194,18 @@ Start it from Steam yourself: the playthrough is already loaded.</value></data>
   <data name="CaptionSavePoint" xml:space="preserve"><value>SAVE A POINT NOW</value></data>
   <data name="Change" xml:space="preserve"><value>Change</value></data>
   <data name="CloudBarAction" xml:space="preserve"><value>How to do it</value></data>
-  <data name="CloudBarText" xml:space="preserve"><value>When the game starts, Steam might put back saves from another playthrough. Turn it off for Control.</value></data>
-  <data name="CloudBarTitle" xml:space="preserve"><value>Steam Cloud is on for Control</value></data>
+  <data name="CloudBarText" xml:space="preserve"><value>When the game starts, Steam might put back saves from another playthrough. Turn it off for {0}.</value></data>
+  <data name="CloudBarTitle" xml:space="preserve"><value>Steam Cloud is on for {0}</value></data>
   <data name="CloudConfirmHeading" xml:space="preserve"><value>Steam Cloud might mix up your playthroughs</value></data>
-  <data name="CloudConfirmMaybe" xml:space="preserve"><value>We can&apos;t tell whether Steam Cloud is on for Control. If it is, Steam might put back saves from another playthrough.
+  <data name="CloudConfirmMaybe" xml:space="preserve"><value>We can&apos;t tell whether Steam Cloud is on for {0}. If it is, Steam might put back saves from another playthrough.
 
 This warning won&apos;t be shown again until you close the app.</value></data>
-  <data name="CloudConfirmOn" xml:space="preserve"><value>Steam Cloud is on for Control: when the game starts, Steam might put back saves from another playthrough. Turn it off in Control&apos;s properties.
+  <data name="CloudConfirmOn" xml:space="preserve"><value>Steam Cloud is on for {0}: when the game starts, Steam might put back saves from another playthrough. Turn it off in the game&apos;s properties.
 
 This warning won&apos;t be shown again until you close the app.</value></data>
-  <data name="CloudHelpHeading" xml:space="preserve"><value>Turn off Steam Cloud for Control</value></data>
+  <data name="CloudHelpHeading" xml:space="preserve"><value>Turn off Steam Cloud for {0}</value></data>
   <data name="CloudHelpText" xml:space="preserve"><value>1. In Steam, open the Library.
-2. Right-click Control and choose Properties.
+2. Right-click {0} and choose Properties.
 3. In General, turn off “Keep games saves in the Steam Cloud”.
 
 The bar disappears as soon as the setting is off.</value></data>
@@ -233,22 +233,22 @@ The bar disappears as soon as the setting is off.</value></data>
   <data name="ExportTitle" xml:space="preserve"><value>Export playthrough</value></data>
   <data name="FirstPlaythroughName" xml:space="preserve"><value>Main playthrough</value></data>
   <data name="FirstRunAccount" xml:space="preserve"><value>Steam account: {0}</value></data>
-  <data name="FirstRunCloudOff" xml:space="preserve"><value>Steam Cloud is off for Control: good</value></data>
-  <data name="FirstRunCloudOn" xml:space="preserve"><value>Steam Cloud is on for Control: better turn it off (you&apos;ll find how in the main window)</value></data>
-  <data name="FirstRunCloudUnknown" xml:space="preserve"><value>We can&apos;t tell whether Steam Cloud is on for Control</value></data>
+  <data name="FirstRunCloudOff" xml:space="preserve"><value>Steam Cloud is off for {0}: good</value></data>
+  <data name="FirstRunCloudOn" xml:space="preserve"><value>Steam Cloud is on for {0}: better turn it off (you&apos;ll find how in the main window)</value></data>
+  <data name="FirstRunCloudUnknown" xml:space="preserve"><value>We can&apos;t tell whether Steam Cloud is on for {0}</value></data>
   <data name="FirstRunIntro" xml:space="preserve"><value>Each playthrough has its own saves. When you choose “Play this”, the app puts the previous playthrough aside and loads the new one. It makes a copy before every switch, so you can always go back.</value></data>
   <data name="FirstRunNameCaption" xml:space="preserve"><value>THE GAME ALREADY HAS A PLAYTHROUGH. WHAT SHALL WE CALL IT?</value></data>
   <data name="FirstRunSave" xml:space="preserve"><value>Save and start</value></data>
   <data name="FirstRunSkip" xml:space="preserve"><value>Start without saving it</value></data>
-  <data name="FirstRunTitle" xml:space="preserve"><value>Several Control playthroughs, one at a time in the game</value></data>
-  <data name="GameBarExit" xml:space="preserve"><value>To switch playthrough or save a point, quit Control: the app notices by itself.</value></data>
-  <data name="GameBarOpen" xml:space="preserve"><value>Control is running</value></data>
+  <data name="FirstRunTitle" xml:space="preserve"><value>Several {0} playthroughs, one at a time in the game</value></data>
+  <data name="GameBarExit" xml:space="preserve"><value>To switch playthrough or save a point, quit {0}: the app notices by itself.</value></data>
+  <data name="GameBarOpen" xml:space="preserve"><value>{0} is running</value></data>
   <data name="GameBarPlaying" xml:space="preserve"><value>You&apos;re playing “{0}”</value></data>
   <data name="GameBarSaveOnExit" xml:space="preserve"><value>When you close the game, your progress is saved to this playthrough automatically.</value></data>
   <data name="GameBarSession" xml:space="preserve"><value>Current session: {0}</value></data>
   <data name="GoBackHere" xml:space="preserve"><value>Go back here</value></data>
   <data name="HistoryButton" xml:space="preserve"><value>History</value></data>
-  <data name="HistoryGameRunning" xml:space="preserve"><value>Quit Control to save a point or go back.</value></data>
+  <data name="HistoryGameRunning" xml:space="preserve"><value>Quit {0} to save a point or go back.</value></data>
   <data name="HistoryHeading" xml:space="preserve"><value>History of “{0}”</value></data>
   <data name="HistoryIntro" xml:space="preserve"><value>Pick a moment and go back to it. Before going back, the current situation is copied.</value></data>
   <data name="HistoryTitle" xml:space="preserve"><value>History</value></data>
@@ -291,18 +291,18 @@ The bar disappears as soon as the setting is off.</value></data>
   <data name="SettingDataFolder" xml:space="preserve"><value>Playthroughs and copies are in {0}</value></data>
   <data name="SettingKeepCopies" xml:space="preserve"><value>Automatic copies to keep</value></data>
   <data name="SettingKeepCopiesHint" xml:space="preserve"><value>0 = all</value></data>
-  <data name="SettingLaunch" xml:space="preserve"><value>“Play this” also starts Control</value></data>
+  <data name="SettingLaunch" xml:space="preserve"><value>“Play this” also starts {0}</value></data>
   <data name="SettingLaunchHint" xml:space="preserve"><value>If you turn it off, the playthrough is only loaded and you start the game yourself.</value></data>
-  <data name="SettingSaveOnExit" xml:space="preserve"><value>Save progress when you close Control</value></data>
+  <data name="SettingSaveOnExit" xml:space="preserve"><value>Save progress when you close {0}</value></data>
   <data name="SettingSaveOnExitHint" xml:space="preserve"><value>As soon as you quit the game, the playthrough in use is updated, with an automatic copy. Only while the app is open.</value></data>
   <data name="SettingSharePreferences" xml:space="preserve"><value>Same game options for all playthroughs</value></data>
   <data name="SettingSharePreferencesHint" xml:space="preserve"><value>Controls, audio and subtitles stay the same when you switch playthrough, even in a new one.</value></data>
   <data name="SettingsButton" xml:space="preserve"><value>Settings</value></data>
   <data name="SettingsTitle" xml:space="preserve"><value>Settings</value></data>
   <data name="StartAnyway" xml:space="preserve"><value>Start anyway</value></data>
-  <data name="StartingWith" xml:space="preserve"><value>Starting Control with “{0}”...</value></data>
+  <data name="StartingWith" xml:space="preserve"><value>Starting {0} with “{1}”...</value></data>
   <data name="Undo" xml:space="preserve"><value>Undo</value></data>
   <data name="YourPlaythroughs" xml:space="preserve"><value>Your playthroughs</value></data>
-  <data name="ZipFilter" xml:space="preserve"><value>Control playthrough (*.zip)|*.zip</value></data>
+  <data name="ZipFilter" xml:space="preserve"><value>{0} playthrough (*.zip)|*.zip</value></data>
   <data name="UnknownGameName" xml:space="preserve"><value>App {0}</value></data>
 </root>

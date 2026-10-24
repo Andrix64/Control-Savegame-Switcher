@@ -285,7 +285,7 @@ internal abstract class ListDialog : Form
 
             // Il messaggio sul gioco aperto prende il posto dell'ultimo esito.
             if (!Busy)
-                SetStatus(running ? Strings.GameRunning : "", running ? Theme.Warning : Theme.TextMuted);
+                SetStatus(running ? Loc.F(Strings.GameRunning, Manager.Game.Name) : "", running ? Theme.Warning : Theme.TextMuted);
 
             UpdateButtons();
         }

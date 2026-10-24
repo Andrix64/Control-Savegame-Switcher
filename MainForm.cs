@@ -281,7 +281,7 @@ internal sealed class MainForm : Form
 
         if (cloudState == CloudState.Enabled)
         {
-            cloudBar.Show(InfoKind.Warning, Strings.CloudBarTitle, Strings.CloudBarText,
+            cloudBar.Show(InfoKind.Warning, Loc.F(Strings.CloudBarTitle, manager.Game.Name), Loc.F(Strings.CloudBarText, manager.Game.Name),
                 Strings.CloudBarAction, ShowCloudHelp);
         }
         else
@@ -296,14 +296,14 @@ internal sealed class MainForm : Form
                 : "";
 
             string text = manager.State.SaveOnGameExit && active != ""
-                ? Strings.GameBarSaveOnExit + " " + Strings.GameBarExit
-                : Strings.GameBarExit;
+                ? Strings.GameBarSaveOnExit + " " + Loc.F(Strings.GameBarExit, manager.Game.Name)
+                : Loc.F(Strings.GameBarExit, manager.Game.Name);
 
             if (sessionStart is DateTime start && DateTime.Now - start >= TimeSpan.FromMinutes(1))
                 text += "\n" + Loc.F(Strings.GameBarSession, CardText.FormatPlayTime(DateTime.Now - start));
 
             gameBar.Show(InfoKind.Info,
-                active == "" ? Strings.GameBarOpen : Loc.F(Strings.GameBarPlaying, active), text);
+                active == "" ? Loc.F(Strings.GameBarOpen, manager.Game.Name) : Loc.F(Strings.GameBarPlaying, active), text);
         }
         else
         {
@@ -516,7 +516,7 @@ internal sealed class MainForm : Form
             Result launched = SaveManager.LaunchGame();
 
             if (launched.Success)
-                ShowToast(InfoKind.Info, Loc.F(Strings.StartingWith, name));
+                ShowToast(InfoKind.Info, Loc.F(Strings.StartingWith, manager.Game.Name, name));
             else
                 ShowError(launched);
 
@@ -545,7 +545,7 @@ internal sealed class MainForm : Form
         Result launched = SaveManager.LaunchGame();
 
         if (launched.Success)
-            ShowToast(InfoKind.Info, Loc.F(Strings.StartingWith,
+            ShowToast(InfoKind.Info, Loc.F(Strings.StartingWith, manager.Game.Name,
                 SaveManager.ProfileDisplayName(manager.State.ActiveProfile)));
         else
             ShowError(launched);
@@ -592,7 +592,7 @@ internal sealed class MainForm : Form
         using var dialog = new SaveFileDialog
         {
             Title = Strings.ExportTitle,
-            Filter = Strings.ZipFilter,
+            Filter = Loc.F(Strings.ZipFilter, manager.Game.Name),
             FileName = name + ".zip",
             OverwritePrompt = true
         };
@@ -616,7 +616,7 @@ internal sealed class MainForm : Form
         using var dialog = new OpenFileDialog
         {
             Title = Strings.ImportTitle,
-            Filter = Strings.ZipFilter
+            Filter = Loc.F(Strings.ZipFilter, manager.Game.Name)
         };
 
         if (dialog.ShowDialog(this) != DialogResult.OK)
@@ -723,7 +723,8 @@ internal sealed class MainForm : Form
 
     private void ShowCloudHelp()
     {
-        MessageDialog.Inform(this, Strings.CloudHelpHeading, Strings.CloudHelpText, MessageBoxIcon.Information);
+        MessageDialog.Inform(this, Loc.F(Strings.CloudHelpHeading, manager.Game.Name),
+            Loc.F(Strings.CloudHelpText, manager.Game.Name), MessageBoxIcon.Information);
         RefreshAll();
     }
 
@@ -844,7 +845,9 @@ internal sealed class MainForm : Form
             return true;
 
         cloudWarningAccepted = MessageDialog.Confirm(this, Strings.CloudConfirmHeading,
-            cloudState == CloudState.Enabled ? Strings.CloudConfirmOn : Strings.CloudConfirmMaybe,
+            cloudState == CloudState.Enabled
+                ? Loc.F(Strings.CloudConfirmOn, manager.Game.Name)
+                : Loc.F(Strings.CloudConfirmMaybe, manager.Game.Name),
             launching ? Strings.StartAnyway : Strings.ContinueAnyway,
             icon: MessageBoxIcon.Warning);
 

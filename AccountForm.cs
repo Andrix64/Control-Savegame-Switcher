@@ -47,7 +47,7 @@ internal sealed class AccountForm : Form
 
         var intro = new Label
         {
-            Text = Strings.AccountIntro,
+            Text = Loc.F(Strings.AccountIntro, "Control"),
             AutoSize = true,
             ForeColor = Theme.Text,
             Margin = new Padding(0, 0, 0, 14)

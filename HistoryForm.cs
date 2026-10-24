@@ -467,7 +467,7 @@ internal sealed class HistoryForm : Form
 
         if (gameRunning)
         {
-            saveHint.Text = Strings.HistoryGameRunning;
+            saveHint.Text = Loc.F(Strings.HistoryGameRunning, manager.Game.Name);
             saveHint.ForeColor = Theme.Warning;
         }
         else if (!valid)

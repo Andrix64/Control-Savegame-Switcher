@@ -126,7 +126,7 @@ public sealed partial class SaveManager
         if (accounts.Count == 0)
         {
             return Result<SaveManager>.Fail(
-                Strings.SavesNotFound);
+                Loc.F(Strings.SavesNotFound, "Control"));
         }
 
         string appData = AppData.Root;
@@ -514,7 +514,7 @@ public sealed partial class SaveManager
 
         // Copiando mentre il gioco scrive si otterrebbe un profilo incoerente.
         if (IsGameRunning())
-            return Result.Fail(Strings.CloseControlFirst);
+            return Result.Fail(Loc.F(Strings.CloseGameFirst, Game.Name));
 
         string backup = NewBackupPath("Prima_creazione");
 
@@ -727,7 +727,7 @@ public sealed partial class SaveManager
     private Result ActivateProfileCore(string profileName)
     {
         if (IsGameRunning())
-            return Result.Fail(Strings.CloseControlFirst);
+            return Result.Fail(Loc.F(Strings.CloseGameFirst, Game.Name));
 
         string profile = Path.Combine(ProfilesPath, profileName);
 
@@ -786,7 +786,7 @@ public sealed partial class SaveManager
             return Result.Fail(Strings.NoValidActiveProfile);
 
         if (IsGameRunning())
-            return Result.Fail(Strings.CloseControlFirst);
+            return Result.Fail(Loc.F(Strings.CloseGameFirst, Game.Name));
 
         if (!allowEmptySaves && GameSavesAreEmpty())
         {
@@ -974,7 +974,7 @@ public sealed partial class SaveManager
             return Result.Fail(Strings.InvalidName);
 
         if (IsGameRunning())
-            return Result.Fail(Strings.CloseControlFirst);
+            return Result.Fail(Loc.F(Strings.CloseGameFirst, Game.Name));
 
         if (GameSavesAreEmpty())
             return Result.Fail(Strings.GameSavesEmpty);
@@ -1097,7 +1097,7 @@ public sealed partial class SaveManager
     private Result RestoreToGame(Snapshot snapshot, string root, string message)
     {
         if (IsGameRunning())
-            return Result.Fail(Strings.CloseControlFirst);
+            return Result.Fail(Loc.F(Strings.CloseGameFirst, Game.Name));
 
         if (!IsInside(snapshot.Path, root) || !Directory.Exists(snapshot.Path))
             return Result.Fail(Loc.F(Strings.FolderNotFound, snapshot.Path));

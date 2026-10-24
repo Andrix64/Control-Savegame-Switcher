@@ -88,8 +88,8 @@ internal sealed class SettingsForm : Form
 {
     private readonly SaveManager manager;
 
-    private readonly CheckBox launchCheck = MakeCheck(Strings.SettingLaunch);
-    private readonly CheckBox saveOnExitCheck = MakeCheck(Strings.SettingSaveOnExit);
+    private readonly CheckBox launchCheck;
+    private readonly CheckBox saveOnExitCheck;
     private readonly CheckBox shareCheck = MakeCheck(Strings.SettingSharePreferences);
 
     private readonly NumericUpDown keepBox = new()
@@ -110,6 +110,9 @@ internal sealed class SettingsForm : Form
     public SettingsForm(SaveManager manager)
     {
         this.manager = manager;
+
+        launchCheck = MakeCheck(Loc.F(Strings.SettingLaunch, manager.Game.Name));
+        saveOnExitCheck = MakeCheck(Loc.F(Strings.SettingSaveOnExit, manager.Game.Name));
 
         Theme.ApplyDialog(this, Strings.SettingsTitle);
         AutoSize = true;
@@ -286,7 +289,7 @@ internal sealed class FirstRunForm : Form
 
         var title = new Label
         {
-            Text = Strings.FirstRunTitle,
+            Text = Loc.F(Strings.FirstRunTitle, manager.Game.Name),
             AutoSize = true,
             MaximumSize = new Size(560, 0),
             Font = Theme.Large,
@@ -313,9 +316,9 @@ internal sealed class FirstRunForm : Form
 
         string cloudText = cloud switch
         {
-            CloudState.Disabled => "✓  " + Strings.FirstRunCloudOff,
-            CloudState.Enabled => "!  " + Strings.FirstRunCloudOn,
-            _ => "?  " + Strings.FirstRunCloudUnknown
+            CloudState.Disabled => "✓  " + Loc.F(Strings.FirstRunCloudOff, manager.Game.Name),
+            CloudState.Enabled => "!  " + Loc.F(Strings.FirstRunCloudOn, manager.Game.Name),
+            _ => "?  " + Loc.F(Strings.FirstRunCloudUnknown, manager.Game.Name)
         };
 
         var checks = new Label

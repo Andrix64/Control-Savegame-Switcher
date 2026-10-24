@@ -14,7 +14,7 @@ I dettagli sono nel registro:
 {1}</value></data>
   <data name="SteamNotFound" xml:space="preserve"><value>Steam non trovato.</value></data>
   <data name="UserDataNotFound" xml:space="preserve"><value>Cartella userdata di Steam non trovata.</value></data>
-  <data name="SavesNotFound" xml:space="preserve"><value>Salvataggi di Control non trovati.
+  <data name="SavesNotFound" xml:space="preserve"><value>Salvataggi di {0} non trovati.
 Avvia il gioco almeno una volta.</value></data>
   <data name="InitError" xml:space="preserve"><value>Errore di inizializzazione: {0}</value></data>
   <data name="InvalidName" xml:space="preserve"><value>Nome non valido.</value></data>
@@ -40,7 +40,7 @@ Carica prima un&apos;altra partita.</value></data>
 Sono in:
 {1}</value></data>
   <data name="ProfileDeleted" xml:space="preserve"><value>Partita eliminata. Puoi recuperarla da «Partite eliminate».</value></data>
-  <data name="CloseControlFirst" xml:space="preserve"><value>Chiudi Control prima di continuare.</value></data>
+  <data name="CloseGameFirst" xml:space="preserve"><value>Chiudi {0} prima di continuare.</value></data>
   <data name="ActivatedStateNotSaved" xml:space="preserve"><value>Partita caricata, ma lo stato non è stato salvato: {0}</value></data>
   <data name="ProfileActivated" xml:space="preserve"><value>Partita caricata.</value></data>
   <data name="NoValidActiveProfile" xml:space="preserve"><value>Nessuna partita è caricata nel gioco.</value></data>
@@ -89,7 +89,7 @@ NON avviare il gioco. Il backup è in:
   <data name="ActiveSuffix" xml:space="preserve"><value>, attivo</value></data>
   <data name="CannotReadState" xml:space="preserve"><value>Impossibile leggere lo stato: {0}</value></data>
   <data name="CannotReadProfiles" xml:space="preserve"><value>Impossibile leggere i profili: {0}</value></data>
-  <data name="GameRunning" xml:space="preserve"><value>Control è in esecuzione: chiudilo per cambiare o salvare.</value></data>
+  <data name="GameRunning" xml:space="preserve"><value>{0} è in esecuzione: chiudilo per cambiare o salvare.</value></data>
   <data name="SwitchSaveFailed" xml:space="preserve"><value>Non è cambiato nulla: non siamo riusciti a salvare i progressi di «{0}».
 {1}</value></data>
   <data name="TitleSeriousError" xml:space="preserve"><value>Errore grave</value></data>
@@ -109,7 +109,7 @@ NON avviare il gioco. Il backup è in:
   <data name="InvalidNameHint" xml:space="preserve"><value>Nome non valido. {0}</value></data>
   <data name="UseThisAccount" xml:space="preserve"><value>Usa questo account</value></data>
   <data name="Exit" xml:space="preserve"><value>Esci</value></data>
-  <data name="AccountIntro" xml:space="preserve"><value>Su questo PC ci sono più account Steam con Control.
+  <data name="AccountIntro" xml:space="preserve"><value>Su questo PC ci sono più account Steam con {0}.
 Quale vuoi usare? Ogni account ha le sue partite.</value></data>
   <data name="CaptionSteamAccount" xml:space="preserve"><value>ACCOUNT STEAM</value></data>
   <data name="AccountNoSaves" xml:space="preserve"><value>nessun salvataggio</value></data>
@@ -167,8 +167,8 @@ L&apos;app continua a usare la vecchia cartella. Non è andato perso nulla.</val
   <data name="Exported" xml:space="preserve"><value>«{0}» esportata in {1}.</value></data>
   <data name="ImportInvalid" xml:space="preserve"><value>Questo file non è una partita esportata da Local Save Switcher o da Control Save Manager.</value></data>
   <data name="ImportFailed" xml:space="preserve"><value>Non siamo riusciti a importare la partita: {0}</value></data>
-  <data name="GameLaunching" xml:space="preserve"><value>Avvio di Control...</value></data>
-  <data name="LaunchFailed" xml:space="preserve"><value>Non siamo riusciti ad avviare Control tramite Steam: {0}
+  <data name="GameLaunching" xml:space="preserve"><value>Avvio di {0}...</value></data>
+  <data name="LaunchFailed" xml:space="preserve"><value>Non siamo riusciti ad avviare {0} tramite Steam: {1}
 Avvialo tu da Steam: la partita è già caricata.</value></data>
   <data name="AppTitle" xml:space="preserve"><value>Local Save Switcher</value></data>
   <data name="PlaythroughNameHint" xml:space="preserve"><value>Lettere, cifre, spazi, _ e -. Potrai cambiarlo quando vuoi.</value></data>
@@ -194,18 +194,18 @@ Avvialo tu da Steam: la partita è già caricata.</value></data>
   <data name="CaptionSavePoint" xml:space="preserve"><value>SALVA UN PUNTO ADESSO</value></data>
   <data name="Change" xml:space="preserve"><value>Cambia</value></data>
   <data name="CloudBarAction" xml:space="preserve"><value>Come si fa</value></data>
-  <data name="CloudBarText" xml:space="preserve"><value>All&apos;avvio del gioco Steam potrebbe rimettere salvataggi di un&apos;altra partita. Disattivalo per Control.</value></data>
-  <data name="CloudBarTitle" xml:space="preserve"><value>Steam Cloud è attivo per Control</value></data>
+  <data name="CloudBarText" xml:space="preserve"><value>All&apos;avvio del gioco Steam potrebbe rimettere salvataggi di un&apos;altra partita. Disattivalo per {0}.</value></data>
+  <data name="CloudBarTitle" xml:space="preserve"><value>Steam Cloud è attivo per {0}</value></data>
   <data name="CloudConfirmHeading" xml:space="preserve"><value>Steam Cloud potrebbe mischiare le partite</value></data>
-  <data name="CloudConfirmMaybe" xml:space="preserve"><value>Non sappiamo se Steam Cloud è attivo per Control. Se lo è, Steam potrebbe rimettere salvataggi di un&apos;altra partita.
+  <data name="CloudConfirmMaybe" xml:space="preserve"><value>Non sappiamo se Steam Cloud è attivo per {0}. Se lo è, Steam potrebbe rimettere salvataggi di un&apos;altra partita.
 
 L&apos;avviso non verrà ripetuto fino alla chiusura dell&apos;app.</value></data>
-  <data name="CloudConfirmOn" xml:space="preserve"><value>Steam Cloud è attivo per Control: all&apos;avvio del gioco Steam potrebbe rimettere salvataggi di un&apos;altra partita. Disattivalo nelle proprietà di Control.
+  <data name="CloudConfirmOn" xml:space="preserve"><value>Steam Cloud è attivo per {0}: all&apos;avvio del gioco Steam potrebbe rimettere salvataggi di un&apos;altra partita. Disattivalo nelle proprietà del gioco.
 
 L&apos;avviso non verrà ripetuto fino alla chiusura dell&apos;app.</value></data>
-  <data name="CloudHelpHeading" xml:space="preserve"><value>Disattivare Steam Cloud per Control</value></data>
+  <data name="CloudHelpHeading" xml:space="preserve"><value>Disattivare Steam Cloud per {0}</value></data>
   <data name="CloudHelpText" xml:space="preserve"><value>1. In Steam, apri la Libreria.
-2. Tasto destro su Control, poi Proprietà.
+2. Tasto destro su {0}, poi Proprietà.
 3. In Generale, spegni «Mantieni i salvataggi su Steam Cloud».
 
 La barra sparisce appena l&apos;impostazione è spenta.</value></data>
@@ -233,22 +233,22 @@ La barra sparisce appena l&apos;impostazione è spenta.</value></data>
   <data name="ExportTitle" xml:space="preserve"><value>Esporta partita</value></data>
   <data name="FirstPlaythroughName" xml:space="preserve"><value>Partita principale</value></data>
   <data name="FirstRunAccount" xml:space="preserve"><value>Account Steam: {0}</value></data>
-  <data name="FirstRunCloudOff" xml:space="preserve"><value>Steam Cloud disattivato per Control: va bene così</value></data>
-  <data name="FirstRunCloudOn" xml:space="preserve"><value>Steam Cloud è attivo per Control: meglio disattivarlo (trovi come nella finestra principale)</value></data>
-  <data name="FirstRunCloudUnknown" xml:space="preserve"><value>Non sappiamo se Steam Cloud è attivo per Control</value></data>
+  <data name="FirstRunCloudOff" xml:space="preserve"><value>Steam Cloud disattivato per {0}: va bene così</value></data>
+  <data name="FirstRunCloudOn" xml:space="preserve"><value>Steam Cloud è attivo per {0}: meglio disattivarlo (trovi come nella finestra principale)</value></data>
+  <data name="FirstRunCloudUnknown" xml:space="preserve"><value>Non sappiamo se Steam Cloud è attivo per {0}</value></data>
   <data name="FirstRunIntro" xml:space="preserve"><value>Ogni partita ha i suoi salvataggi. Quando scegli «Gioca questa», il programma mette da parte la partita di prima e carica quella nuova. Prima di ogni cambio fa una copia, quindi puoi sempre tornare indietro.</value></data>
   <data name="FirstRunNameCaption" xml:space="preserve"><value>NEL GIOCO C&apos;È GIÀ UNA PARTITA. COME LA CHIAMIAMO?</value></data>
   <data name="FirstRunSave" xml:space="preserve"><value>Salva e comincia</value></data>
   <data name="FirstRunSkip" xml:space="preserve"><value>Comincia senza salvarla</value></data>
-  <data name="FirstRunTitle" xml:space="preserve"><value>Più partite di Control, una alla volta nel gioco</value></data>
-  <data name="GameBarExit" xml:space="preserve"><value>Per cambiare partita o salvare un punto, esci da Control: il programma se ne accorge da solo.</value></data>
-  <data name="GameBarOpen" xml:space="preserve"><value>Control è aperto</value></data>
+  <data name="FirstRunTitle" xml:space="preserve"><value>Più partite di {0}, una alla volta nel gioco</value></data>
+  <data name="GameBarExit" xml:space="preserve"><value>Per cambiare partita o salvare un punto, esci da {0}: il programma se ne accorge da solo.</value></data>
+  <data name="GameBarOpen" xml:space="preserve"><value>{0} è aperto</value></data>
   <data name="GameBarPlaying" xml:space="preserve"><value>Stai giocando «{0}»</value></data>
   <data name="GameBarSaveOnExit" xml:space="preserve"><value>Quando chiudi il gioco, i progressi vengono salvati da soli in questa partita.</value></data>
   <data name="GameBarSession" xml:space="preserve"><value>Sessione in corso: {0}</value></data>
   <data name="GoBackHere" xml:space="preserve"><value>Torna qui</value></data>
   <data name="HistoryButton" xml:space="preserve"><value>Cronologia</value></data>
-  <data name="HistoryGameRunning" xml:space="preserve"><value>Esci da Control per salvare un punto o tornare indietro.</value></data>
+  <data name="HistoryGameRunning" xml:space="preserve"><value>Esci da {0} per salvare un punto o tornare indietro.</value></data>
   <data name="HistoryHeading" xml:space="preserve"><value>Cronologia di «{0}»</value></data>
   <data name="HistoryIntro" xml:space="preserve"><value>Scegli un momento e torna lì. Prima di tornare indietro, la situazione attuale viene copiata.</value></data>
   <data name="HistoryTitle" xml:space="preserve"><value>Cronologia</value></data>
@@ -291,18 +291,18 @@ La barra sparisce appena l&apos;impostazione è spenta.</value></data>
   <data name="SettingDataFolder" xml:space="preserve"><value>Partite e copie sono in {0}</value></data>
   <data name="SettingKeepCopies" xml:space="preserve"><value>Copie automatiche da tenere</value></data>
   <data name="SettingKeepCopiesHint" xml:space="preserve"><value>0 = tutte</value></data>
-  <data name="SettingLaunch" xml:space="preserve"><value>«Gioca questa» avvia anche Control</value></data>
+  <data name="SettingLaunch" xml:space="preserve"><value>«Gioca questa» avvia anche {0}</value></data>
   <data name="SettingLaunchHint" xml:space="preserve"><value>Se lo spegni, la partita viene solo caricata e il gioco lo avvii tu.</value></data>
-  <data name="SettingSaveOnExit" xml:space="preserve"><value>Salva i progressi quando chiudi Control</value></data>
+  <data name="SettingSaveOnExit" xml:space="preserve"><value>Salva i progressi quando chiudi {0}</value></data>
   <data name="SettingSaveOnExitHint" xml:space="preserve"><value>Appena esci dal gioco, la partita in uso viene aggiornata, con una copia automatica. Solo se l&apos;app è aperta.</value></data>
   <data name="SettingSharePreferences" xml:space="preserve"><value>Stesse opzioni del gioco per tutte le partite</value></data>
   <data name="SettingSharePreferencesHint" xml:space="preserve"><value>Comandi, audio e sottotitoli restano uguali quando cambi partita, anche in una partita nuova.</value></data>
   <data name="SettingsButton" xml:space="preserve"><value>Impostazioni</value></data>
   <data name="SettingsTitle" xml:space="preserve"><value>Impostazioni</value></data>
   <data name="StartAnyway" xml:space="preserve"><value>Avvia comunque</value></data>
-  <data name="StartingWith" xml:space="preserve"><value>Avvio Control con «{0}»...</value></data>
+  <data name="StartingWith" xml:space="preserve"><value>Avvio {0} con «{1}»...</value></data>
   <data name="Undo" xml:space="preserve"><value>Annulla</value></data>
   <data name="YourPlaythroughs" xml:space="preserve"><value>Le tue partite</value></data>
-  <data name="ZipFilter" xml:space="preserve"><value>Partita di Control (*.zip)|*.zip</value></data>
+  <data name="ZipFilter" xml:space="preserve"><value>Partita di {0} (*.zip)|*.zip</value></data>
   <data name="UnknownGameName" xml:space="preserve"><value>App {0}</value></data>
 </root>
