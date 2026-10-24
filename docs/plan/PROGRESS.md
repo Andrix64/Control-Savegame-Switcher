@@ -14,7 +14,7 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 
 - [x] C1 — Solution file (bafaacf)
 - [x] C2 — `IPlatform`, still inside the WinForms project (035d396)
-- [ ] C3 — Card texts out of the WinForms control
+- [x] C3 — Card texts out of the WinForms control (b80bb70)
 - [ ] C4 — Projects `Lss.Core` and `Lss.Platform`
 - [ ] C5 — Tests on plain `net10.0`
 - [ ] C6 — Tests on Linux in GitHub Actions
