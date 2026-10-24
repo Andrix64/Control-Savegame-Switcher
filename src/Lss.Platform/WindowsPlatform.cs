@@ -182,15 +182,35 @@ public sealed class WindowsPlatform : IPlatform
 
     public IDisposable? AcquireSingleInstance()
     {
-        // Il nome resta quello di Control Save Manager finché i dati sono nella
-        // sua cartella: così la vecchia versione e LSS non possono essere aperte
-        // insieme.
-        var mutex = new Mutex(true, @"Local\ControlSaveManager", out bool first);
+        // Il mutex di Control Save Manager impedisce di aprire la sua vecchia
+        // versione mentre LSS è aperto; quello di LSS impedisce due LSS insieme.
+        var legacy = new Mutex(true, @"Local\ControlSaveManager", out bool legacyFree);
 
-        if (first)
-            return mutex;
+        if (!legacyFree)
+        {
+            legacy.Dispose();
+            return null;
+        }
 
+        var mutex = new Mutex(true, @"Local\LSS", out bool free);
+
+        if (free)
+            return new InstanceLock([legacy, mutex]);
+
+        legacy.Dispose();
         mutex.Dispose();
         return null;
+    }
+
+    /// <summary>
+    /// I mutex tenuti da AcquireSingleInstance: si rilasciano insieme.
+    /// </summary>
+    private sealed class InstanceLock(List<Mutex> mutexes) : IDisposable
+    {
+        public void Dispose()
+        {
+            foreach (Mutex mutex in mutexes)
+                mutex.Dispose();
+        }
     }
 }

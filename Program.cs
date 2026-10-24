@@ -37,7 +37,7 @@ internal static class Program
         }
 
         // Prima di qualsiasi lettura o scrittura dei dati, registro compreso.
-        (AppData.MoveResult moved, string moveDetail) = AppData.MoveFromDocuments();
+        (AppData.MoveResult moved, string moveDetail) = AppData.MigrateToLss();
 
         Log.Write("Avvio versione " + Version);
         ReportDataMove(moved, moveDetail);
@@ -64,28 +64,28 @@ internal static class Program
     }
 
     /// <summary>
-    /// Dice all'utente, una volta sola, che i dati sono stati spostati da Documenti.
+    /// Dice all'utente, una volta sola, che i dati sono stati spostati nella cartella di LSS.
     /// </summary>
     private static void ReportDataMove(AppData.MoveResult result, string detail)
     {
         if (result == AppData.MoveResult.NothingToMove)
             return;
 
-        Log.Write($"Spostamento dei dati da {AppData.OldRoot} a {AppData.DefaultRoot}: {result} {detail}");
+        Log.Write($"Spostamento dei dati da {AppData.LastMoveSource} a {AppData.DefaultRoot}: {result} {detail}");
 
         (string text, MessageBoxIcon icon) = result switch
         {
             AppData.MoveResult.Moved => (
-                Loc.F(Strings.DataMoved, AppData.OldRoot, AppData.DefaultRoot) +
+                Loc.F(Strings.DataMoved, AppData.LastMoveSource, AppData.DefaultRoot) +
                 (detail == "" ? "" : Loc.F(Strings.DataMovedOldLeft, detail)),
                 MessageBoxIcon.Information),
 
             AppData.MoveResult.BothExist => (
-                Loc.F(Strings.DataBothExist, AppData.OldRoot, AppData.DefaultRoot),
+                Loc.F(Strings.DataBothExist, AppData.LastMoveSource, AppData.DefaultRoot),
                 MessageBoxIcon.Warning),
 
             _ => (
-                Loc.F(Strings.DataMoveFailed, AppData.OldRoot, AppData.DefaultRoot, detail),
+                Loc.F(Strings.DataMoveFailed, AppData.LastMoveSource, AppData.DefaultRoot, detail),
                 MessageBoxIcon.Warning)
         };
 

@@ -74,7 +74,7 @@ public sealed partial class SaveManager
     public string AccountName { get; }
 
     /// <param name="savePath">Cartella dei salvataggi del gioco (…\870780).</param>
-    /// <param name="basePath">Cartella dei dati dell'account (…\ControlSaveManager\IDAccount).</param>
+    /// <param name="basePath">Cartella dei dati del gioco per un account (…\LSS\IDAccount\AppID).</param>
     /// <param name="game">Gioco gestito; se manca è Control con savePath.</param>
     internal SaveManager(string savePath, string basePath, string accountName = "", GameInfo? game = null)
     {
@@ -130,18 +130,20 @@ public sealed partial class SaveManager
         }
 
         string appData = AppData.Root;
-        string lastAccountFile = Path.Combine(appData, "account.txt");
+        var settings = new AppSettings(Path.Combine(appData, "lss.ini"));
+        settings.Load();
 
         SteamAccount? account = accounts[0];
 
         if (accounts.Count > 1)
         {
-            account = chooseAccount(accounts, ReadLastAccount(lastAccountFile));
+            account = chooseAccount(accounts, settings.LastAccount == "" ? null : settings.LastAccount);
 
             if (account == null)
                 return Result<SaveManager>.Fail("");
 
-            WriteLastAccount(lastAccountFile, account.Id);
+            settings.LastAccount = account.Id;
+            settings.Save();
         }
 
         try
@@ -155,7 +157,7 @@ public sealed partial class SaveManager
 
             return Result<SaveManager>.Ok(new SaveManager(
                 savePath,
-                Path.Combine(appData, account.Id),
+                Path.Combine(appData, account.Id, GameInfo.ControlAppId),
                 account.Name,
                 game));
         }
@@ -395,7 +397,7 @@ public sealed partial class SaveManager
     /// <summary>
     /// true se il nome è fatto solo di cifre, come le cartelle degli account e dei giochi.
     /// </summary>
-    private static bool IsNumeric(string name) => name.Length > 0 && name.All(char.IsAsciiDigit);
+    internal static bool IsNumeric(string name) => name.Length > 0 && name.All(char.IsAsciiDigit);
 
     /// <summary>
     /// Nome Steam dell'account, letto da config\localconfig.vdf.
@@ -415,31 +417,6 @@ public sealed partial class SaveManager
         catch
         {
             return "";
-        }
-    }
-
-    private static string? ReadLastAccount(string file)
-    {
-        try
-        {
-            return File.Exists(file) ? File.ReadAllText(file).Trim() : null;
-        }
-        catch
-        {
-            return null;
-        }
-    }
-
-    private static void WriteLastAccount(string file, string id)
-    {
-        try
-        {
-            Directory.CreateDirectory(Path.GetDirectoryName(file)!);
-            File.WriteAllText(file, id);
-        }
-        catch
-        {
-            // Solo una comodità: la prossima volta non sarà preselezionato.
         }
     }
 
