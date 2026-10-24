@@ -65,7 +65,7 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 - [x] G11 — Settings and first start (39c8f98)
 - [x] G12 — Accounts and deleted playthroughs (396633a)
 - [x] G13 — 👤 Full manual check (2026-10-24, Andrix: done; first round of visual fixes in `617b509`)
-- [ ] G14 — Remove WinForms, `Lss.App` becomes `LSS`
+- [x] G14 — Remove WinForms, `Lss.App` becomes `LSS` (50eeb41)
 
 ## Phase H — Linux ([H-linux.md](H-linux.md))
 
@@ -104,6 +104,19 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 Write here anything that didn't match the plan, decisions taken with
 Andrix, and results of the 👤 checks. Newest first, with the date.
 
+- 2026-10-24 — G14 (Haiku): WinForms, `spike/` e `ZipFilter` eliminati; `LSS.exe`
+  da `src/Lss.App`. Build 0 warning, 176 test verdi, 11 PNG con `tools/UiScreenshots`
+  (01-main letto: titolo LSS, v0.9.0), `release.ps1 -AllowDirty -SkipTests` crea
+  `dist\LSS-0.9.0-win-x64.zip` con `LSS.exe` e nessun `.pdb`; nessun blocco di Smart App Control.
+  Scelte fuori piano o da controllare:
+  - `linux-x64.pubxml` creato come chiede il passo 4 (il piano lo prevede già); lo usa I3.
+  - La `Description` dell'exe è stata spostata com'era: dice ancora "(per ora solo Control)".
+  - Restano commenti che citano le vecchie finestre WinForms (`GameInfo.cs`, `Theme.axaml`,
+    `InfoKind.cs`, i `ViewModels`, `Views/DeletedWindow.axaml.cs`, `PlaythroughCardView.axaml.cs`):
+    solo commenti, non toccati.
+  - `DEVELOPMENT.md`: aggiornate tabella del codice, comandi di build/pubblicazione, versione
+    in `Lss.App.csproj`, nome dell'artefatto (`lss`). Il resto del file non è stato riletto.
+  - `bin/` e `obj/` in radice (ignorati da git) sono resti del vecchio progetto: non usati.
 - 2026-10-24 — Fase H, H1–H7 (Haiku), 176 test verdi e 0 warning su Windows
   (`dotnet test`: 157 prima, 19 nuovi). Non eseguiti: i test Linux (nessun WSL
   né Docker sul PC), cioè `SteamLinkIsNotCountedTwice`, `NativeComesBeforeFlatpak`,
