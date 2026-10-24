@@ -39,7 +39,7 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 - [x] E3 — `LaunchGame`, `IsGameRunning`, `GameStartTime` per game (e5f65bc)
 - [x] E4 — Shared files per game (c1a2827)
 - [x] E5 — Accounts and recovery for every game (f1cc69b)
-- [ ] E6 — 👤 Check with Control
+- [x] E6 — 👤 Check with Control (2026-10-24, Andrix: game bar while Control runs, play time and save on exit when it closes)
 
 ## Phase F — Data folder ([F-data.md](F-data.md))
 
