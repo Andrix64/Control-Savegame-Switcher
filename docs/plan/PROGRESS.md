@@ -29,7 +29,7 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 - [x] D3 — Manifests (91efc49)
 - [x] D4 — Support state (745b9f8)
 - [x] D5 — Images (2220175)
-- [ ] D6 — List the games of an account
+- [x] D6 — List the games of an account (401f983)
 - [ ] D7 — Docs
 
 ## Phase E — Any game ([E-per-game.md](E-per-game.md))
