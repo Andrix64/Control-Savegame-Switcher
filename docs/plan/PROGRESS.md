@@ -38,7 +38,7 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 - [x] E2 — Texts with the game name (765edb8)
 - [x] E3 — `LaunchGame`, `IsGameRunning`, `GameStartTime` per game (e5f65bc)
 - [x] E4 — Shared files per game (c1a2827)
-- [ ] E5 — Accounts and recovery for every game
+- [x] E5 — Accounts and recovery for every game (f1cc69b)
 - [ ] E6 — 👤 Check with Control
 
 ## Phase F — Data folder ([F-data.md](F-data.md))
