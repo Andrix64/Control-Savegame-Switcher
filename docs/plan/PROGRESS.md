@@ -104,7 +104,7 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 - [x] J1b — 👤 Choose the icon (Andrix chose B, 2026-10-24)
 - [x] J1c — New icon in the app and the packages (8c9d40c)
 - [x] J2 — Links and README (f1ec978)
-- [ ] J3 — Other documents
+- [x] J3 — Other documents (5e5c0ac)
 - [ ] J4 — Version `1.0.0-beta.1`
 - [ ] J5 — 👤 First beta
 - [ ] J6 — 👤 SignPath
