@@ -399,7 +399,7 @@ with `--no-incremental` (see [Smart App Control](#smart-app-control)).
 
 ## Build on GitHub
 
-The repository is on [GitHub](https://github.com/Andrix64/Control-Savegame-Switcher)
+The repository is on [GitHub](https://github.com/Andrix64/Local-Save-Switcher)
 (needed for free signing, see below). The `.github/workflows/build.yml`
 workflow runs on Windows on every push to `main`, every pull request and on
 demand (*Run workflow*):

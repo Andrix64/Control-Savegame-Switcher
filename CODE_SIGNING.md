@@ -6,7 +6,7 @@ certificate by [SignPath Foundation](https://signpath.org/).
 ## What is signed
 
 Only `LSS.exe` from the release zips published on the
-[Releases page](https://github.com/Andrix64/Control-Savegame-Switcher/releases)
+[Releases page](https://github.com/Andrix64/Local-Save-Switcher/releases)
 of this repository. The executable is built by GitHub Actions
 ([`.github/workflows/build.yml`](.github/workflows/build.yml)) directly from
 the source code in this repository, from a version tag (`v*`). Nothing built
@@ -26,7 +26,8 @@ This program will not transfer any information to other networked systems
 unless specifically requested by the user or the person installing or
 operating it.
 
-Control Save Manager works only on local files: the Control save folder in
-Steam's `userdata` and its own data in `%LOCALAPPDATA%\ControlSaveManager`.
-To start the game it asks the locally installed Steam client to run Control
-(`steam://rungameid/870780`); it does not connect to the internet by itself.
+LSS works only on local files: the save folders of the games in Steam's
+`userdata` and its own data in `%LOCALAPPDATA%\LSS` (on Linux
+`~/.local/share/LSS`). To start a game it asks the locally installed Steam
+client to run it (`steam://rungameid/<AppID>`); it does not connect to the
+internet by itself.
