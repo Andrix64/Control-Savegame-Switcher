@@ -67,6 +67,11 @@ Phases A (rename) and B (Avalonia test, `spike/`) are already done.
 8. **Never touch the real Steam folder or the real app data.** Tests work
    only in temporary folders (see `TestFolder`). Don't run the app against
    real saves unless a 👤 task says so.
+   **Linux checks:** if the brief of your session gives you an SSH host
+   for Linux checks, run `bash scripts/linux-check.sh <host>` after every
+   task that touches Linux code, packaging or tests (`--tests-only` when
+   packaging didn't change). It only uses temporary containers on that
+   machine; never run anything else there.
 9. **Keep the existing style.** Read the file before editing it and write
    code like the code around it.
 

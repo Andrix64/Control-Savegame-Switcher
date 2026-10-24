@@ -352,6 +352,27 @@ dotnet test tests/Lss.Tests
 The windows aren't covered by tests. On GitHub the tests run on every push and
 pull request (see below); locally `scripts\release.ps1` runs them too.
 
+### Checking on Linux without GitHub
+
+`scripts/linux-check.sh` runs on a Linux machine with Docker, reached over
+SSH with a key (no password; the user must be able to run `docker`, root is
+not needed). It copies the current commit (`HEAD` only, not uncommitted
+changes) to `~/lss-ci` and, in temporary containers only:
+
+1. runs the tests (`mcr.microsoft.com/dotnet/sdk:10.0`);
+2. builds the packages with `scripts/release.sh`, as the `linux` job of the
+   workflow does, and leaves them in `~/lss-out`;
+3. installs each package in a clean distribution and runs `lss --version`:
+   deb on Ubuntu 24.04, Ubuntu 22.04 and Debian 13, rpm on Fedora 42, the
+   AppImage on Ubuntu 24.04, the tar.gz with `install.sh` on Arch Linux.
+
+```bash
+bash scripts/linux-check.sh user@host
+```
+
+With `--tests-only` it stops after the tests. It can't replace a check with
+the real Steam and a desktop (H8 in the plan).
+
 ### Pictures of the windows
 
 `tools/UiScreenshots` draws every window of the Avalonia app (main window,
