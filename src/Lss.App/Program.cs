@@ -1,12 +1,18 @@
+using System.Reflection;
 using Avalonia;
 
 namespace Lss.App;
 
 internal static class Program
 {
-    /// <summary>Versione dell'app (es. "0.9.0"), dal tag Version del .csproj.</summary>
+    /// <summary>
+    /// Versione dell'app (es. "1.0.0-beta.1"), da Version del .csproj. Senza il
+    /// suffisso "+commit" che aggiunge l'SDK.
+    /// </summary>
     public static string Version { get; } =
-        typeof(Program).Assembly.GetName().Version?.ToString(3) ?? "";
+        (typeof(Program).Assembly
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "")
+        .Split('+')[0];
 
     [STAThread]
     public static int Main(string[] args)

@@ -20,7 +20,6 @@
   <url type="bugtracker">https://github.com/Andrix64/Local-Save-Switcher/issues</url>
   <content_rating type="oars-1.1" />
   <releases>
-    <!-- Data segnaposto: J4 la aggiorna alla data del rilascio. -->
-    <release version="1.0.0" date="2026-12-01" />
+    <release version="1.0.0-beta.1" date="2026-10-24" type="development" />
   </releases>
 </component>

@@ -3,14 +3,41 @@
 All notable changes, newest first. Versions follow
 [Semantic Versioning](https://semver.org/).
 
-## Unreleased
+## 1.0.0-beta.1 — 2026-10-24
 
-### Changed
+First beta of **LSS — Local Save Switcher**, the new name of Control Save
+Manager. Multiple playthroughs for Steam games, on Windows and Linux.
 
-- Control Save Manager is now **LSS — Local Save Switcher**: the exe is
-  `LSS.exe` and the release zip `LSS-<version>-win-x64.zip`. Data stays in
-  `%LOCALAPPDATA%\ControlSaveManager` for now, so nothing has to be moved.
-- Playthroughs exported by Control Save Manager can still be imported.
+### Games
+
+- Every Steam game with saves in `userdata` can be used, not only Control.
+- The games list shows the games that LSS can manage first; games that save
+  elsewhere are under *Other games*, with the reason.
+- Files kept the same for each game (in Settings), for example the options
+  file of Control.
+
+### Linux
+
+- Linux x64 packages: `.tar.gz`, `.deb`, `.rpm` and AppImage.
+- Steam installed natively, as Flatpak or as Snap, and Steam Deck in desktop
+  mode.
+- The running game is recognised through Steam's `registry.vdf` and the
+  running processes.
+
+### Interface
+
+- New interface, the same features as 0.9.0.
+- New icon.
+
+### Data
+
+- Control Save Manager is now **LSS**: the exe is `LSS.exe` and the Windows
+  zip is `LSS-<version>-win-x64.zip`.
+- Data moves from `%LOCALAPPDATA%\ControlSaveManager` to `%LOCALAPPDATA%\LSS`
+  on first start, and the app says so. On Linux the data is in
+  `~/.local/share/LSS`.
+- Export format 2: a playthrough also records the game it belongs to.
+  Playthroughs exported by Control Save Manager can still be imported.
 
 ## 0.9.0 — 2026-10-23
 
