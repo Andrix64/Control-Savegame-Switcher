@@ -47,7 +47,7 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 - [x] F2 — `SaveManager.Open` (9ecef98)
 - [x] F3 — Migration from Control Save Manager (d5d2bba)
 - [ ] F4 — 👤 Migration with real data
-- [ ] F5 — Export format 2
+- [x] F5 — Export format 2 (320fb77)
 - [ ] F6 — Docs for the data folder
 
 ## Phase G — Avalonia interface ([G-avalonia.md](G-avalonia.md))
