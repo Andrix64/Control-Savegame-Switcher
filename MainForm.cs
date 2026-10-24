@@ -117,7 +117,7 @@ internal sealed class MainForm : Form
 
     private void BuildLayout()
     {
-        var header = new HeaderPanel("CONTROL", "SAVE MANAGER  ·  v" + Program.Version);
+        var header = new HeaderPanel("LSS", "LOCAL SAVE SWITCHER  ·  v" + Program.Version);
         // Il pulsante sta a destra e lascia libera la riga in fondo all'intestazione.
         settingsButton.BackColor = Theme.Header;
         header.Controls.Add(settingsButton);
