@@ -11,6 +11,13 @@ internal static class Program
     [STAThread]
     public static int Main(string[] args)
     {
+        // Per i controlli dei pacchetti: stampa la versione ed esce, senza finestre.
+        if (args.Contains("--version"))
+        {
+            Console.WriteLine("LSS " + Version);
+            return 0;
+        }
+
         Platform.Current = OperatingSystem.IsWindows() ? new WindowsPlatform()
             : OperatingSystem.IsLinux() ? new LinuxPlatform()
             : throw new PlatformNotSupportedException();
