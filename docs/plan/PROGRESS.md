@@ -34,7 +34,7 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 
 ## Phase E — Any game ([E-per-game.md](E-per-game.md))
 
-- [ ] E1 — `SaveManager` gets a `GameInfo`
+- [x] E1 — `SaveManager` gets a `GameInfo` (79efd2d)
 - [ ] E2 — Texts with the game name
 - [ ] E3 — `LaunchGame`, `IsGameRunning`, `GameStartTime` per game
 - [ ] E4 — Shared files per game
