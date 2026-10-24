@@ -1,0 +1,524 @@
+using System.Collections.ObjectModel;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Lss.App.Services;
+
+namespace Lss.App.ViewModels;
+
+/// <summary>
+/// Le partite di un gioco e le sue azioni: la logica di MainForm (WinForms).
+/// Una istanza per gioco, con il suo SaveManager.
+/// </summary>
+public partial class GameViewModel : ObservableObject
+{
+    private readonly IDialogService dialogs;
+
+    // Avviso su Steam Cloud: una sola volta per sessione.
+    private bool cloudWarningAccepted;
+
+    public GameViewModel(SaveManager manager, IDialogService dialogs)
+    {
+        Manager = manager;
+        this.dialogs = dialogs;
+    }
+
+    public SaveManager Manager { get; }
+
+    // Sessione di gioco in corso: quando è partita e con quale partita.
+    public SessionTracker Session { get; } = new();
+
+    public ToastViewModel Toast { get; } = new();
+
+    public ObservableCollection<PlaythroughViewModel> Playthroughs { get; } = [];
+
+    // true mentre un'operazione sui file è in corso.
+    [ObservableProperty]
+    private bool isBusy;
+
+    [ObservableProperty]
+    private bool gameRunning;
+
+    [ObservableProperty]
+    private CloudState cloud = CloudState.Unknown;
+
+    [ObservableProperty]
+    private bool showCloudBar;
+
+    [ObservableProperty]
+    private string cloudBarTitle = "";
+
+    [ObservableProperty]
+    private string cloudBarText = "";
+
+    [ObservableProperty]
+    private bool showGameBar;
+
+    [ObservableProperty]
+    private string gameBarTitle = "";
+
+    [ObservableProperty]
+    private string gameBarText = "";
+
+    [ObservableProperty]
+    private int deletedCount;
+
+    [ObservableProperty]
+    private string deletedLinkText = "";
+
+    [ObservableProperty]
+    private bool showDeletedLink;
+
+    [ObservableProperty]
+    private string emptyText = "";
+
+    /// <summary>
+    /// Rilegge stato e partite dal disco e ricostruisce le schede.
+    /// </summary>
+    public void Refresh()
+    {
+        try
+        {
+            Manager.ReloadState();
+        }
+        catch (Exception ex)
+        {
+            Toast.Show(InfoKind.Error, Loc.F(Strings.CannotReadState, ex.Message));
+        }
+
+        Cloud = Manager.GetCloudState();
+        Playthroughs.Clear();
+
+        try
+        {
+            string active = Manager.State.ActiveProfile;
+
+            // La partita nel gioco per prima, poi le altre in ordine di nome.
+            foreach (string profile in Manager.GetProfiles().OrderBy(p => p != active).ThenBy(p => p))
+            {
+                Playthroughs.Add(new PlaythroughViewModel(new CardData(
+                    profile,
+                    profile == active,
+                    Manager.GetInfo(profile),
+                    Manager.GetProfileLastModified(profile),
+                    Manager.CountSavestates(profile)), this));
+            }
+        }
+        catch (Exception ex)
+        {
+            Toast.Show(InfoKind.Error, Loc.F(Strings.CannotReadProfiles, ex.Message));
+        }
+
+        int deleted = 0;
+
+        try
+        {
+            deleted = Manager.GetDeletedProfiles().Count;
+        }
+        catch
+        {
+            // Senza l'elenco il collegamento resta nascosto.
+        }
+
+        DeletedCount = deleted;
+        DeletedLinkText = Loc.F(Strings.DeletedLink, deleted);
+        ShowDeletedLink = deleted > 0;
+
+        UpdateState();
+    }
+
+    /// <summary>
+    /// Aggiorna le barre, il testo di elenco vuoto e lo stato delle schede.
+    /// </summary>
+    public void UpdateState()
+    {
+        EmptyText = Playthroughs.Count == 0 ? Strings.NoPlaythroughs : "";
+
+        ShowCloudBar = Cloud == CloudState.Enabled;
+        CloudBarTitle = Loc.F(Strings.CloudBarTitle, Manager.Game.Name);
+        CloudBarText = Loc.F(Strings.CloudBarText, Manager.Game.Name);
+
+        if (GameRunning)
+        {
+            string active = Manager.HasActiveProfile
+                ? SaveManager.ProfileDisplayName(Manager.State.ActiveProfile)
+                : "";
+
+            string text = Manager.State.SaveOnGameExit && active != ""
+                ? Strings.GameBarSaveOnExit + " " + Loc.F(Strings.GameBarExit, Manager.Game.Name)
+                : Loc.F(Strings.GameBarExit, Manager.Game.Name);
+
+            if (Session.Running && DateTime.Now - Session.Start is TimeSpan length && length >= TimeSpan.FromMinutes(1))
+                text += "\n" + Loc.F(Strings.GameBarSession, CardText.FormatPlayTime(length));
+
+            GameBarTitle = active == "" ? Loc.F(Strings.GameBarOpen, Manager.Game.Name) : Loc.F(Strings.GameBarPlaying, active);
+            GameBarText = text;
+            ShowGameBar = true;
+        }
+        else
+        {
+            ShowGameBar = false;
+        }
+
+        foreach (PlaythroughViewModel card in Playthroughs)
+            card.NotifyStateChanged();
+    }
+
+    /// <summary>
+    /// Carica una partita senza chiedere conferme: i progressi non salvati di
+    /// quella nel gioco vengono salvati prima, ed entrambe le operazioni fanno
+    /// una copia. Poi avvia il gioco, oppure offre "Annulla".
+    /// </summary>
+    /// <param name="offerUndo">false per il cambio fatto da "Annulla", che non si annulla.</param>
+    public async Task PlayAsync(string profileName, bool launch, bool offerUndo = true)
+    {
+        if (IsBusy || GameRunning || !await ConfirmCloudAsync(launch))
+            return;
+
+        string name = SaveManager.ProfileDisplayName(profileName);
+        string previous = Manager.State.ActiveProfile;
+        bool hadPrevious = Manager.HasActiveProfile && previous != profileName;
+        string previousName = SaveManager.ProfileDisplayName(previous);
+
+        Result result = await RunBusyAsync(Loc.F(Strings.BusyLoading, name), () =>
+        {
+            bool saved = false;
+
+            if (Manager.HasUnsavedProgress())
+            {
+                Result save = Manager.SaveProgress();
+
+                if (!save.Success)
+                    return save with { Message = Loc.F(Strings.SwitchSaveFailed, previousName, save.Message) };
+
+                saved = true;
+            }
+
+            Result activation = Manager.ActivateProfile(profileName);
+
+            if (!activation.Success)
+                return activation;
+
+            return activation with
+            {
+                Message = saved
+                    ? Loc.F(Strings.LoadedAndSaved, name, previousName)
+                    : Loc.F(Strings.Loaded, name)
+            };
+        });
+
+        if (!result.Success)
+        {
+            await ShowError(result);
+            return;
+        }
+
+        if (launch)
+        {
+            Result launched = Manager.LaunchGame();
+
+            if (launched.Success)
+                Toast.Show(InfoKind.Info, Loc.F(Strings.StartingWith, Manager.Game.Name, name));
+            else
+                await ShowError(launched);
+
+            return;
+        }
+
+        if (offerUndo && hadPrevious)
+        {
+            Toast.Show(InfoKind.Success, result.Message, Strings.Undo,
+                () => _ = PlayAsync(previous, launch: false, offerUndo: false));
+        }
+        else
+        {
+            Toast.Show(InfoKind.Success, result.Message);
+        }
+    }
+
+    /// <summary>
+    /// "Gioca" su una scheda: se è la partita nel gioco avvia solo il gioco,
+    /// altrimenti la carica e avvia.
+    /// </summary>
+    public async Task PlayCardAsync(PlaythroughViewModel card)
+    {
+        if (IsBusy)
+            return;
+
+        if (card.IsActive)
+            await LaunchOnly();
+        else
+            await PlayAsync(card.ProfileName, Manager.State.LaunchGame);
+    }
+
+    /// <summary>
+    /// "Gioca" sulla partita già nel gioco: avvia solo il gioco.
+    /// </summary>
+    public async Task LaunchOnly()
+    {
+        if (IsBusy || GameRunning || !await ConfirmCloudAsync(launching: true))
+            return;
+
+        Result launched = Manager.LaunchGame();
+
+        if (launched.Success)
+        {
+            Toast.Show(InfoKind.Info, Loc.F(Strings.StartingWith, Manager.Game.Name,
+                SaveManager.ProfileDisplayName(Manager.State.ActiveProfile)));
+        }
+        else
+        {
+            await ShowError(launched);
+        }
+    }
+
+    public async Task ExportAsync(string profile)
+    {
+        string name = SaveManager.ProfileDisplayName(profile);
+
+        string? path = await dialogs.PickZipToSaveAsync(Strings.ExportTitle, name + ".zip",
+            Loc.F(Strings.ZipFileType, Manager.Game.Name));
+
+        if (path == null)
+            return;
+
+        Result result = await RunBusyAsync(Loc.F(Strings.BusyExporting, name),
+            () => Manager.ExportProfile(profile, path));
+
+        await ShowResult(result);
+    }
+
+    [RelayCommand]
+    public async Task ImportAsync()
+    {
+        if (IsBusy)
+            return;
+
+        string? path = await dialogs.PickZipToOpenAsync(Strings.ImportTitle,
+            Loc.F(Strings.ZipFileType, Manager.Game.Name));
+
+        if (path == null)
+            return;
+
+        string imported = "";
+
+        Result result = await RunBusyAsync(Strings.BusyImporting, () =>
+        {
+            Result<string> import = Manager.ImportProfile(path);
+
+            if (!import.Success)
+                return Result.Fail(import.Message);
+
+            imported = import.Value!;
+            return Result.Ok(Loc.F(Strings.Imported, SaveManager.ProfileDisplayName(imported)));
+        });
+
+        await ShowResult(result);
+    }
+
+    /// <summary>
+    /// Elimina una partita: finisce tra le copie automatiche, da cui si può recuperare.
+    /// </summary>
+    public async Task DeleteAsync(string profile)
+    {
+        string name = SaveManager.ProfileDisplayName(profile);
+        string text = Loc.F(Strings.ConfirmDeleteText, Manager.State.BackupsToKeep == 0
+            ? Strings.ConfirmDeleteKeepAll
+            : Loc.F(Strings.ConfirmDeleteKeepN, Manager.State.BackupsToKeep));
+
+        int points = Manager.CountSavestates(profile);
+
+        if (points > 0)
+            text += "\n\n" + Loc.F(Strings.ConfirmDeletePoints, points);
+
+        if (!await dialogs.ConfirmAsync(Loc.F(Strings.ConfirmDeleteHeading, name), text,
+                Strings.DeletePlaythrough, destructive: true, kind: InfoKind.Warning))
+            return;
+
+        Result result = await RunBusyAsync(Strings.BusyDeleting, () => Manager.DeleteProfile(profile));
+
+        await ShowResult(result);
+    }
+
+    [RelayCommand]
+    public async Task CloudHelpAsync()
+    {
+        await dialogs.InformAsync(Loc.F(Strings.CloudHelpHeading, Manager.Game.Name),
+            Loc.F(Strings.CloudHelpText, Manager.Game.Name), InfoKind.Info);
+
+        Refresh();
+    }
+
+    /// <summary>
+    /// Dice all'avvio quali cartelle in Profili non compaiono come partite e perché.
+    /// </summary>
+    public void ReportIgnoredProfileFolders()
+    {
+        IReadOnlyList<string> ignored;
+
+        try
+        {
+            ignored = Manager.GetIgnoredProfileFolders();
+        }
+        catch
+        {
+            return;
+        }
+
+        if (ignored.Count == 0)
+            return;
+
+        string names = string.Join(", ", ignored);
+        Log.Write("Cartelle ignorate in Profili (nome non valido): " + names);
+        Toast.Show(InfoKind.Warning, Loc.F(Strings.IgnoredProfileFolders, names), autoHide: false);
+    }
+
+    /// <summary>
+    /// Il gioco è cambiato di stato (chiamato dal monitor, ogni 2 secondi).
+    /// </summary>
+    public async Task OnGameState(SessionEvent e)
+    {
+        GameRunning = Session.Running;
+
+        switch (e.Change)
+        {
+            case SessionChange.Started:
+                Toast.Hide();
+                UpdateState();
+                break;
+
+            case SessionChange.Ended:
+                await OnGameClosedAsync(e);
+                break;
+
+            default:
+                if (GameRunning && !IsBusy)
+                    UpdateState();
+
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Chiusura dell'app con una sessione aperta: il tempo fin qui conta.
+    /// </summary>
+    public void CloseSession()
+    {
+        SessionEvent e = Session.EndNow(DateTime.Now);
+
+        if (e.Change == SessionChange.Ended && e.Profile != "")
+            Manager.AddPlayTime(e.Profile, e.Start, e.End);
+    }
+
+    /// <summary>
+    /// Il gioco si è chiuso: tempo di gioco e, se attivo, salvataggio dei progressi.
+    /// </summary>
+    private async Task OnGameClosedAsync(SessionEvent e)
+    {
+        if (e.Profile != "")
+            Manager.AddPlayTime(e.Profile, e.Start, e.End);
+
+        string profile = e.Profile;
+
+        if (IsBusy || !Manager.State.SaveOnGameExit || profile == "" ||
+            Manager.State.ActiveProfile != profile || !Manager.HasActiveProfile)
+        {
+            Refresh();
+            return;
+        }
+
+        string name = SaveManager.ProfileDisplayName(profile);
+
+        Result result = await RunBusyAsync(Loc.F(Strings.BusySavingOnExit, name), () =>
+            Manager.HasUnsavedProgress()
+                ? Manager.SaveProgress(onGameExit: true)
+                : Result.Ok(""));
+
+        if (!result.Success)
+            await ShowError(result);
+        else if (result.Message != "")
+            Toast.Show(InfoKind.Success, Loc.F(Strings.SavedOnExit, name));
+    }
+
+    /// <summary>
+    /// Esegue un'operazione sui file in background, con la finestra bloccata.
+    /// </summary>
+    private async Task<Result> RunBusyAsync(string message, Func<Result> action)
+    {
+        IsBusy = true;
+        Toast.Show(InfoKind.Info, message, autoHide: false);
+        UpdateState();
+
+        try
+        {
+            return await Task.Run(action);
+        }
+        catch (Exception ex)
+        {
+            Log.Write("Errore imprevisto (" + message + ")", ex);
+            return Result.Fail(Loc.F(Strings.UnexpectedError, ex.Message, Log.FilePath));
+        }
+        finally
+        {
+            IsBusy = false;
+            Toast.Hide();
+            Refresh();
+        }
+    }
+
+    private async Task ShowResult(Result result)
+    {
+        if (result.Success)
+            Toast.Show(InfoKind.Success, result.Message);
+        else
+            await ShowError(result);
+    }
+
+    /// <summary>
+    /// Errore in una finestra: cosa è successo e, se c'è, il backup da aprire.
+    /// </summary>
+    private async Task ShowError(Result result)
+    {
+        bool hasBackup = result.BackupPath != null && Directory.Exists(result.BackupPath);
+
+        bool openBackup = await dialogs.InformAsync(
+            result.Critical ? Strings.TitleSeriousError : Strings.TitleOperationFailed,
+            result.Message,
+            result.Critical ? InfoKind.Error : InfoKind.Warning,
+            hasBackup ? Strings.OpenBackup : null);
+
+        if (openBackup)
+            await OpenFolder(result.BackupPath!);
+    }
+
+    private async Task OpenFolder(string path)
+    {
+        if (!await dialogs.OpenFolderAsync(path))
+        {
+            await dialogs.InformAsync(Strings.TitleOperationFailed,
+                Loc.F(Strings.CannotOpenFolder, path), InfoKind.Warning);
+        }
+    }
+
+    /// <summary>
+    /// Avviso su Steam Cloud, una sola volta per sessione: prima di avviare il
+    /// gioco, o prima di toccare i salvataggi con Steam aperto. Con il cloud
+    /// disattivato per il gioco non serve.
+    /// </summary>
+    private async Task<bool> ConfirmCloudAsync(bool launching)
+    {
+        if (cloudWarningAccepted || Cloud == CloudState.Disabled)
+            return true;
+
+        if (!launching && !SaveManager.IsSteamRunning())
+            return true;
+
+        cloudWarningAccepted = await dialogs.ConfirmAsync(Strings.CloudConfirmHeading,
+            Cloud == CloudState.Enabled
+                ? Loc.F(Strings.CloudConfirmOn, Manager.Game.Name)
+                : Loc.F(Strings.CloudConfirmMaybe, Manager.Game.Name),
+            launching ? Strings.StartAnyway : Strings.ContinueAnyway,
+            kind: InfoKind.Warning);
+
+        return cloudWarningAccepted;
+    }
+}
