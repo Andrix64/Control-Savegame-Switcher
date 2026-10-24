@@ -34,6 +34,10 @@ tests="tests/Lss.Tests"
 publish_dir="bin/publish/linux-x64"
 dist="dist"
 
+# appimagetool: versione fissa e impronta SHA-256, controllata dopo il download.
+appimagetool_version="1.9.1"
+appimagetool_sha256="ed4ce84f0d9caff66f50bcca6ff6f35aae54ce8135408b3fa33abfc3cb384eb0"
+
 # Un pacchetto deve corrispondere a un commit preciso.
 if [ "$allow_dirty" -eq 0 ] && [ -n "$(git status --porcelain)" ]; then
     echo "Ci sono modifiche non committate. Fai il commit o usa --allow-dirty." >&2
@@ -140,6 +144,45 @@ VERSION="$version" nfpm package --config packaging/linux/nfpm.yaml --packager de
 VERSION="$version" nfpm package --config packaging/linux/nfpm.yaml --packager rpm \
     --target "$dist/lss-${version}-1.x86_64.rpm"
 artifacts+=("lss_${version}_amd64.deb" "lss-${version}-1.x86_64.rpm")
+
+# AppImage: un solo file eseguibile su quasi ogni distribuzione.
+tool="$dist/tools/appimagetool-$appimagetool_version-x86_64.AppImage"
+if [ ! -f "$tool" ]; then
+    mkdir -p "$dist/tools"
+    curl -fL -o "$tool" "https://github.com/AppImage/appimagetool/releases/download/$appimagetool_version/appimagetool-x86_64.AppImage"
+fi
+if ! echo "$appimagetool_sha256  $tool" | sha256sum -c --status; then
+    rm -f "$tool"
+    echo "Impronta SHA-256 di appimagetool non valida." >&2
+    exit 1
+fi
+chmod +x "$tool"
+
+echo "== AppImage"
+appdir="$dist/LSS.AppDir"
+rm -rf "$appdir"
+mkdir -p "$appdir/usr/lib/lss" "$appdir/usr/share/applications" "$appdir/usr/share/metainfo"
+cp "$publish_dir/LSS" "$appdir/usr/lib/lss/LSS"
+cp packaging/linux/io.github.andrix64.LocalSaveSwitcher.desktop "$appdir/usr/share/applications/"
+cp packaging/linux/io.github.andrix64.LocalSaveSwitcher.metainfo.xml "$appdir/usr/share/metainfo/"
+for size in 16x16 24x24 32x32 48x48 64x64 256x256; do
+    mkdir -p "$appdir/usr/share/icons/hicolor/$size/apps"
+    cp "packaging/linux/icons/$size/io.github.andrix64.LocalSaveSwitcher.png" "$appdir/usr/share/icons/hicolor/$size/apps/"
+done
+# Alla radice: il file desktop e l'icona che appimagetool cerca per nome.
+cp packaging/linux/io.github.andrix64.LocalSaveSwitcher.desktop "$appdir/"
+cp packaging/linux/icons/256x256/io.github.andrix64.LocalSaveSwitcher.png "$appdir/"
+cat > "$appdir/AppRun" <<'EOF'
+#!/bin/sh
+HERE="$(dirname "$(readlink -f "$0")")"
+exec "$HERE/usr/lib/lss/LSS" "$@"
+EOF
+chmod +x "$appdir/AppRun" "$appdir/usr/lib/lss/LSS"
+
+appimage="LSS-$version-x86_64.AppImage"
+ARCH=x86_64 "$tool" --appimage-extract-and-run "$appdir" "$dist/$appimage"
+rm -rf "$appdir"
+artifacts+=("$appimage")
 
 echo "== SHA-256"
 for file in "${artifacts[@]}"; do
