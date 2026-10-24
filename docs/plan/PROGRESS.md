@@ -37,7 +37,7 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 - [x] E1 — `SaveManager` gets a `GameInfo` (79efd2d)
 - [x] E2 — Texts with the game name (765edb8)
 - [x] E3 — `LaunchGame`, `IsGameRunning`, `GameStartTime` per game (e5f65bc)
-- [ ] E4 — Shared files per game
+- [x] E4 — Shared files per game (c1a2827)
 - [ ] E5 — Accounts and recovery for every game
 - [ ] E6 — 👤 Check with Control
 
