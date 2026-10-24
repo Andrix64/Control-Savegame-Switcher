@@ -152,4 +152,58 @@ public sealed class ProfileTests : IDisposable
         Assert.Equal("Eliminato_Profilo_Mario", backup.Name);
         Assert.Equal("A1", File.ReadAllText(Path.Combine(backup.Path, "remote", "slot.sav")));
     }
+
+    [Fact]
+    public void NamesDifferingOnlyByCaseAreTheSamePlaythrough()
+    {
+        SaveManager manager = folder.CreateManager("A1");
+        manager.CreateProfile("Mario", false);
+
+        Result result = manager.CreateProfile("mario", false);
+
+        Assert.False(result.Success);
+        Assert.Equal(Strings.ProfileExists, result.Message);
+        Assert.True(manager.ProfileExists("Profilo_mario"));
+    }
+
+    [Fact]
+    public void ImportedNameGetsTheFreeNameIgnoringCase()
+    {
+        SaveManager manager = folder.CreateManager("A1");
+        manager.CreateProfile("Mario", false);
+
+        Assert.Equal("mario 2", manager.UniqueName("mario"));
+
+        manager.CreateProfile("mario 2", false);
+
+        Assert.Equal("mario 3", manager.UniqueName("mario"));
+    }
+
+    [Fact]
+    public void RenameToOtherCaseKeepsNoteAndSavestates()
+    {
+        SaveManager manager = folder.CreateManager("A1");
+        manager.CreateProfile("Mario", false);
+        manager.SetNote("Profilo_Mario", "Missione");
+        TestFolder.Write(Path.Combine(manager.SavestatePath, "Profilo_Mario", "punto1", "slot.sav"), "p");
+
+        Result result = manager.RenameProfile("Profilo_Mario", "MARIO");
+
+        Assert.True(result.Success, result.Message);
+        Assert.Equal("Missione", manager.GetInfo("Profilo_MARIO").Note);
+        Assert.Equal(1, manager.CountSavestates("Profilo_MARIO"));
+    }
+
+    [Fact]
+    public void RenameToAnotherPlaythroughsNameIsRefusedIgnoringCase()
+    {
+        SaveManager manager = folder.CreateManager("A1");
+        manager.CreateProfile("Mario", false);
+        manager.CreateProfile("Luigi", false);
+
+        Result result = manager.RenameProfile("Profilo_Luigi", "MARIO");
+
+        Assert.False(result.Success);
+        Assert.Equal(Strings.ProfileExists, result.Message);
+    }
 }

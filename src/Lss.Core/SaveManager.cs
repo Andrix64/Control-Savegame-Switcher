@@ -519,7 +519,11 @@ public sealed partial class SaveManager
 
     public bool ProfileExists(string profileName)
     {
-        return Directory.Exists(Path.Combine(ProfilesPath, profileName));
+        // Senza distinzione di maiuscole su ogni sistema: su Linux "Profilo_mario"
+        // e "Profilo_Mario" sono cartelle diverse, ma per LSS sono la stessa partita.
+        return Directory.GetDirectories(ProfilesPath)
+            .Select(Path.GetFileName)
+            .Any(name => string.Equals(name, profileName, StringComparison.OrdinalIgnoreCase));
     }
 
     /// <summary>
@@ -600,7 +604,7 @@ public sealed partial class SaveManager
         string profileName = ProfileFolderName(name);
         string profile = Path.Combine(ProfilesPath, profileName);
 
-        if (Directory.Exists(profile))
+        if (ProfileExists(profileName))
             return Result.Fail(Strings.ProfileExists);
 
         if (!copyCurrentSaves)
@@ -677,7 +681,7 @@ public sealed partial class SaveManager
         // Su Windows "Mario" e "mario" sono la stessa cartella.
         bool caseOnly = string.Equals(profileName, newProfileName, StringComparison.OrdinalIgnoreCase);
 
-        if (!caseOnly && Directory.Exists(destination))
+        if (!caseOnly && ProfileExists(newProfileName))
             return Result.Fail(Strings.ProfileExists);
 
         try
