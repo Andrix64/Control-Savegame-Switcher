@@ -3,6 +3,20 @@
              x:Class="Lss.App.App"
              RequestedThemeVariant="Dark">
 
+  <!--
+    Colore d'accento del tema Fluent (caselle, pulsanti di opzione, focus...):
+    il rosso dell'app, non quello di sistema, uguale su Windows e Linux.
+  -->
+  <Application.Resources>
+    <Color x:Key="SystemAccentColor">#E0261B</Color>
+    <Color x:Key="SystemAccentColorDark1">#C42218</Color>
+    <Color x:Key="SystemAccentColorDark2">#A81D15</Color>
+    <Color x:Key="SystemAccentColorDark3">#8C1811</Color>
+    <Color x:Key="SystemAccentColorLight1">#F03C30</Color>
+    <Color x:Key="SystemAccentColorLight2">#F5655B</Color>
+    <Color x:Key="SystemAccentColorLight3">#FA8F87</Color>
+  </Application.Resources>
+
   <Application.Styles>
     <FluentTheme />
     <StyleInclude Source="avares://Lss.App/Styles/Theme.axaml" />

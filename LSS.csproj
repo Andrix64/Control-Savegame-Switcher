@@ -11,7 +11,7 @@
     <AssemblyName>LSS</AssemblyName>
     <RootNamespace>Lss</RootNamespace>
     <!-- I test e la prova di Avalonia hanno il loro progetto. -->
-    <DefaultItemExcludes>$(DefaultItemExcludes);tests/**;src/**;dist/**;scripts/**;spike/**</DefaultItemExcludes>
+    <DefaultItemExcludes>$(DefaultItemExcludes);tests/**;src/**;tools/**;dist/**;scripts/**;spike/**</DefaultItemExcludes>
   </PropertyGroup>
 
   <PropertyGroup>

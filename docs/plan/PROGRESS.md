@@ -104,6 +104,16 @@ hash after it. 👤 = done by Andrix, skip it. Rules in [README.md](README.md).
 Write here anything that didn't match the plan, decisions taken with
 Andrix, and results of the 👤 checks. Newest first, with the date.
 
+- 2026-10-24 — G13, first round (Andrix + Opus): decisions: in
+  confirmations the **verb is the default button** (Enter = confirm, Esc =
+  cancel, Cancel on the left); the **Open folder** button stays in the
+  deleted playthroughs window. Fixed after looking at every window with the
+  new `tools/UiScreenshots`: text centred in all buttons, ⋯ button same
+  height as the others with drawn dots, darker red for destructive buttons,
+  hover on secondary/danger, app colours for list selection and for the
+  Fluent accent (checkboxes, radio buttons), italic note no longer cut,
+  History's Delete button styled. The rest of G13 (every function by hand)
+  is still to do.
 - 2026-10-24 — Phase G review (Opus): the main window was never shown
   (assigned to `desktop.MainWindow` after startup without `Show()`), and an
   exception in `StartAsync` was lost; both fixed in `01344b5`, with texts

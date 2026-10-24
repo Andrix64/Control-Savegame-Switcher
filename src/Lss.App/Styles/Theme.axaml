@@ -32,6 +32,12 @@
     <SolidColorBrush x:Key="ErrorBorder">#6B2B2B</SolidColorBrush>
     <SolidColorBrush x:Key="DangerBorder">#7A2A24</SolidColorBrush>
     <SolidColorBrush x:Key="DangerText">#FFB4AD</SolidColorBrush>
+    <!-- Pulsante per le azioni distruttive: rosso più scuro, il testo bianco si legge. -->
+    <SolidColorBrush x:Key="Danger">#B3261E</SolidColorBrush>
+    <SolidColorBrush x:Key="DangerHover">#C93A30</SolidColorBrush>
+    <SolidColorBrush x:Key="DangerPressed">#8F1D17</SolidColorBrush>
+    <SolidColorBrush x:Key="SecondaryHover">#38383D</SolidColorBrush>
+    <SolidColorBrush x:Key="SecondaryPressed">#242428</SolidColorBrush>
   </Styles.Resources>
 
   <Style Selector="Window">
@@ -66,9 +72,15 @@
     <Setter Property="FontSize" Value="13" />
     <Setter Property="FontStyle" Value="Italic" />
     <Setter Property="Foreground" Value="#D8D8DC" />
+    <!-- Il corsivo sporge a destra: senza margine l'ultima lettera viene tagliata. -->
+    <Setter Property="Padding" Value="0,0,3,0" />
   </Style>
 
-  <!-- Pulsanti. -->
+  <!-- Pulsanti: testo sempre al centro, anche quando sono più larghi del testo (MinWidth). -->
+  <Style Selector="Button">
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+  </Style>
   <Style Selector="Button.primary">
     <Setter Property="Background" Value="{StaticResource Accent}" />
     <Setter Property="Foreground" Value="White" />
@@ -77,6 +89,7 @@
   </Style>
   <Style Selector="Button.primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
     <Setter Property="Background" Value="{StaticResource AccentHover}" />
+    <Setter Property="Foreground" Value="White" />
   </Style>
   <Style Selector="Button.primary:pressed /template/ ContentPresenter#PART_ContentPresenter">
     <Setter Property="Background" Value="{StaticResource AccentPressed}" />
@@ -87,11 +100,60 @@
     <Setter Property="FontSize" Value="13" />
     <Setter Property="FontWeight" Value="SemiBold" />
   </Style>
+  <Style Selector="Button.secondary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{StaticResource SecondaryHover}" />
+    <Setter Property="Foreground" Value="{StaticResource Text}" />
+  </Style>
+  <Style Selector="Button.secondary:pressed /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{StaticResource SecondaryPressed}" />
+  </Style>
   <Style Selector="Button.danger">
-    <Setter Property="Background" Value="{StaticResource Error}" />
+    <Setter Property="Background" Value="{StaticResource Danger}" />
     <Setter Property="Foreground" Value="White" />
     <Setter Property="FontSize" Value="13" />
     <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+  <Style Selector="Button.danger:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{StaticResource DangerHover}" />
+    <Setter Property="Foreground" Value="White" />
+  </Style>
+  <Style Selector="Button.danger:pressed /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{StaticResource DangerPressed}" />
+  </Style>
+
+  <!-- "⋯" delle schede: stessa altezza degli altri pulsanti, tre puntini disegnati al centro. -->
+  <Style Selector="Button.more">
+    <Setter Property="Background" Value="{StaticResource SurfaceSelected}" />
+    <Setter Property="Padding" Value="11,0" />
+    <Setter Property="MinHeight" Value="0" />
+    <Setter Property="VerticalAlignment" Value="Stretch" />
+  </Style>
+  <Style Selector="Button.more:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{StaticResource SecondaryHover}" />
+  </Style>
+  <Style Selector="Button.more Ellipse">
+    <Setter Property="Width" Value="4" />
+    <Setter Property="Height" Value="4" />
+    <Setter Property="Fill" Value="{StaticResource Text}" />
+  </Style>
+
+  <!-- Elenchi (giochi, account, partite eliminate): selezione con i colori dell'app, non quelli di sistema. -->
+  <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{StaticResource SurfaceHover}" />
+  </Style>
+  <Style Selector="ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{StaticResource AccentSoft}" />
+    <Setter Property="BorderBrush" Value="{StaticResource Accent}" />
+    <Setter Property="BorderThickness" Value="3,0,0,0" />
+  </Style>
+  <Style Selector="ListBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{StaticResource AccentSoft}" />
+  </Style>
+  <Style Selector="ListBoxItem:selected:focus /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{StaticResource AccentSoft}" />
+  </Style>
+  <Style Selector="ListBoxItem:selected:pressed /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{StaticResource AccentSoft}" />
   </Style>
   <Style Selector="Button.link">
     <Setter Property="Background" Value="Transparent" />

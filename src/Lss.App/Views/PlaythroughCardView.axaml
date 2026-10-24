@@ -36,8 +36,13 @@
                   VerticalAlignment="Center" IsVisible="{Binding !IsActive}">
         <Button Classes="primary" Content="{Binding PlayText}" Command="{Binding PlayCommand}"
                 IsEnabled="{Binding CanPlay}" IsVisible="{Binding ShowPlay}" />
-        <Button Content="⋯" Width="38" Height="36" Margin="8,0,0,0"
+        <Button Classes="more"
                 AutomationProperties.Name="{Binding MoreActionsName}">
+          <StackPanel Orientation="Horizontal" Spacing="3">
+            <Ellipse />
+            <Ellipse />
+            <Ellipse />
+          </StackPanel>
           <Button.Flyout>
             <MenuFlyout>
               <MenuItem Header="{loc:Str LoadWithoutStarting}" Command="{Binding LoadOnlyCommand}"
@@ -61,8 +66,13 @@
         <Button Classes="secondary" Content="{loc:Str SavePointButton}" Command="{Binding SavePointCommand}"
                 IsEnabled="{Binding CanPlay}" />
         <Button Classes="secondary" Content="{loc:Str HistoryButton}" Command="{Binding HistoryCommand}" />
-        <Button Content="⋯" Width="38" Height="36" Margin="0"
+        <Button Classes="more"
                 AutomationProperties.Name="{Binding MoreActionsName}">
+          <StackPanel Orientation="Horizontal" Spacing="3">
+            <Ellipse />
+            <Ellipse />
+            <Ellipse />
+          </StackPanel>
           <Button.Flyout>
             <MenuFlyout>
               <MenuItem Header="{loc:Str RenameMenu}" Command="{Binding RenameCommand}" />

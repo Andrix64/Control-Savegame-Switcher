@@ -47,14 +47,14 @@ public partial class MessageWindow : Window
     }
 
     /// <summary>
-    /// Conferma con un verbo: il verbo a sinistra, "Annulla" a destra. Come in
-    /// WinForms, il predefinito è Annulla (Invio ed Esc annullano).
+    /// Conferma con un verbo: "Annulla" a sinistra, il verbo a destra. Il
+    /// verbo è il pulsante principale (Invio), Esc annulla.
     /// </summary>
     public static MessageWindow Confirm(string heading, string text, string verb, bool destructive, InfoKind kind)
     {
         var window = new MessageWindow(heading, text, kind);
-        window.AddButton(verb, destructive ? "danger" : "secondary", result: true);
-        window.AddButton(Strings.Cancel, "primary", result: false, isDefault: true, isCancel: true);
+        window.AddButton(Strings.Cancel, "secondary", result: false, isCancel: true);
+        window.AddButton(verb, destructive ? "danger" : "primary", result: true, isDefault: true);
         return window;
     }
 

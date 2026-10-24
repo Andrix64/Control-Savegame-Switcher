@@ -351,6 +351,23 @@ dotnet test tests/Lss.Tests
 The windows aren't covered by tests. On GitHub the tests run on every push and
 pull request (see below); locally `scripts\release.ps1` runs them too.
 
+### Pictures of the windows
+
+`tools/UiScreenshots` draws every window of the Avalonia app (main window,
+confirmations, new playthrough, note, History, Settings, first start,
+accounts, deleted playthroughs) with fake data and saves them as PNG, to
+check the look without opening the app on real saves. It works in a
+temporary folder (data and log included) and never touches Steam or
+`%LOCALAPPDATA%\LSS`. Second argument: `it` (default) or `en`.
+
+```bash
+dotnet run --project tools/UiScreenshots -c Release -- shots it
+```
+
+Menus opened from a button (the card's ⋯) are separate popups and are not
+in the pictures. If Smart App Control blocks the tool's dll, rebuild it
+with `--no-incremental` (see [Smart App Control](#smart-app-control)).
+
 ## Build on GitHub
 
 The repository is on [GitHub](https://github.com/Andrix64/Control-Savegame-Switcher)

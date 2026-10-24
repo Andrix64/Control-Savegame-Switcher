@@ -7,5 +7,8 @@
   <Folder Name="/tests/">
     <Project Path="tests/Lss.Tests/Lss.Tests.csproj" />
   </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/UiScreenshots/UiScreenshots.csproj" />
+  </Folder>
   <Project Path="LSS.csproj" />
 </Solution>

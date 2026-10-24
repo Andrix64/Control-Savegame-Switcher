@@ -23,6 +23,7 @@
     <InternalsVisibleTo Include="LSS" />
     <InternalsVisibleTo Include="Lss.App" />
     <InternalsVisibleTo Include="Lss.Tests" />
+    <InternalsVisibleTo Include="Lss.UiScreenshots" />
   </ItemGroup>
 
 </Project>

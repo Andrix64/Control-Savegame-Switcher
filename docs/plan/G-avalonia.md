@@ -698,6 +698,15 @@ close it and check play time and save on exit. Check the Italian texts
 (Windows in Italian) and look for `!Key` texts. Note problems in
 `PROGRESS.md`; the agent fixes them as extra tasks `G13.n`.
 
+**For the agent, on every `G13.n` that changes how a window looks:** after
+the fix run `tools/UiScreenshots` (see `docs/DEVELOPMENT.md` → "Pictures of
+the windows") into a folder outside the repository, open the PNG of the
+window you changed with the Read tool and check it. Use the shared styles
+of `src/Lss.App/Styles/Theme.axaml` (`primary`, `secondary`, `danger`,
+`link`, `more`) for every button: no button without a class, no fixed
+`Width`/`Height` on buttons. If you add a window, add it to
+`tools/UiScreenshots/Program.cs` too.
+
 ---
 
 ## G14 — Remove WinForms, `Lss.App` becomes `LSS`
